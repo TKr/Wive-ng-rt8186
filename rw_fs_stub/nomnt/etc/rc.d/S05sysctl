@@ -1,0 +1,147 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+ echo "Starting sysctl: "
+ /sbin/sysctl -p /etc/sysctl.conf > /dev/null
+# default enable ipsec passthrough , and will be disalbed when vpn enabled (SDK)
+if [ -f /proc/nat_ipsec ];then
+    echo "1" > /proc/nat_ipsec
+fi
+if [ -f /proc/nat_l2tp ];then
+    echo "1" > /proc/nat_l2tp
+fi
+ echo "Tune system: "
+#ip anti arp spoof patch enable
+if [ "$SPOOF_PROTECT" == "yes" ]; then
+    echo 1 > /proc/sys/net/ipv4/neigh/default/arp_antidote
+    sysctl -w net.ipv4.conf.default.rp_filter=1
+    sysctl -w net.ipv4.conf.all.accept_source_route=0
+    else
+    echo 0 > /proc/sys/net/ipv4/neigh/default/arp_antidote
+    echo 0 > /proc/sys/net/ipv4/neigh/eth0/arp_antidote
+    echo 0 > /proc/sys/net/ipv4/neigh/eth1/arp_antidote
+    echo 0 > /proc/sys/net/ipv4/neigh/wlan0/arp_antidote
+    echo 0 > /proc/sys/net/ipv4/neigh/br0/arp_antidote
+    sysctl -w net.ipv4.conf.default.rp_filter=0
+    sysctl -w net.ipv4.conf.all.accept_source_route=1
+fi
+
+#tune network stack and memory usadge fo small memory devices
+MEM_SIZE=`free | grep Total | awk '{ print $2/10000 }' | cut -d '.' -f1`
+if [ "$MEM_SIZE" != "0" ]; then
+    echo Tune kernel to minimum memory usadge - 16MB
+    #disable swap subsystem
+    echo 0 0 0 > /proc/sys/vm/kswapd
+    if [ "$OPTIMIZE_TCP_MEM" == "yes" ]; then
+	echo Tune network stack
+	# tcp buff size
+	MAX_MEM=`free | grep Total | awk '{ print ($4-1228)*1024 }'`
+	CORE_MEM=`echo $MAX_MEM | awk '{ print ($1)/2 }' | cut -d '.' -f1`
+	IPV4_MEM=`echo $MAX_MEM | awk '{ print ($1)/4 }' | cut -d '.' -f1`
+	# set sysctl
+	sysctl -w net.core.rmem_max=$MAX_MEM
+	sysctl -w net.core.wmem_max=$MAX_MEM
+	sysctl -w net.ipv4.tcp_rmem="4096 43689 $CORE_MEM"
+	sysctl -w net.ipv4.tcp_wmem="4096 16384 $CORE_MEM"
+	sysctl -w net.ipv4.tcp_mem="2048 2560 $IPV4_MEM"
+    fi
+else
+    echo Tune kernel to minimum memory usadge - 8MB
+    #disable swap subsystem
+    echo 0 0 0 > /proc/sys/vm/kswapd
+    echo 3 > /proc/sys/vm/max-readahead
+    echo 0 > /proc/sys/vm/overcommit_memory
+fi
+
+#fast UDP conntrack mode
+if [ "$LOOSEUDP" == "yes" ]; then
+    sysctl -w net.ipv4.ip_masq_udp_dloose=1
+    else
+    sysctl -w net.ipv4.ip_masq_udp_dloose=0
+fi
+
+#Optimize conntrack for slow CPU
+if [ "$CONNTRACK_OPT" == "yes" ]; then
+    sysctl -w net.ipv4.netfilter.ip_conntrack_generic_timeout=200
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_established=3600
+    sysctl -w net.ipv4.ip_conntrack_max=512
+    sysctl -w net.ipv4.netfilter.ip_conntrack_max=512
+    sysctl -w net.ipv4.netfilter.ip_conntrack_icmp_timeout=30
+    sysctl -w net.ipv4.netfilter.ip_conntrack_udp_timeout_stream=120
+    sysctl -w net.ipv4.netfilter.ip_conntrack_udp_timeout=30
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_close=10
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait=60
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_last_ack=30
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_close_wait=60
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_fin_wait=100
+    sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_syn_sent=80
+fi
+
+#keepalive probes each 15 minutes, with an interval between tests of ~4 minutes of 4 probes
+if [ "$KEEPALIVE_OPT" == "yes" ]; then
+    sysctl -w net.ipv4.tcp_keepalive_time=900
+    sysctl -w net.ipv4.tcp_keepalive_intvl=225
+    sysctl -w net.ipv4.tcp_keepalive_probes=4
+fi
+
+#Disable echo reply at all interfaces
+if [ "$ICMP_DISABLE" == "yes" ]; then
+    sysctl -w net.ipv4.icmp_echo_ignore_all=1
+    else
+    sysctl -w net.ipv4.icmp_echo_ignore_all=0
+fi
+
+#proxyarp support
+if [ "$PROXY_ARP" == "yes" ]; then
+    sysctl -w net.ipv4.conf.default.proxy_arp=1
+    sysctl -w net.ipv4.conf.all.proxy_arp=1
+    else
+    sysctl -w net.ipv4.conf.default.proxy_arp=0
+    sysctl -w net.ipv4.conf.all.proxy_arp=0
+fi
+
+#decrease arp timeouts param
+if [ "$ARP_FAST_CLEAN" == "yes" ]; then
+    sysctl -w net.ipv4.neigh.default.gc_thresh3=1024
+    sysctl -w net.ipv4.neigh.default.gc_thresh2=768
+    sysctl -w net.ipv4.neigh.default.gc_thresh1=512
+    sysctl -w net.ipv4.neigh.default.gc_interval=20
+fi
+
+#enable stealth mode
+if [ "$STEALTH" = "yes" ] ; then
+    sysctl -w net.ipv4.igmp_restrict=1
+    sysctl -w net.ipv4.udp_restrict_pu=1
+    sysctl -w net.ipv4.tcp_restrict_rst=1
+    sysctl -w net.ipv4.tcp_restrict=1
+    sysctl -w net.ipv4.icmp_restrict=1
+fi
+ echo " Ok"
+}
+
+stop() {
+ echo "Stopping sysctl: "
+  killall sysctl
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

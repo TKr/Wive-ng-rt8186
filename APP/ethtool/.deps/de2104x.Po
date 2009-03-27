@@ -1,0 +1,75 @@
+de2104x.o: de2104x.c \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/stdio.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/features.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/cdefs.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/uClibc_config.h \
+  /opt/Wive/toolchain/lib/gcc-lib/mips-linux-uclibc/3.3.3/include/stddef.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/types.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/kernel_types.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/pthreadtypes.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/sched.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/types.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/time.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/endian.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/endian.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/select.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/select.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/sigset.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/time.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/sysmacros.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/uClibc_stdio.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/wchar.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/wchar.h \
+  /opt/Wive/toolchain/lib/gcc-lib/mips-linux-uclibc/3.3.3/include/stdarg.h \
+  /opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/stdio_lim.h \
+  ethtool-util.h ethtool-copy.h
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/stdio.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/features.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/cdefs.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/uClibc_config.h:
+
+/opt/Wive/toolchain/lib/gcc-lib/mips-linux-uclibc/3.3.3/include/stddef.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/types.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/kernel_types.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/pthreadtypes.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/sched.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/types.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/time.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/endian.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/endian.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/select.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/select.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/sigset.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/time.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/sys/sysmacros.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/uClibc_stdio.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/wchar.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/wchar.h:
+
+/opt/Wive/toolchain/lib/gcc-lib/mips-linux-uclibc/3.3.3/include/stdarg.h:
+
+/opt/Wive/toolchain/mips-linux-uclibc/sys-include/bits/stdio_lim.h:
+
+ethtool-util.h:
+
+ethtool-copy.h:

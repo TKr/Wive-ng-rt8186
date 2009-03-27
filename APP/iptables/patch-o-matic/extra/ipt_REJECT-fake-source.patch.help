@@ -1,0 +1,15 @@
+Author: Fabrice MARIE <fabrice@celestix.com>
+Status: It Works For Me.
+
+Adds the possibility to send icmp-unreachable messages
+from a fake source IP address.
+
+Example :
+# iptables -A INPUT -p tcp -d 202.156.58.79 --dport http -j REJECT --fake-source 10.1.1.1
+# iptables --list -n
+Chain INPUT (policy ACCEPT)
+target prot opt source      destination         
+REJECT tcp  --  0.0.0.0/0   202.156.58.79   tcp dpt:80 reject-with icmp-port-unreachable faked from 10.1.1.1
+
+***** WARNING ***** This patch also patch the userspace directory which means that you
+                    you have to recompile and reinstall the iptables package after that.

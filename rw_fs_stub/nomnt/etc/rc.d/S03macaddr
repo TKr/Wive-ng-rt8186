@@ -1,0 +1,41 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+
+start() {
+echo "Starting Macaddr: "
+if [ -f /etc/devices/wlan0 ]; then
+   ifconfig wlan0 hw ether $WLAN_MACADDR
+fi
+if [ -f /etc/devices/eth0 ]; then
+   ifconfig eth0 hw ether $ETH0_MACADDR
+fi
+if [ -f /etc/devices/eth1 ]; then
+   ifconfig eth1 hw ether $ETH1_MACADDR
+fi
+echo " Ok"
+}
+
+stop() {
+ echo "Stopping macaddr: "
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

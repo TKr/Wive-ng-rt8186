@@ -1,0 +1,10 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Submitted to the kernel at 2.4.18-pre3 time
+
+This is a patch fixing some minor problems when
+ip_{conntrack,nat}_{irc,ftp}.o are compiled as a module, and
+registration of the helper fails.
+
+This is a very rare occasion (somebody would have to try to 
+register two different helpers for the same port number).
+

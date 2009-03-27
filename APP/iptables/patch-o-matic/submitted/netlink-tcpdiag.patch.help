@@ -1,0 +1,9 @@
+Author: unknown
+Status: In kernel since 2.4.17
+
+This patch is not really a netfilter patch, but updates your netlink.h file
+in order to comply with the ulog patch.  It's safe to apply this patch all
+the time - and it's needed by ulog.patch
+
+NOTE: this patch is not needed (and will not apply) on kernels >= 2.4.18 
+

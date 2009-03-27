@@ -1,0 +1,17 @@
+CONFIG_IP6_NF_MATCH_OWNER
+IPV6 queue handler (EXPERIMENTAL)
+CONFIG_IP6_NF_QUEUE
+
+  This option adds a queue handler to the kernel for IPv6
+  packets which lets us to receive the filtered packets
+  with QUEUE target using libiptc as we can do with
+  the IPv4 now.
+
+  (C) Fernando Anton 2001
+  IPv64 Project - Work based in IPv64 draft by Arturo Azcorra.
+  Universidad Carlos III de Madrid
+  Universidad Politecnica de Alcala de Henares
+  email: fanton@it.uc3m.es
+
+  If you want to compile it as a module, say M here and read
+  Documentation/modules.txt. If unsure, say `N'.

@@ -1,0 +1,14 @@
+diff -u --recursive --new-file v2.4.10/linux/net/ipv4/netfilter/ipt_mac.c linux/net/ipv4/netfilter/ipt_mac.c
+--- v2.4.10/linux/net/ipv4/netfilter/ipt_mac.c	Thu Jul  6 21:20:00 2000
++++ linux/net/ipv4/netfilter/ipt_mac.c	Sat Oct  6 08:50:28 2001
+@@ -20,7 +20,7 @@
+ 
+     /* Is mac pointer valid? */
+     return (skb->mac.raw >= skb->head
+-	    && skb->mac.raw < skb->head + skb->len - ETH_HLEN
++	    && (skb->mac.raw + ETH_HLEN) <= skb->data
+ 	    /* If so, compare... */
+ 	    && ((memcmp(skb->mac.ethernet->h_source, info->srcaddr, ETH_ALEN)
+ 		== 0) ^ info->invert));
+
+

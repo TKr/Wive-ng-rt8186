@@ -1,0 +1,36 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+if [ "$START_WINSSERVER" == "yes" ]; then
+ echo "Starting LWINS: "
+  /sbin/lwins --config /etc/lwins.conf 2> /var/log/lwins.log &
+ echo " Ok"
+fi
+}
+
+stop() {
+ echo "Stopping LWINS: "
+  killall lwins
+ echo " Ok"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        stop)
+            stop
+            ;;
+
+        restart)
+            stop
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start|stop|restart}"
+            exit 1
+esac

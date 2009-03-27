@@ -1,0 +1,2 @@
+r3k_dump_tlb.c: In function `dump16':
+r3k_dump_tlb.c:181: warning: operation on `p' may be undefined

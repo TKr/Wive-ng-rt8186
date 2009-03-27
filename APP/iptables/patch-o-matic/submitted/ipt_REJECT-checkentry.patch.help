@@ -1,0 +1,7 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Included in kernel 2.4.11
+
+Minor correction to the REJECT target's checkentry function, which had a 
+long-term undiscovered bug which was undiscovered because of cacheline 
+alignment only.
+

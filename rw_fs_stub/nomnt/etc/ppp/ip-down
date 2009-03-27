@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+
+#Replace DNS servers from temp of pppd down
+if [ "$PPTP_PEERDNS" = "yes" ] || [ "$PPOE_PEERDNS" = "yes" ] ; then
+    cp -f /var/tmp/resolv.conf.tmp.$1 /etc/resolv.conf 
+fi

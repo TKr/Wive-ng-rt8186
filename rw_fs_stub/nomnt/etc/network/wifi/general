@@ -1,0 +1,195 @@
+#---------------------------------GENERAL WIRELESS INTERFACE CONFIG--------------------------
+#Set Mode: AP/CLIENT/ADHOC
+RMODE=AP
+
+#Set ESSID of wirelless Infrastructure Network
+ESSID=SF-WL
+
+#This is name BS to first probe connect (12 digits macaddress)
+JOINBS=0019CB7515A2
+
+#Deny the association SSID of “any” including upper and lower cases.
+DSSID=BAD_SSID
+
+#This is AP is hidden
+HIDEAP=no
+
+#---------------------------------POWER AND MODULATION MODE------------------------------------
+#Set WiFi mode b/g/bg
+MODE=bg
+
+#Set Channel here 1-14 (0 for auto)
+CHANNEL=9
+
+#Use CHANNEL options for scan and use  only this channel (no - scan all 1-14 channels)
+FIXCHANNEL=no
+
+#If enabled in B+G mode, AP will deny the association from 11B STA.
+DENYLEGACY=no
+
+#Set TransmitPower for CCK(802.11b) modulation (1-4b) 
+#Attention! The parametre increase can cause failure RF of the module.
+#More 2A need fun.
+CCKPOWER=8
+
+#Set TransmitPower for OFDM(802.11g) modulation. Recomended 1A-25.
+#Attention! The parametre increase can cause failure RF of the module.
+#14(default indoor),20(default outdoor, need fun)
+OFDMPOWER=12
+
+#Enhanced Tx Power
+ENHTX=yes
+
+#Set Initial Gain: in range 0-7
+GAIN=7
+AUTOGAIN=yes
+
+#Dynamic RF sensitivity adjustment
+DRSA=yes
+
+#Enable LNA (low noise amplifier) for some SoC (all Senao for example)
+LNA=no
+
+#ACK timeout. Range 0-255. 255 is auto (self) configuration
+ACK=255
+
+#----------------------------------SPEED MODE CONFIGS------------------------------------------------------
+FIXRATE=no #if you use fixrate, select basicrates and operates for need speed mode
+BASICRATES=4095
+OPRATES=4095
+WLAN_BURST=no
+
+#Realtek turmo mode Auto/Always/Disable (actual only RTL based devices and fixrate disabled)
+TURBO_MODE=Auto
+
+#Show hidden BS 
+SHOWHIDDEN=yes
+
+#G protection is 802.11g mode prioriry (instead use G only mode)
+GPROTECTION=no
+
+#Use cts to Self for protection mode (may be need by some old devices)
+CTS2SELF=no
+
+#Preample type SHORT/LONG
+SHORTPREAMBLE=yes
+
+#Roaming support (IEEE 802.11f server mode) on AP mode 
+ENABLE_ROAMING=no
+
+#Fast roaming (IEEE 802.11f client support) on client mode
+FAST_ROAMING=no
+
+#----------------------------------ADVANCED PARAMETRS------------------------------------------------------
+
+#Interval of service packets transmit
+BCINIT=200
+
+#Frame size for fragment 
+FRAGTHRES=2346
+
+#RTS/CTS Threshold
+RTSTHRES=2347
+
+#Time of last recive frame when connection is closed (30 minutes of seconds)
+EXPIRED_TIME=1800
+
+#Count of short rertry send frames (Fast hand shake without the coordination of parameters)
+SHORTRETRY=3
+
+#Count of long rertry send frames or frame dead(Slow hand shake with the full coordination of parameters)
+LONGRETRY=2
+
+#Change AP mode wlan led type = 6(enable), CB mode = 2(link), 7 (Enable/tx/rx), CB mode = 5 (link/tx/rx)
+LED_TYPE=2
+
+#Prioriry transmit maximum speed on realtek turbo mode 
+TXPRIO=yes
+
+#Enable Quality of Service
+QOS=yes
+
+#For bridged mode set this parameters
+# Nat2.5 is technology to change the source MAC to MAC of Wlan-interface
+#  be carefull it says disabled, so make inverse in your decision
+NAT2_5=yes
+
+# Macclone says all about itself. It just takes MAC of ETHERNET device on other end of line
+#  and take it for Wlan-interface. be carefull if this enabled it must be one device on a line.
+MACCLONE=no
+
+# Disable/Enable dhcp relay from/to wireless interface
+DHCPBCST=yes
+
+#Block packets between clients connected
+# 0 - disable; 1 - block relay;2 - block relay but passup 
+BLOCK_RELAY=0
+
+#Use lowest basic rate to send multicast and broadcast
+LOWMCS=yes
+
+#---------------------------------------ACCESS OPTIONS-------------------------------------------------------
+
+#802.11 Authentication type OPEN-open system, SHARED–shared key, AUTO-auto
+AUTHTYPE=AUTO
+
+#Enable/disable access list
+ACL=no
+
+#Allowed macs of client (on one through a blank)
+ALLOWMACS="001D92C7B5AB 0015AF8BD700 004F6A010719 003005DF2049 0019CB7515A2 00027267E56A"
+
+#Enable/disable wep
+WEP=no
+
+#WepKey 26 digits for 128bit
+WEPKEY=11223344556677889910111213
+
+#Enable/disable wpa/wpa2
+WPA=no
+
+#--------------------------------------WDS Options----------------------------------------------------------
+
+#Enable/disable wds
+WDS=no
+
+#Set MAC/BSSID of WDS stations for driver and wds-interfaces (first station for WDS).
+WDS0_MAC="0019CB7515A2 00006c000002"
+
+#Pure WDS enable, client not have connect to this AP
+WDS_ONLY=no
+
+#Give WDS packets higher priority
+WDS_PRIO=yes
+
+#WDS Encrypt 0 - disabled, 1 - WEP64, 5 - WEP128
+WDS_CRYPT=0
+
+#Passphrase or hex key for WDS mode encryption
+#WepKey 26 digits for WEP 128bit
+WDS_WEPKEY=11223344556677889910123456
+
+#--------------------------------------REP Options----------------------------------------------------------
+
+#Repeater mode
+REPEATER=no
+
+#REPEATER Encrypt 0 - disabled, 1 - WEP64, 5 - WEP128
+REPCRYPT=0
+
+#Extended connection loggin with syslog
+RSSI_DUMP=no
+TSSI_DUMP=no
+CRC_LOG=no
+
+#Be carefull. There're many Hardware-specific mibs
+WLAN_USE_UNCHECKED_MIBS=no
+
+#------------------------------WPS and MESH Options Only in SDK this version--------------------------------
+#Select yes to support OSLR MESH network
+#MESH_MODE=no
+#Support WiFi Protection Setup
+#WPS=no
+#PIN setting for WPS “string_value” with 8 characters in max
+#PIN=12345678
+#---------------------------------------Other options-------------------------------------------------------

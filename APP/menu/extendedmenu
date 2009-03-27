@@ -1,0 +1,33 @@
+#!/bin/sh
+
+#Author: Evgeniy Manachkin <sfstudio@mail.ru>
+#This is software distributed under version 3 of the General Public License
+
+while [ "2" != "1" ] ; do
+    clear
+    cat /version
+    echo "Please report of any bug to sfstudio@mail.ru"
+    echo "	"
+    echo "-=Extended menu=-"
+    echo "	"
+    echo "1)Unchecked 2)Iptables 3)Routes 4)Sysctl 5) DHCPD 6)DNS 7)PPTPPEERS"
+    echo "8)VLAN 9)PPTPOPTIONS 10)CHAPPASSWORD 11)PAPPASSWORD 12)Back"
+    echo "	"
+    echo "Enter choice number: "
+    echo "	"
+    read Keypress
+    case "$Keypress" in
+    1 )		vi /etc/network/wifi/unchecked;;
+    2 )		vi /etc/network/iptables;;
+    3 )		vi /etc/network/routes;;
+    4 )		vi /etc/sysctl.conf;;
+    5 )		vi /etc/udhcpd.conf;;
+    6 )		vi /etc/resolv.conf;;
+    7 )		vi /etc/ppp/peers/pptp;;
+    8 )		vi /etc/network/vlan;;
+    9 )		vi /etc/ppp/options.pptp;;
+    10 ) 	vi /etc/ppp/chap-secrets;;
+    11 )	vi /etc/ppp/pap-secrets;;
+    12 )	exit;;
+    esac
+done

@@ -1,0 +1,6 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Pending for kernel inclusion
+
+This adds support for ip_conntrack_protocol_unregister(), needed if 
+layer four protocol helpers (GRE, ...) are implemented as modules.
+

@@ -1,0 +1,429 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+. /etc/network/wifi/general
+dhcpc=/sbin/udhcpc
+
+start() {
+echo "Starting wireless network..."
+echo Configure wifi module
+#---------------------START IF WLAN_ENABLED=YES
+if [ -f /etc/devices/wlan0 ]; then
+if [ "$WLAN_ENABLED" = "yes" ] ; then
+#------------------------INTERFACE CONFIG-----------------------------------------
+echo  "   Starting wlan0: "
+#-------------------------------DEFAULT MODIFY SETTINGS-----------------------
+    iwpriv wlan0 set_mib nat25_disable=0
+    iwpriv wlan0 set_mib macclone_enable=0
+#-------------------------------FOR ALL MODES---------------------------------
+    iwpriv wlan0 set_mib ssid=$ESSID
+    #Deny the association SSID of “any” including upper and lower cases
+    iwpriv wlan0 set_mib deny_any=$DSSID
+    #Channels list mode
+    iwpriv wlan0 set_mib regdomain=6
+    #Do not disable 14channel for 802.11g mode
+    iwpriv wlan0 set_mib disable_ch14_ofdm=0
+    #Transmit power level
+    iwpriv wlan0 set_mib TxPowerCCK=`ader $CCKPOWER 14`
+    iwpriv wlan0 set_mib TxPowerOFDM=`ader $OFDMPOWER 162`
+    #The highest/lowest channel to scan and use
+    if [ "$FIXCHANNEL" = "yes" ] ; then
+        iwpriv wlan0 set_mib ch_low=$CHANNEL
+        iwpriv wlan0 set_mib ch_hi=$CHANNEL
+        else
+        iwpriv wlan0 set_mib ch_low=1
+        iwpriv wlan0 set_mib ch_hi=14
+    fi
+    #Speed mode fix/auto
+    if [ "$FIXRATE" = "yes" ] ; then
+    	iwpriv wlan0 set_mib autorate=0
+	iwpriv wlan0 set_mib fixrate=$OPRATES
+        else
+	iwpriv wlan0 set_mib fixrate=0
+	iwpriv wlan0 set_mib autorate=1
+    fi
+    #Select rates
+        iwpriv wlan0 set_mib basicrates=$BASICRATES
+        iwpriv wlan0 set_mib oprates=$OPRATES
+    #Signal/noise threshold
+    iwpriv wlan0 set_mib initialGain=$GAIN
+    if [ "$AUTOGAIN" = "yes" ] ; then
+        iwpriv wlan0 set_mib DIG_enable=1
+        else
+        iwpriv wlan0 set_mib DIG_enable=0
+    fi
+    if [ "$DRSA" = "yes" ] ; then
+        iwpriv wlan0 set_mib DRSA_disable=0
+        else
+        iwpriv wlan0 set_mib DRSA_disable=1
+    fi
+    if [ "$LNA" = "yes" ] ; then
+	iwpriv wlan0 set_mib LNA_enable=1
+	else
+	iwpriv wlan0 set_mib LNA_enable=0
+    fi
+    if [ "$ENHTX" = "yes" ] ; then
+        iwpriv wlan0 set_mib EhTxPower=1
+        else
+        iwpriv wlan0 set_mib EhTxPower=0
+    fi
+    #Use cts2Self for protection mode
+    if [ "$CTS2SELF" = "yes" ] ; then
+        iwpriv wlan0 set_mib cts2self=1
+        else
+        iwpriv wlan0 set_mib cts2self=0
+    fi
+    #Enable QoS
+    if [ "$QOS" = "yes" ] ; then
+        iwpriv wlan0 set_mib qos_enable=1
+	else    
+        iwpriv wlan0 set_mib qos_enable=0
+    fi
+    if [ "$LOWMCS" = "yes" ] ; then
+        iwpriv wlan0 set_mib lowestMlcstRate=1
+	else    
+        iwpriv wlan0 set_mib lowestMlcstRate=0
+    fi
+    #---------------------MODE SELECT
+    if [ "$MODE" = "b" ] ; then 
+	iwpriv wlan0 set_mib band=1
+        iwpriv wlan0 set_mib disable_olbc=1
+    fi
+    if [ "$MODE" = "g" ] ; then 
+	iwpriv wlan0 set_mib band=2 
+	iwpriv wlan0 set_mib disable_olbc=1
+	iwpriv wlan0 set_mib deny_legacy=1
+    fi
+    if [ "$MODE" = "bg" ] ; then
+    	iwpriv wlan0 set_mib band=3
+	iwpriv wlan0 set_mib disable_olbc=0
+	if [ "$DENYLEGACY" = "yes" ] ; then
+	    iwpriv wlan0 set_mib deny_legacy=1
+	    else
+	    iwpriv wlan0 set_mib deny_legacy=0
+	fi
+    fi
+    
+user_turbo() {
+    #---------------------FIX RATE
+    if [ "$FIXRATE" != "yes" ] ; then
+	#---------------------TURBO MODE
+        if [ "$TURBO_MODE" = "Auto" ] ; then
+	    echo  "Start in turbomode $TURBO_MODE"
+    	    iwpriv wlan0 set_mib turbo_mode=0
+            #Tx/Rx shortcut enable/disable
+            iwpriv wlan0 set_mib disable_txsc=0
+            iwpriv wlan0 set_mib disable_rxsc=0
+            #Bridge shortcut enable/disable
+            iwpriv wlan0 set_mib disable_brsc=0
+            #NAT2.5 shortcut enable/disable
+            iwpriv wlan0 set_mib nat25sc_disable=0
+            if [ "$TX_PRIO" = "yes" ] ; then
+		iwpriv wlan0 set_mib tx_priority=1
+		else    
+		iwpriv wlan0 set_mib tx_priority=0
+    	    fi
+        fi
+        if [ "$TURBO_MODE" = "Always" ] ; then
+	    echo  "Start in turbomode $TURBO_MODE"
+    	    iwpriv wlan0 set_mib turbo_mode=1
+    	    #Tx/Rx shortcut enable/disable
+    	    iwpriv wlan0 set_mib disable_txsc=0
+    	    iwpriv wlan0 set_mib disable_rxsc=0
+    	    #Bridge shortcut enable/disable
+    	    iwpriv wlan0 set_mib disable_brsc=0
+    	    #NAT2.5 shortcut enable/disable
+    	    iwpriv wlan0 set_mib nat25sc_disable=0
+    	    if [ "$TX_PRIO" = "yes" ] ; then
+		iwpriv wlan0 set_mib tx_priority=1
+		else    
+		iwpriv wlan0 set_mib tx_priority=0
+    	    fi
+        fi
+        if [ "$TURBO_MODE" = "Disable" ] ; then
+    	    iwpriv wlan0 set_mib turbo_mode=2
+    	    #Tx/Rx shortcut enable/disable
+    	    iwpriv wlan0 set_mib disable_txsc=1
+    	    iwpriv wlan0 set_mib disable_rxsc=1
+    	    #Bridge shortcut enable/disable
+    	    iwpriv wlan0 set_mib disable_brsc=1
+    	    #NAT2.5 shortcut enable/disable
+    	    iwpriv wlan0 set_mib nat25sc_disable=1
+    	fi
+        #---------------------END TURBO
+    fi	
+    #---------------------END FIX RATE
+}
+    user_turbo
+    #---------------------SHOW HIDDEN
+    if [ "$SHOWHIDDEN" = "yes" ] ; then
+	iwpriv wlan0 set_mib show_hidden_bss=1
+	else
+	iwpriv wlan0 set_mib show_hidden_bss=0
+    fi
+    #---------------------PREAMBLE
+    if [ "$SHORTPREAMBLE" = "yes" ] ; then
+	iwpriv wlan0 set_mib preamble=1
+	else
+	iwpriv wlan0 set_mib preamble=0
+    fi
+    #---------------------UNCHEK
+    if [ "$WLAN_USE_UNCHECKED_MIBS" == "yes" ]; then
+	/etc/network/wifi/unchecked
+    fi
+#-------------------------------AP MODE----------------------------------------
+if [ "$RMODE" = "AP" ] ; then
+    iwpriv wlan0 set_mib opmode=16
+    iwpriv wlan0 set_mib channel=$CHANNEL
+    #---------------------HIDDEN AP MODE
+    if [ "$HIDEAP" = "yes" ] ; then
+	iwpriv wlan0 set_mib hiddenAP=1
+	else
+	iwpriv wlan0 set_mib hiddenAP=0
+    fi
+    #---------------------G PROTECT
+    if [ "$GPROTECTION" = "yes" ] ; then 
+	iwpriv wlan0 set_mib disable_protection=0
+	else
+	iwpriv wlan0 set_mib disable_protection=1
+    fi
+    if [ "$AUTHTYPE" = "OPEN" ] ; then
+	iwpriv wlan0 set_mib authtype=0
+    fi
+    if [ "$AUTHTYPE" = "SHARED" ] ; then
+	iwpriv wlan0 set_mib authtype=1
+    fi
+    if [ "$AUTHTYPE" = "AUTO" ] ; then
+	iwpriv wlan0 set_mib authtype=2
+    fi
+    #---------------------ACL
+    if [ "$ACL" = "yes" ] ; then
+	iwpriv wlan0 set_mib aclmode=1 
+	iwpriv wlan0 set_mib aclnum=0
+	   for i in $ALLOWMACS; do
+	     iwpriv wlan0 set_mib acladdr=$i
+	   done
+	acls=`iwpriv wlan0 get_mib aclnum | awk {'print $5'}`
+	echo Is $acls ACL rules added
+	else
+	iwpriv wlan0 set_mib aclmode=0
+    fi
+    #---------------------WDS-------------------------------------
+    if [ "$WDS" = "yes" ] ; then
+    #start WDS
+    iwpriv wlan0 set_mib wds_enable=1 
+            if [ "$WDS_ONLY" = "yes" ] ; then
+		iwpriv wlan0 set_mib wds_pure=1
+	    else
+		iwpriv wlan0 set_mib wds_pure=0
+	    fi
+            if [ "$WDS_PRIO" = "yes" ] ; then
+		iwpriv wlan0 set_mib wds_priority=1
+	    else
+		iwpriv wlan0 set_mib wds_priority=0
+	    fi
+	    iwpriv wlan0 set_mib wds_encrypt=$WDS_CRYPT
+	    iwpriv wlan0 set_mib wds_wepkey=$WDS_WEPKEY
+    	    iwpriv wlan0 set_mib wds_num=0
+	    num=0
+	    for i in $WDS0_MAC; do
+		iwpriv wlan0 set_mib wds_add=$i
+    		ifconfig wlan0-wds$num hw ether $WLAN_MACADDR
+		if [ "$WDS_IN_BR0" != "yes" ] ; then
+		    echo link up wds$num non bridge
+		    ip link set wlan0-wds$num up
+		fi
+		num=`expr $num + 1`
+	    done
+	  wdsls=`iwpriv wlan0 get_mib wds_num | awk {'print $5'}`
+	  echo Is $wdsls WDS rules added
+    else
+	iwpriv wlan0 set_mib wds_enable=0
+    fi
+    #---------------------WPS-------------------------------------
+    if [ "$WPS" = "yes" ] ; then
+	iwpriv wlan0 set_mib wsc_enable=1
+	iwpriv wlan0 set_mib pin=$PIN
+	else
+	iwpriv wlan0 set_mib wsc_enable=0
+    fi
+    #-----------------------Repeater--------------------------------
+    if [ "$REPEATER" = "yes" ] ; then
+        ifconfig wlan0-vxd down 
+	ifconfig wlan0-vxd hw ether $WLAN_MACADDR
+	iwpriv wlan0-vxd set_mib ssid=$ESSID
+	iwpriv wlan0-vxd set_mib encmode=$REPCRYPT
+	ifconfig wlan0-vxd up 
+    fi
+fi
+
+#-------------------------------CLIENT MODE-------------------------------------
+if [ "$RMODE" = "CLIENT" ] ; then
+    #---------------------OPTION JOIN TO STATION AND MODESELECT
+    iwpriv wlan0 set_mib opmode=8
+    if [ "$JOINBS" != "" ] ; then
+	iwpriv wlan0 set_mib bssid2join=$JOINBS
+    fi
+    #---------------------OPTION FOR BRIDGE
+    if [ "$BRIDGE_START" = "yes" ] ;  then 
+        if [ "$NAT2_5" = "yes" ] ; then
+		iwpriv wlan0 set_mib nat25_disable=0
+		iwpriv wlan0 set_mib add_pppoe_tag=1
+	    else
+		iwpriv wlan0 set_mib nat25_disable=1
+		iwpriv wlan0 set_mib add_pppoe_tag=0
+		if [ "$MACCLONE" = "yes" ] ; then
+	    	    iwpriv wlan0 set_mib macclone_enable=1
+		    else
+		    iwpriv wlan0 set_mib macclone_enable=0
+		fi
+	  fi
+    fi
+    #---------------------ROAMING-----------
+    if [ "$FAST_ROAMING" = "yes" ] ; then
+	iwpriv wlan0 set_mib fast_roaming=1
+	else
+	iwpriv wlan0 set_mib fast_roaming=0
+    fi
+    #---------------------ROAMING-----------
+fi
+
+#-------------------------------ADHOC MODE---------------------------------------
+if [ "$RMODE" = "ADHOC" ] ; then
+    iwpriv wlan0 set_mib opmode=32
+    iwpriv wlan0 set_mib channel=$CHANNEL
+    iwpriv wlan0 set_mib defssid=$ESSID
+    #---------------------OPTION FOR BRIDGE
+    if [ "$BRIDGE_START" = "yes" ] ;  then 
+        if [ "$NAT2_5" = "yes" ] ; then
+		iwpriv wlan0 set_mib nat25_disable=0
+	    else
+		iwpriv wlan0 set_mib nat25_disable=1
+		if [ "$MACCLONE" = "yes" ] ; then
+	    	    iwpriv wlan0 set_mib macclone_enable=1
+		    else
+		    iwpriv wlan0 set_mib macclone_enable=0
+		fi
+	  fi
+    fi
+fi
+#-------------------------------ADVANCED OPTIONS----------------------------------
+iwpriv wlan0 set_mib bcnint=$BCINIT
+iwpriv wlan0 set_mib fragthres=$FRAGTHRES
+iwpriv wlan0 set_mib rtsthres=$RTSTHRES
+iwpriv wlan0 set_mib expired_time=`echo $EXPIRED_TIME | awk '{ print ($1)*100 }'`
+iwpriv wlan0 set_mib shortretry=$SHORTRETRY
+iwpriv wlan0 set_mib longretry=$LONGRETRY
+iwpriv wlan0 set_mib led_type=$LED_TYPE
+iwpriv wlan0 set_mib AntDvrsty=0
+iwpriv wlan0 set_mib Diversity=0
+iwpriv wlan0 set_mib DefaultAnt=0
+iwpriv wlan0 set_mib RFChipID=7 #7 - RTL8225(11b/g), 8 - RTL8255(11b/g/a), 9 - RTL8255B(11 b/g/a full-band)
+iwpriv wlan0 set_mib block_relay=$BLOCK_RELAY
+iwpriv wlan0 set_mib ack_timeout=$ACK
+if [ "$DHCPBCST" = "yes" ] ; then
+    iwpriv wlan0 set_mib dhcp_bcst_disable=0
+    else
+    iwpriv wlan0 set_mib dhcp_bcst_disable=1
+fi    
+if [ "$RSSI_DUMP" = "yes" ] ; then
+    iwpriv wlan0 set_mib rssi_dump=1
+    else
+    iwpriv wlan0 set_mib rssi_dump=0
+fi
+if [ "$TSSI_DUMP" = "yes" ] ; then
+    iwpriv wlan0 set_mib tssi_dump=1
+    else
+    iwpriv wlan0 set_mib tssi_dump=0
+fi
+
+if [ "$CRC_LOG" = "yes" ] ; then
+    iwpriv wlan0 set_mib crc_log=1
+    else
+    iwpriv wlan0 set_mib crc_log=0
+fi
+#-------------------------DO NOT SELECTED OPTIONS (see wifi reference)------------
+iwpriv wlan0 set_mib dtimperiod=1 
+iwpriv wlan0 set_mib wifi_specific=0
+#--------------------------------END MODESELECT-----------------------------------
+
+#--------------WORKAROUND TURBO---------------------
+user_turbo
+#---------------------ROAMING MIB-------------------
+if [ "$ENABLE_ROAMING" == "yes" ]; then
+    echo Cahge roaming mib
+    iwpriv wlan0 set_mib iapp_enable=1
+    else
+    iwpriv wlan0 set_mib iapp_enable=0
+fi
+
+#--------------------WEP MIB-------------------------
+if [ "$WEP" = "yes" ] ; then 
+    iwpriv wlan0 set_mib encmode=5
+    #Number of key for encrypt. Range 0-3
+    iwpriv wlan0 set_mib wepdkeyid=0
+    #26 digits for 128bit
+    iwpriv wlan0 set_mib wepkey1=$WEPKEY
+fi
+#---------------------WPA MIB------------------------
+if [ "$WPA" = "yes" ] ; then 
+    echo Change WPA mib
+    iwpriv wlan0 set_mib encmode=2
+    iwpriv wlan0 set_mib 802_1x=1
+    else
+    iwpriv wlan0 set_mib 802_1x=0
+fi
+
+#-----------------------FLUSH WLAN0 ADRESS----------
+ip addr flush dev wlan0
+#-----------------------IF DHCP OR MANUAL UP--------
+if [ "$WLAN_IN_BR0" != "yes" ]; then
+    if [ "$WLAN_USE_DHCP" = "yes" ]; then
+	echo "Set wlan0 IP adreess from dhcp server"
+	ip link set wlan0 up
+	$dhcpc -p /var/run/udhcpc-wlan0.pid -S -i wlan0 -t 3 -b >>/dev/null
+    else
+	echo "Set IP adreess from local files"
+	ip link set wlan0 up
+	ip addr add $WLAN_IPADDR brd + dev wlan0
+    fi
+fi
+#-----------------------IF FORCE-------------------
+if [ "$WLAN_FORCEIP" = "yes" ]; then
+    echo Wlan force ip
+    ip addr flush dev wlan0
+    ip addr add $WLAN_IPADDR brd + dev wlan0
+    ip link set wlan0 up
+fi
+    
+echo Config OK
+fi #if wlan0 enabled
+fi #if wlan0 exist
+echo " Ok"
+}
+
+stop() {
+
+echo "Stop wireless network..."
+ip link set wlan0 down                                
+
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

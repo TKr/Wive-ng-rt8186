@@ -1,0 +1,5 @@
+#!/bin/sh
+while [ 1 ]; do
+  res=`cat /proc/wlan0/sta_info | grep "rssi:"`;
+  echo $res;
+done

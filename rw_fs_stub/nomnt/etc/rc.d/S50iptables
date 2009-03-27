@@ -1,0 +1,130 @@
+#!/bin/sh
+
+. /etc/boot
+. /etc/network/interfaces
+
+modtest=`uname -r`
+moddir=/lib/modules/$modtest/kernel/net
+
+start() {
+if [ "$START_IPTABLES" == "yes" ] || [ "$MASQUERADE" = "yes" ] ; then
+ echo "Starting iptables: "
+    if [ "$PPTP_CALL_START" = "yes" ] ; then
+     echo  "No VPN conntrack: "
+     mods=`find $moddir/ipv4/netfilter -type f | grep -v "pptp"`
+     else
+     echo  "No FULL conntrack: "
+     mods=`find $moddir/ipv4/netfilter -type f`
+    fi
+     for i in $mods; do
+       if [ "$i" == "" ];then 
+         continue;
+       fi
+        /sbin/insmod $i
+     done
+    /etc/network/iptables
+ echo " Ok"
+fi
+
+#workaroud for bad servers (Corbina) not include in in the first IF
+if [ "$BUGGY_NAS" == "yes" ] ; then
+    iptables -I OUTPUT -o ppp+ -d $PPTP_SERVER -j DROP
+    iptables -I FORWARD -o ppp+ -d $PPTP_SERVER -j DROP
+fi
+
+#NOTRACK Local services
+echo "ADD iptables rules for NOTRACK local connection"
+    iptables -t raw -I OUTPUT -j NOTRACK
+if [ "$BRIDGE_START" == "yes" ] ; then
+    iptables -t raw -A PREROUTING -i br0 -d $BR0_IPADDR -p tcp -m multiport --dports 22,53,1701,1723 -j NOTRACK
+    iptables -t raw -A PREROUTING -i br0 -d $BR0_IPADDR -p udp -m multiport --dports 53,1701 -j NOTRACK
+    iptables -t raw -A PREROUTING -i br0 -d $BR0_IPADDR -p 47 -j NOTRACK
+fi
+if [ "$ETH0_IPADDR" != "" ] ; then
+    iptables -t raw -A PREROUTING -i eth0 -d $ETH0_IPADDR -p tcp -m multiport --dports 22,53,1701,1723 -j NOTRACK
+    iptables -t raw -A PREROUTING -i eth0 -d $ETH0_IPADDR -p udp -m multiport --dports 53,1701 -j NOTRACK
+    iptables -t raw -A PREROUTING -i eth0 -d $ETH0_IPADDR -p 47 -j NOTRACK
+fi
+if [ "$ETH1_IPADDR" != "" ] ; then
+    iptables -t raw -A PREROUTING -i eth1 -d $ETH1_IPADDR -p tcp -m multiport --dports 22,53,1701,1723 -j NOTRACK
+    iptables -t raw -A PREROUTING -i eth1 -d $ETH1_IPADDR -p udp -m multiport --dports 53,1701 -j NOTRACK
+    iptables -t raw -A PREROUTING -i eth1 -d $ETH1_IPADDR -p 47 -j NOTRACK
+fi
+if [ "$WLAN_IPADDR" != "" ] ; then
+    iptables -t raw -A PREROUTING -i wlan0 -d $WLAN_IPADDR -p tcp -m multiport --dports 22,53,1701,1723 -j NOTRACK
+    iptables -t raw -A PREROUTING -i wlan0 -d $WLAN_IPADDR -p udp -m multiport --dports 53,1701 -j NOTRACK
+    iptables -t raw -A PREROUTING -i wlan0 -d $WLAN_IPADDR -p 47 -j NOTRACK
+fi
+
+}
+
+stop() {
+ echo "Stopping iptables: "
+    #Drop chains and rules
+    iptables -F
+    iptables -F -t mangle
+    iptables -F -t nat
+    iptables -F -t filter
+    iptables -X 
+    iptables -X -t mangle
+    iptables -X -t nat
+    iptables -X -t filter
+    
+    #Change defauts polici ACCEPT
+    iptables -P INPUT ACCEPT
+    iptables -P OUTPUT ACCEPT
+    iptables -P FORWARD ACCEPT
+                                                                            
+    rmmod ip_conntrack_ftp
+    rmmod ip_conntrack_irc
+    rmmod ip_conntrack_pptp
+    rmmod ip_conntrack_tftp
+    rmmod ip_nat_ftp
+    rmmod ip_nat_irc
+    rmmod ip_nat_pptp
+    rmmod ip_nat_tftp
+    rmmod ipt_conntrack
+    rmmod ipt_dscp
+    rmmod ipt_DSCP
+    rmmod ipt_ecn
+    rmmod ipt_ECN
+    rmmod ipt_rmmod iprange
+    rmmod ipt_limit
+    rmmod ipt_LOG
+    rmmod ipt_mac
+    rmmod ipt_mark
+    rmmod ipt_MARK
+    rmmod ipt_mport
+    rmmod ipt_multrmmod iport
+    rmmod ipt_pkttype
+    rmmod ipt_recent
+    rmmod ipt_state
+    rmmod ipt_tcpmss
+    rmmod ipt_tos
+    rmmod ipt_TOS
+    rmmod ipt_ttl
+    rmmod ipt_TTL
+    rmmod ipt_ULOG
+ 
+ echo " Ok"
+}
+
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

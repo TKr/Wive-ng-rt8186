@@ -1,0 +1,8 @@
+#!/bin/bash
+CROSS_COMPILER=mips-linux-
+
+CC=$CROSS_COMPILER\gcc;
+OBJCOPY=$CROSS_COMPILER\objcopy;
+rm ./ader
+$CC -Os ./ader.c -o ./ader
+$OBJCOPY --strip-all ./ader ./ader

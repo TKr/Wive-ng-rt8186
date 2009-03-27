@@ -1,0 +1,67 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+
+echo -n "Starting boot services:"
+
+#start ntp client on boot
+if [ "$TIME_SYNC_ON_START" == "yes" ]; then
+    /bin/ntpclient -s -h $NTP_SERVER &
+fi    
+
+#pppoe relay support
+if [ "$START_PPPOE_RELAY" == "yes" ]; then
+    pppoe-relay -S $SERVER_IF -C $CLIENT_IF
+fi
+
+#mount cifs
+if [ "$MOUNT_CIFS" = "yes" ] ; then
+    #if module for CIFS support not load
+    modenable=`lsmod | grep cifs -c`
+    if [ "$modenable" = "0" ] ; then 
+	modprobe cifs 
+    fi
+    echo "mount cifs to /mnt/cifs"
+    mount.cifs //$CIFS_SERVER/$SHARE_NAME /mnt/cifs -o user="$CIFS_USER",pass="$CIFS_PASSWD"
+fi
+
+#mount mmc
+if [ "$MMC_FLASH" = "yes" ] ; then
+    #if module for MMC Card not load
+    modenable=`lsmod | grep mmc -c`
+    if [ "$modenable" = "0" ] ; then 
+	modprobe mmc 
+    fi
+    echo "mount MMC CARD"
+    mount /dev/mmc/disc0/part1 $MMC_MOUNT_POINT
+fi
+
+}
+
+stop() {
+ echo "Stopping boot "
+ umount /mnt/cifs
+ reboot
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac
+

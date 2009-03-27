@@ -1,0 +1,2 @@
+ieee754xcpt.c: In function `ieee754_xcpt':
+ieee754xcpt.c:45: warning: implicit declaration of function `printk'

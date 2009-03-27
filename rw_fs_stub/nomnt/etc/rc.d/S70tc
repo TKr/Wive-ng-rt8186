@@ -1,0 +1,88 @@
+#!/bin/sh
+
+. /etc/boot
+. /etc/network/interfaces
+
+modtest=`uname -r`
+moddir=/lib/modules/$modtest/kernel/net
+
+start() {
+echo  "Starting tc: "
+echo Loading modules
+if [ "$START_SHAPER" == "yes" ]; then
+      mods=`find $moddir/sched -type f`
+       for i in $mods; do
+          if [ "$i" == "" ];then
+           continue;
+          fi
+          /sbin/insmod $i
+       done
+echo Set shaper rules                                               
+    if [ "$BRIDGE_START" != "yes" ]; then
+      if [ "$WLAN_ENABLED" == "yes" ]; then
+      tc qdisc add dev wlan0 root handle 1: htb default ff r2q 100
+      tc class add dev wlan0 parent 1: classid 1:fffe htb rate 100mbit
+      tc qdisc add dev wlan0 parent 1:fffe handle fffe: sfq perturb 20
+      tc filter add dev wlan0 parent 1: protocol ip u32 match ip src $WLAN_IPADDR flowid 1:fffe
+      tc class add dev wlan0 parent 1: classid 1:ff htb rate 100mbit
+      tc qdisc add dev wlan0 parent 1:ff handle ff: sfq perturb 20
+     fi
+    if [ "$ETH0_ENABLED" == "yes" ]; then
+      tc qdisc add dev eth0 root handle 1: htb default ff r2q 100
+      tc class add dev eth0 parent 1: classid 1:fffe htb rate 100mbit
+      tc qdisc add dev eth0 parent 1:fffe handle fffe: sfq perturb 20
+      tc filter add dev eth0 parent 1: protocol ip u32 match ip src $ETH0_IPADDR flowid 1:fffe
+      tc class add dev eth0 parent 1: classid 1:ff htb rate 100mbit
+      tc qdisc add dev eth0 parent 1:ff handle ff: sfq perturb 20
+    fi
+    if [ "$ETH1_ENABLED" == "yes" ]; then
+      tc qdisc add dev eth1 root handle 1: htb default ff r2q 100
+      tc class add dev eth1 parent 1: classid 1:fffe htb rate 100mbit
+      tc qdisc add dev eth1 parent 1:fffe handle fffe: sfq perturb 20
+      tc filter add dev eth1 parent 1: protocol ip u32 match ip src $ETH1_IPADDR flowid 1:fffe
+      tc class add dev eth1 parent 1: classid 1:ff htb rate 100mbit
+      tc qdisc add dev eth1 parent 1:ff handle ff: sfq perturb 20
+    fi
+else
+  tc qdisc add dev br0 root handle 1: htb default ff r2q 100
+  tc class add dev br0 parent 1: classid 1:fffe htb rate 100mbit
+  tc qdisc add dev br0 parent 1:fffe handle fffe: sfq perturb 20
+  tc filter add dev br0 parent 1: protocol ip u32 match ip src $BR0_IPADDR flowid 1:fffe
+  tc class add dev br0 parent 1: classid 1:ff htb rate 100mbit
+  tc qdisc add dev br0 parent 1:ff handle ff: sfq perturb 20
+fi
+  /etc/network/tc.start
+  echo " Ok"
+fi 
+
+}
+
+stop() {
+ echo "Stopping tc: "
+    tc qdisc del root dev eth0
+    tc qdisc del root dev eth1
+    tc qdisc del root dev wlan0
+    rmmod sch_htb.o
+    rmmod sch_ingress.o
+    rmmod sch_sfq.o
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

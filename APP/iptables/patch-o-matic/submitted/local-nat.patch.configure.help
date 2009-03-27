@@ -1,0 +1,8 @@
+CONFIG_IP_NF_NAT
+Local NAT support
+CONFIG_IP_NF_NAT_LOCAL
+  This option enables support for NAT of locally originated connections. 
+  Enable this if you need to use destination NAT on connections
+  originating from local processes on the nat box itself.
+  If unsure, say 'N'.
+

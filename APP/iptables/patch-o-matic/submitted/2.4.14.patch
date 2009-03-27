@@ -1,0 +1,3064 @@
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/Config.in linux-2.4.14-plain/net/ipv4/netfilter/Config.in
+--- linux-2.4.13-plain/net/ipv4/netfilter/Config.in	Wed Mar  7 07:44:16 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/Config.in	Wed Oct 31 00:08:12 2001
+@@ -7,6 +7,7 @@
+ tristate 'Connection tracking (required for masq/NAT)' CONFIG_IP_NF_CONNTRACK
+ if [ "$CONFIG_IP_NF_CONNTRACK" != "n" ]; then
+   dep_tristate '  FTP protocol support' CONFIG_IP_NF_FTP $CONFIG_IP_NF_CONNTRACK
++  dep_tristate '  IRC protocol support' CONFIG_IP_NF_IRC $CONFIG_IP_NF_CONNTRACK
+ fi
+ 
+ if [ "$CONFIG_EXPERIMENTAL" = "y" -a "$CONFIG_NETLINK" = "y" ]; then
+@@ -20,6 +21,8 @@
+   dep_tristate '  netfilter MARK match support' CONFIG_IP_NF_MATCH_MARK $CONFIG_IP_NF_IPTABLES
+   dep_tristate '  Multiple port match support' CONFIG_IP_NF_MATCH_MULTIPORT $CONFIG_IP_NF_IPTABLES
+   dep_tristate '  TOS match support' CONFIG_IP_NF_MATCH_TOS $CONFIG_IP_NF_IPTABLES
++  dep_tristate '  LENGTH match support' CONFIG_IP_NF_MATCH_LENGTH $CONFIG_IP_NF_IPTABLES
++  dep_tristate '  TTL match support' CONFIG_IP_NF_MATCH_TTL $CONFIG_IP_NF_IPTABLES
+   dep_tristate '  tcpmss match support' CONFIG_IP_NF_MATCH_TCPMSS $CONFIG_IP_NF_IPTABLES
+   if [ "$CONFIG_IP_NF_CONNTRACK" != "n" ]; then
+     dep_tristate '  Connection state match support' CONFIG_IP_NF_MATCH_STATE $CONFIG_IP_NF_CONNTRACK $CONFIG_IP_NF_IPTABLES 
+@@ -43,6 +46,16 @@
+       define_bool CONFIG_IP_NF_NAT_NEEDED y
+       dep_tristate '    MASQUERADE target support' CONFIG_IP_NF_TARGET_MASQUERADE $CONFIG_IP_NF_NAT
+       dep_tristate '    REDIRECT target support' CONFIG_IP_NF_TARGET_REDIRECT $CONFIG_IP_NF_NAT
++      if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
++        dep_tristate '    Basic SNMP-ALG support (EXPERIMENTAL)' CONFIG_IP_NF_NAT_SNMP_BASIC $CONFIG_IP_NF_NAT
++      fi
++      if [ "$CONFIG_IP_NF_IRC" = "m" ]; then
++        define_tristate CONFIG_IP_NF_NAT_IRC m
++      else
++        if [ "$CONFIG_IP_NF_IRC" = "y" ]; then
++          define_tristate CONFIG_IP_NF_NAT_IRC $CONFIG_IP_NF_NAT
++        fi
++      fi
+       # If they want FTP, set to $CONFIG_IP_NF_NAT (m or y), 
+       # or $CONFIG_IP_NF_FTP (m or y), whichever is weaker.  Argh.
+       if [ "$CONFIG_IP_NF_FTP" = "m" ]; then
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/Makefile linux-2.4.14-plain/net/ipv4/netfilter/Makefile
+--- linux-2.4.13-plain/net/ipv4/netfilter/Makefile	Thu Apr 26 00:00:28 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/Makefile	Wed Oct 31 00:08:12 2001
+@@ -31,6 +31,10 @@
+ # connection tracking
+ obj-$(CONFIG_IP_NF_CONNTRACK) += ip_conntrack.o
+ 
++# IRC support
++obj-$(CONFIG_IP_NF_IRC) += ip_conntrack_irc.o
++obj-$(CONFIG_IP_NF_NAT_IRC) += ip_nat_irc.o
++
+ # connection tracking helpers
+ obj-$(CONFIG_IP_NF_FTP) += ip_conntrack_ftp.o
+ 
+@@ -52,6 +56,10 @@
+ obj-$(CONFIG_IP_NF_MATCH_MULTIPORT) += ipt_multiport.o
+ obj-$(CONFIG_IP_NF_MATCH_OWNER) += ipt_owner.o
+ obj-$(CONFIG_IP_NF_MATCH_TOS) += ipt_tos.o
++
++obj-$(CONFIG_IP_NF_MATCH_LENGTH) += ipt_length.o
++
++obj-$(CONFIG_IP_NF_MATCH_TTL) += ipt_ttl.o
+ obj-$(CONFIG_IP_NF_MATCH_STATE) += ipt_state.o
+ obj-$(CONFIG_IP_NF_MATCH_UNCLEAN) += ipt_unclean.o
+ obj-$(CONFIG_IP_NF_MATCH_TCPMSS) += ipt_tcpmss.o
+@@ -63,6 +71,7 @@
+ obj-$(CONFIG_IP_NF_TARGET_MARK) += ipt_MARK.o
+ obj-$(CONFIG_IP_NF_TARGET_MASQUERADE) += ipt_MASQUERADE.o
+ obj-$(CONFIG_IP_NF_TARGET_REDIRECT) += ipt_REDIRECT.o
++obj-$(CONFIG_IP_NF_NAT_SNMP_BASIC) += ip_nat_snmp_basic.o
+ obj-$(CONFIG_IP_NF_TARGET_LOG) += ipt_LOG.o
+ obj-$(CONFIG_IP_NF_TARGET_TCPMSS) += ipt_TCPMSS.o
+ 
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_conntrack_ftp.c linux-2.4.14-plain/net/ipv4/netfilter/ip_conntrack_ftp.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_conntrack_ftp.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_conntrack_ftp.c	Wed Oct 31 00:08:12 2001
+@@ -335,7 +335,7 @@
+ 	LOCK_BH(&ip_ftp_lock);
+ 	if (htonl((array[0] << 24) | (array[1] << 16) | (array[2] << 8) | array[3])
+ 	    == ct->tuplehash[dir].tuple.src.ip) {
+-		info->is_ftp = 1;
++		info->is_ftp = 21;
+ 		info->seq = ntohl(tcph->seq) + matchoff;
+ 		info->len = matchlen;
+ 		info->ftptype = search[i].ftptype;
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_conntrack_irc.c linux-2.4.14-plain/net/ipv4/netfilter/ip_conntrack_irc.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_conntrack_irc.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_conntrack_irc.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,277 @@
++/* IRC extension for IP connection tracking, Version 1.19
++ * (C) 2000 by Harald Welte <laforge@gnumonks.org>
++ * based on RR's ip_conntrack_ftp.c	
++ *
++ * ip_conntrack_irc.c,v 1.19 2001/10/25 14:34:21 laforge Exp
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ **
++ *	Module load syntax:
++ * 	insmod ip_nat_irc.o ports=port1,port2,...port<MAX_PORTS>
++ *	
++ * 	please give the ports of all IRC servers You wish to connect to.
++ *	If You don't specify ports, the default will be port 6667
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/netfilter.h>
++#include <linux/ip.h>
++#include <net/checksum.h>
++#include <net/tcp.h>
++
++#include <linux/netfilter_ipv4/lockhelp.h>
++#include <linux/netfilter_ipv4/ip_conntrack_helper.h>
++#include <linux/netfilter_ipv4/ip_conntrack_irc.h>
++
++#define MAX_PORTS 8
++static int ports[MAX_PORTS];
++static int ports_n_c = 0;
++
++MODULE_AUTHOR("Harald Welte <laforge@gnumonks.org>");
++MODULE_DESCRIPTION("IRC (DCC) connection tracking module");
++MODULE_LICENSE("GPL");
++#ifdef MODULE_PARM
++MODULE_PARM(ports, "1-" __MODULE_STRING(MAX_PORTS) "i");
++MODULE_PARM_DESC(ports, "port numbers of IRC servers");
++#endif
++
++#define NUM_DCCPROTO 	5
++struct dccproto dccprotos[NUM_DCCPROTO] = {
++	{"SEND ", 5},
++	{"CHAT ", 5},
++	{"MOVE ", 5},
++	{"TSEND ", 6},
++	{"SCHAT ", 6}
++};
++#define MAXMATCHLEN	6
++
++DECLARE_LOCK(ip_irc_lock);
++struct module *ip_conntrack_irc = THIS_MODULE;
++
++#if 0
++#define DEBUGP(format, args...) printk(KERN_DEBUG __FILE__ ":" __FUNCTION__ \
++					":" format, ## args)
++#else
++#define DEBUGP(format, args...)
++#endif
++
++int parse_dcc(char *data, char *data_end, u_int32_t * ip, u_int16_t * port,
++	      char **ad_beg_p, char **ad_end_p)
++/* tries to get the ip_addr and port out of a dcc command
++   return value: -1 on failure, 0 on success 
++	data		pointer to first byte of DCC command data
++	data_end	pointer to last byte of dcc command data
++	ip		returns parsed ip of dcc command
++	port		returns parsed port of dcc command
++	ad_beg_p	returns pointer to first byte of addr data
++	ad_end_p	returns pointer to last byte of addr data */
++{
++
++	/* at least 12: "AAAAAAAA P\1\n" */
++	while (*data++ != ' ')
++		if (data > data_end - 12)
++			return -1;
++
++	*ad_beg_p = data;
++	*ip = simple_strtoul(data, &data, 10);
++
++	/* skip blanks between ip and port */
++	while (*data == ' ')
++		data++;
++
++
++	*port = simple_strtoul(data, &data, 10);
++	*ad_end_p = data;
++
++	return 0;
++}
++
++
++/* FIXME: This should be in userspace.  Later. */
++static int help(const struct iphdr *iph, size_t len,
++		struct ip_conntrack *ct, enum ip_conntrack_info ctinfo)
++{
++	/* tcplen not negative guarenteed by ip_conntrack_tcp.c */
++	struct tcphdr *tcph = (void *) iph + iph->ihl * 4;
++	const char *data = (const char *) tcph + tcph->doff * 4;
++	const char *_data = data;
++	char *data_limit;
++	u_int32_t tcplen = len - iph->ihl * 4;
++	u_int32_t datalen = tcplen - tcph->doff * 4;
++	int dir = CTINFO2DIR(ctinfo);
++	struct ip_conntrack_tuple t, mask;
++
++	u_int32_t dcc_ip;
++	u_int16_t dcc_port;
++	int i;
++	char *addr_beg_p, *addr_end_p;
++
++	struct ip_ct_irc *info = &ct->help.ct_irc_info;
++
++	memset(&mask, 0, sizeof(struct ip_conntrack_tuple));
++	mask.dst.u.tcp.port = 0xFFFF;
++	mask.dst.protonum = 0xFFFF;
++
++	DEBUGP("entered\n");
++	/* Can't track connections formed before we registered */
++	if (!info)
++		return NF_ACCEPT;
++
++	/* If packet is coming from IRC server */
++	if (dir == IP_CT_DIR_REPLY)
++		return NF_ACCEPT;
++
++	/* Until there's been traffic both ways, don't look in packets. */
++	if (ctinfo != IP_CT_ESTABLISHED
++	    && ctinfo != IP_CT_ESTABLISHED + IP_CT_IS_REPLY) {
++		DEBUGP("Conntrackinfo = %u\n", ctinfo);
++		return NF_ACCEPT;
++	}
++
++	/* Not whole TCP header? */
++	if (tcplen < sizeof(struct tcphdr) || tcplen < tcph->doff * 4) {
++		DEBUGP("tcplen = %u\n", (unsigned) tcplen);
++		return NF_ACCEPT;
++	}
++
++	/* Checksum invalid?  Ignore. */
++	/* FIXME: Source route IP option packets --RR */
++	if (tcp_v4_check(tcph, tcplen, iph->saddr, iph->daddr,
++			 csum_partial((char *) tcph, tcplen, 0))) {
++		DEBUGP("bad csum: %p %u %u.%u.%u.%u %u.%u.%u.%u\n",
++		     tcph, tcplen, NIPQUAD(iph->saddr),
++		     NIPQUAD(iph->daddr));
++		return NF_ACCEPT;
++	}
++
++	data_limit = (char *) data + datalen;
++	while (data < (data_limit - (22 + MAXMATCHLEN))) {
++		if (memcmp(data, "\1DCC ", 5)) {
++			data++;
++			continue;
++		}
++
++		data += 5;
++
++		DEBUGP("DCC found in master %u.%u.%u.%u:%u %u.%u.%u.%u:%u...\n",
++			NIPQUAD(iph->saddr), ntohs(tcph->source),
++			NIPQUAD(iph->daddr), ntohs(tcph->dest));
++
++		for (i = 0; i < NUM_DCCPROTO; i++) {
++			if (memcmp(data, dccprotos[i].match,
++				   dccprotos[i].matchlen)) {
++				/* no match */
++				continue;
++			}
++
++			DEBUGP("DCC %s detected\n", dccprotos[i].match);
++			data += dccprotos[i].matchlen;
++			if (parse_dcc((char *) data, data_limit, &dcc_ip,
++				       &dcc_port, &addr_beg_p, &addr_end_p)) {
++				/* unable to parse */
++				DEBUGP("unable to parse dcc command\n");
++				continue;
++			}
++			DEBUGP("DCC bound ip/port: %u.%u.%u.%u:%u\n",
++				HIPQUAD(dcc_ip), dcc_port);
++
++			if (ct->tuplehash[dir].tuple.src.ip != htonl(dcc_ip)) {
++				if (net_ratelimit())
++					printk(KERN_WARNING
++						"Forged DCC command from "
++						"%u.%u.%u.%u: %u.%u.%u.%u:%u\n",
++				NIPQUAD(ct->tuplehash[dir].tuple.src.ip),
++						HIPQUAD(dcc_ip), dcc_port);
++
++				continue;
++			}
++
++			LOCK_BH(&ip_irc_lock);
++
++			/* save position of address in dcc string,
++			 * neccessary for NAT */
++			info->is_irc = IP_CONNTR_IRC;
++			DEBUGP("tcph->seq = %u\n", tcph->seq);
++			info->seq = ntohl(tcph->seq) + (addr_beg_p - _data);
++			info->len = (addr_end_p - addr_beg_p);
++			info->port = dcc_port;
++			DEBUGP("wrote info seq=%u (ofs=%u), len=%d\n",
++				info->seq, (addr_end_p - _data), info->len);
++
++			memset(&t, 0, sizeof(t));
++			t.src.ip = 0;
++			t.src.u.tcp.port = 0;
++			t.dst.ip = htonl(dcc_ip);
++			t.dst.u.tcp.port = htons(info->port);
++			t.dst.protonum = IPPROTO_TCP;
++
++			DEBUGP("expect_related %u.%u.%u.%u:%u-%u.%u.%u.%u:%u\n",
++				NIPQUAD(t.src.ip),
++				ntohs(t.src.u.tcp.port),
++				NIPQUAD(t.dst.ip),
++				ntohs(t.dst.u.tcp.port));
++
++			ip_conntrack_expect_related(ct, &t, &mask, NULL);
++			UNLOCK_BH(&ip_irc_lock);
++
++			return NF_ACCEPT;
++		} /* for .. NUM_DCCPROTO */
++	} /* while data < ... */
++
++	return NF_ACCEPT;
++}
++
++static struct ip_conntrack_helper irc_helpers[MAX_PORTS];
++
++static void fini(void);
++
++static int __init init(void)
++{
++	int i, ret;
++
++	/* If no port given, default to standard irc port */
++	if (ports[0] == 0)
++		ports[0] = 6667;
++
++	for (i = 0; (i < MAX_PORTS) && ports[i]; i++) {
++		memset(&irc_helpers[i], 0,
++		       sizeof(struct ip_conntrack_helper));
++		irc_helpers[i].tuple.src.u.tcp.port = htons(ports[i]);
++		irc_helpers[i].tuple.dst.protonum = IPPROTO_TCP;
++		irc_helpers[i].mask.src.u.tcp.port = 0xFFFF;
++		irc_helpers[i].mask.dst.protonum = 0xFFFF;
++		irc_helpers[i].help = help;
++
++		DEBUGP("port #%d: %d\n", i, ports[i]);
++
++		ret = ip_conntrack_helper_register(&irc_helpers[i]);
++
++		if (ret) {
++			printk("ip_conntrack_irc: ERROR registering port %d\n",
++				ports[i]);
++			fini();
++			return -EBUSY;
++		}
++		ports_n_c++;
++	}
++	return 0;
++}
++
++/* This function is intentionally _NOT_ defined as __exit, because 
++ * it is needed by the init function */
++static void fini(void)
++{
++	int i;
++	for (i = 0; (i < MAX_PORTS) && ports[i]; i++) {
++		DEBUGP("unregistering port %d\n",
++		       ports[i]);
++		ip_conntrack_helper_unregister(&irc_helpers[i]);
++	}
++}
++
++module_init(init);
++module_exit(fini);
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_ftp.c linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_ftp.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_ftp.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_ftp.c	Wed Oct 31 00:08:12 2001
+@@ -52,7 +52,7 @@
+ 	ftpinfo = &master->help.ct_ftp_info;
+ 
+ 	LOCK_BH(&ip_ftp_lock);
+-	if (!ftpinfo->is_ftp) {
++	if (ftpinfo->is_ftp != 21) {
+ 		UNLOCK_BH(&ip_ftp_lock);
+ 		DEBUGP("nat_expected: master not ftp\n");
+ 		return 0;
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_irc.c linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_irc.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_irc.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_irc.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,317 @@
++/* IRC extension for TCP NAT alteration.
++ * (C) 2000 by Harald Welte <laforge@gnumonks.org>
++ * based on a copy of RR's ip_nat_ftp.c
++ *
++ * ip_nat_irc.c,v 1.15 2001/10/22 10:43:53 laforge Exp
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ *
++ *	Module load syntax:
++ * 	insmod ip_nat_irc.o ports=port1,port2,...port<MAX_PORTS>
++ *	
++ * 	please give the ports of all IRC servers You wish to connect to.
++ *	If You don't specify ports, the default will be port 6667
++ */
++
++#include <linux/module.h>
++#include <linux/netfilter_ipv4.h>
++#include <linux/ip.h>
++#include <linux/tcp.h>
++#include <linux/kernel.h>
++#include <net/tcp.h>
++#include <linux/netfilter_ipv4/ip_nat.h>
++#include <linux/netfilter_ipv4/ip_nat_helper.h>
++#include <linux/netfilter_ipv4/ip_nat_rule.h>
++#include <linux/netfilter_ipv4/ip_conntrack_irc.h>
++#include <linux/netfilter_ipv4/ip_conntrack_helper.h>
++
++#if 0
++#define DEBUGP printk
++#else
++#define DEBUGP(format, args...)
++#endif
++
++#define MAX_PORTS 8
++static int ports[MAX_PORTS];
++static int ports_c = 0;
++
++MODULE_AUTHOR("Harald Welte <laforge@gnumonks.org>");
++MODULE_DESCRIPTION("IRC (DCC) network address translation module");
++MODULE_LICENSE("GPL");
++#ifdef MODULE_PARM
++MODULE_PARM(ports, "1-" __MODULE_STRING(MAX_PORTS) "i");
++MODULE_PARM_DESC(ports, "port numbers of IRC servers");
++#endif
++
++/* protects irc part of conntracks */
++DECLARE_LOCK_EXTERN(ip_irc_lock);
++
++/* FIXME: Time out? --RR */
++
++static int
++irc_nat_expected(struct sk_buff **pskb,
++		 unsigned int hooknum,
++		 struct ip_conntrack *ct,
++		 struct ip_nat_info *info,
++		 struct ip_conntrack *master,
++		 struct ip_nat_info *masterinfo, unsigned int *verdict)
++{
++	struct ip_nat_multi_range mr;
++	u_int32_t newdstip, newsrcip, newip;
++	struct ip_ct_irc *ircinfo;
++
++	IP_NF_ASSERT(info);
++	IP_NF_ASSERT(master);
++	IP_NF_ASSERT(masterinfo);
++
++	IP_NF_ASSERT(!(info->initialized & (1 << HOOK2MANIP(hooknum))));
++
++	DEBUGP("nat_expected: We have a connection!\n");
++
++	/* Master must be an irc connection */
++	ircinfo = &master->help.ct_irc_info;
++	LOCK_BH(&ip_irc_lock);
++	if (ircinfo->is_irc != IP_CONNTR_IRC) {
++		UNLOCK_BH(&ip_irc_lock);
++		DEBUGP("nat_expected: master not irc\n");
++		return 0;
++	}
++
++	newdstip = master->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.ip;
++	newsrcip = master->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.ip;
++	DEBUGP("nat_expected: DCC cmd. %u.%u.%u.%u->%u.%u.%u.%u\n",
++	       NIPQUAD(newsrcip), NIPQUAD(newdstip));
++
++	UNLOCK_BH(&ip_irc_lock);
++
++	if (HOOK2MANIP(hooknum) == IP_NAT_MANIP_SRC)
++		newip = newsrcip;
++	else
++		newip = newdstip;
++
++	DEBUGP("nat_expected: IP to %u.%u.%u.%u\n", NIPQUAD(newip));
++
++	mr.rangesize = 1;
++	/* We don't want to manip the per-protocol, just the IPs. */
++	mr.range[0].flags = IP_NAT_RANGE_MAP_IPS;
++	mr.range[0].min_ip = mr.range[0].max_ip = newip;
++
++	*verdict = ip_nat_setup_info(ct, &mr, hooknum);
++
++	return 1;
++}
++
++static int irc_data_fixup(const struct ip_ct_irc *ct_irc_info,
++			  struct ip_conntrack *ct,
++			  unsigned int datalen,
++			  struct sk_buff **pskb,
++			  enum ip_conntrack_info ctinfo)
++{
++	u_int32_t newip;
++	struct ip_conntrack_tuple t;
++	struct iphdr *iph = (*pskb)->nh.iph;
++	struct tcphdr *tcph = (void *) iph + iph->ihl * 4;
++	int port;
++
++	/* "4294967296 65635 " */
++	char buffer[18];
++
++	MUST_BE_LOCKED(&ip_irc_lock);
++
++	DEBUGP("IRC_NAT: info (seq %u + %u) packet(seq %u + %u)\n",
++	       ct_irc_info->seq, ct_irc_info->len,
++	       ntohl(tcph->seq), datalen);
++
++	newip = ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.ip;
++
++	/* Alter conntrack's expectations. */
++
++	/* We can read expect here without conntrack lock, since it's
++	   only set in ip_conntrack_irc, with ip_irc_lock held
++	   writable */
++
++	t = ct->expected.tuple;
++	t.dst.ip = newip;
++	for (port = ct_irc_info->port; port != 0; port++) {
++		t.dst.u.tcp.port = htons(port);
++		if (ip_conntrack_expect_related(ct, &t,
++						&ct->expected.mask,
++						NULL) == 0) {
++			DEBUGP("using port %d", port);
++			break;
++		}
++
++	}
++	if (port == 0)
++		return 0;
++
++	/*      strlen("\1DCC CHAT chat AAAAAAAA P\1\n")=27
++	 *      strlen("\1DCC SCHAT chat AAAAAAAA P\1\n")=28
++	 *      strlen("\1DCC SEND F AAAAAAAA P S\1\n")=26
++	 *      strlen("\1DCC MOVE F AAAAAAAA P S\1\n")=26
++	 *      strlen("\1DCC TSEND F AAAAAAAA P S\1\n")=27
++	 *              AAAAAAAAA: bound addr (1.0.0.0==16777216, min 8 digits,
++	 *                      255.255.255.255==4294967296, 10 digits)
++	 *              P:         bound port (min 1 d, max 5d (65635))
++	 *              F:         filename   (min 1 d )
++	 *              S:         size       (min 1 d )
++	 *              0x01, \n:  terminators
++	 */
++
++	sprintf(buffer, "%u %u", ntohl(newip), port);
++	DEBUGP("ip_nat_irc: Inserting '%s' == %u.%u.%u.%u, port %u\n",
++	       buffer, NIPQUAD(newip), port);
++
++	return ip_nat_mangle_tcp_packet(pskb, ct, ctinfo, 
++					ct_irc_info->seq - ntohl(tcph->seq),
++					ct_irc_info->len, buffer, 
++					strlen(buffer));
++}
++
++static unsigned int help(struct ip_conntrack *ct,
++			 struct ip_nat_info *info,
++			 enum ip_conntrack_info ctinfo,
++			 unsigned int hooknum, struct sk_buff **pskb)
++{
++	struct iphdr *iph = (*pskb)->nh.iph;
++	struct tcphdr *tcph = (void *) iph + iph->ihl * 4;
++	unsigned int datalen;
++	int dir;
++	int score;
++	struct ip_ct_irc *ct_irc_info = &ct->help.ct_irc_info;
++
++	/* Delete SACK_OK on initial TCP SYNs. */
++	if (tcph->syn && !tcph->ack)
++		ip_nat_delete_sack(*pskb, tcph);
++
++	/* Only mangle things once: original direction in POST_ROUTING
++	   and reply direction on PRE_ROUTING. */
++	dir = CTINFO2DIR(ctinfo);
++	if (!((hooknum == NF_IP_POST_ROUTING && dir == IP_CT_DIR_ORIGINAL)
++	      || (hooknum == NF_IP_PRE_ROUTING && dir == IP_CT_DIR_REPLY))) {
++		DEBUGP("nat_irc: Not touching dir %s at hook %s\n",
++		       dir == IP_CT_DIR_ORIGINAL ? "ORIG" : "REPLY",
++		       hooknum == NF_IP_POST_ROUTING ? "POSTROUTING"
++		       : hooknum == NF_IP_PRE_ROUTING ? "PREROUTING"
++		       : hooknum == NF_IP_LOCAL_OUT ? "OUTPUT" : "???");
++		return NF_ACCEPT;
++	}
++	DEBUGP("got beyond not touching\n");
++
++	datalen = (*pskb)->len - iph->ihl * 4 - tcph->doff * 4;
++	score = 0;
++	LOCK_BH(&ip_irc_lock);
++	if (ct_irc_info->len) {
++		DEBUGP("got beyond ct_irc_info->len\n");
++
++		/* If it's in the right range... */
++		score += between(ct_irc_info->seq, ntohl(tcph->seq),
++				 ntohl(tcph->seq) + datalen);
++		score += between(ct_irc_info->seq + ct_irc_info->len,
++				 ntohl(tcph->seq),
++				 ntohl(tcph->seq) + datalen);
++		if (score == 1) {
++			/* Half a match?  This means a partial retransmisison.
++			   It's a cracker being funky. */
++			if (net_ratelimit()) {
++				printk
++				    ("IRC_NAT: partial packet %u/%u in %u/%u\n",
++				     ct_irc_info->seq, ct_irc_info->len,
++				     ntohl(tcph->seq),
++				     ntohl(tcph->seq) + datalen);
++			}
++			UNLOCK_BH(&ip_irc_lock);
++			return NF_DROP;
++		} else if (score == 2) {
++			DEBUGP("IRC_NAT: score=2, calling fixup\n");
++			if (!irc_data_fixup(ct_irc_info, ct, datalen,
++					    pskb, ctinfo)) {
++				UNLOCK_BH(&ip_irc_lock);
++				return NF_DROP;
++			}
++			/* skb may have been reallocated */
++			iph = (*pskb)->nh.iph;
++			tcph = (void *) iph + iph->ihl * 4;
++		}
++	}
++
++	UNLOCK_BH(&ip_irc_lock);
++
++	ip_nat_seq_adjust(*pskb, ct, ctinfo);
++
++	return NF_ACCEPT;
++}
++
++static struct ip_nat_helper ip_nat_irc_helpers[MAX_PORTS];
++static char ip_nih_names[MAX_PORTS][6];
++
++static struct ip_nat_expect irc_expect
++    = { {NULL, NULL}, irc_nat_expected };
++
++
++/* This function is intentionally _NOT_ defined as  __exit, because
++ * it is needed by init() */
++static void fini(void)
++{
++	int i;
++
++	for (i = 0; i < ports_c; i++) {
++		DEBUGP("ip_nat_irc: unregistering helper for port %d\n",
++		       ports[i]);
++		ip_nat_helper_unregister(&ip_nat_irc_helpers[i]);
++	}
++	ip_nat_expect_unregister(&irc_expect);
++}
++static int __init init(void)
++{
++	int ret;
++	int i;
++	struct ip_nat_helper *hlpr;
++	char *tmpname;
++
++	ret = ip_nat_expect_register(&irc_expect);
++	if (ret == 0) {
++
++		if (ports[0] == 0) {
++			ports[0] = 6667;
++		}
++
++		for (i = 0; (i < MAX_PORTS) && ports[i] != 0; i++) {
++			hlpr = &ip_nat_irc_helpers[i];
++			memset(hlpr, 0,
++			       sizeof(struct ip_nat_helper));
++
++			hlpr->tuple.dst.protonum = IPPROTO_TCP;
++			hlpr->tuple.src.u.tcp.port = htons(ports[i]);
++			hlpr->mask.src.u.tcp.port = 0xFFFF;
++			hlpr->mask.dst.protonum = 0xFFFF;
++			hlpr->help = help;
++
++			tmpname = &ip_nih_names[i][0];
++			sprintf(tmpname, "irc%2.2d", i);
++
++			hlpr->name = tmpname;
++			DEBUGP
++			    ("ip_nat_irc: Trying to register helper for port %d: name %s\n",
++			     ports[i], hlpr->name);
++			ret = ip_nat_helper_register(hlpr);
++
++			if (ret) {
++				printk
++				    ("ip_nat_irc: error registering helper for port %d\n",
++				     ports[i]);
++				fini();
++				return 1;
++			}
++			ports_c++;
++		}
++	}
++	return ret;
++}
++
++
++module_init(init);
++module_exit(fini);
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_snmp_basic.c linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_snmp_basic.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_nat_snmp_basic.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_nat_snmp_basic.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,1354 @@
++/*
++ * ip_nat_snmp_basic.c
++ *
++ * Basic SNMP Application Layer Gateway
++ *
++ * This IP NAT module is intended for use with SNMP network 
++ * discovery and monitoring applications where target networks use 
++ * conflicting private address realms.
++ *
++ * Static NAT is used to remap the networks from the view of the network 
++ * management system at the IP layer, and this module remaps some application
++ * layer addresses to match.
++ *
++ * The simplest form of ALG is performed, where only tagged IP addresses
++ * are modified.  The module does not need to be MIB aware and only scans
++ * messages at the ASN.1/BER level.
++ *
++ * Currently, only SNMPv1 and SNMPv2 are supported.
++ *
++ * More information on ALG and associated issues can be found in
++ * RFC 2962
++ *
++ * The ASB.1/BER parsing code is derived from the gxsnmp package by Gregory 
++ * McLean & Jochen Friedrich, stripped down for use in the kernel.
++ *
++ * Copyright (c) 2000 RP Internet (www.rpi.net.au).
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ * Author: James Morris <jmorris@intercode.com.au>
++ *
++ * Updates:
++ * 2000-08-06: Convert to new helper API (Harald Welte).
++ *
++ */
++#include <linux/config.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/netfilter_ipv4.h>
++#include <linux/netfilter_ipv4/ip_nat.h>
++#include <linux/netfilter_ipv4/ip_nat_helper.h>
++#include <linux/brlock.h>
++#include <linux/types.h>
++#include <linux/ip.h>
++#include <net/udp.h>
++#include <asm/uaccess.h>
++#include <asm/checksum.h>
++
++
++
++#define SNMP_PORT 161
++#define SNMP_TRAP_PORT 162
++#define NOCT1(n) (u_int8_t )((n) & 0xff)
++
++static int debug = 0;
++static spinlock_t snmp_lock = SPIN_LOCK_UNLOCKED;
++
++/* 
++ * Application layer address mapping mimics the NAT mapping, but 
++ * only for the first octet in this case (a more flexible system
++ * can be implemented if needed).
++ */
++struct oct1_map
++{
++	u_int8_t from;
++	u_int8_t to;
++};
++
++                                  
++/*****************************************************************************
++ *
++ * Basic ASN.1 decoding routines (gxsnmp author Dirk Wisse)
++ *
++ *****************************************************************************/
++
++/* Class */
++#define ASN1_UNI	0	/* Universal */
++#define ASN1_APL	1	/* Application */
++#define ASN1_CTX	2	/* Context */
++#define ASN1_PRV	3	/* Private */
++
++/* Tag */
++#define ASN1_EOC	0	/* End Of Contents */
++#define ASN1_BOL	1	/* Boolean */
++#define ASN1_INT	2	/* Integer */
++#define ASN1_BTS	3	/* Bit String */
++#define ASN1_OTS	4	/* Octet String */
++#define ASN1_NUL	5	/* Null */
++#define ASN1_OJI	6	/* Object Identifier  */
++#define ASN1_OJD	7	/* Object Description */
++#define ASN1_EXT	8	/* External */
++#define ASN1_SEQ	16	/* Sequence */
++#define ASN1_SET	17	/* Set */
++#define ASN1_NUMSTR	18	/* Numerical String */
++#define ASN1_PRNSTR	19	/* Printable String */
++#define ASN1_TEXSTR	20	/* Teletext String */
++#define ASN1_VIDSTR	21	/* Video String */
++#define ASN1_IA5STR	22	/* IA5 String */
++#define ASN1_UNITIM	23	/* Universal Time */
++#define ASN1_GENTIM	24	/* General Time */
++#define ASN1_GRASTR	25	/* Graphical String */
++#define ASN1_VISSTR	26	/* Visible String */
++#define ASN1_GENSTR	27	/* General String */
++
++/* Primitive / Constructed methods*/
++#define ASN1_PRI	0	/* Primitive */
++#define ASN1_CON	1	/* Constructed */
++
++/*
++ * Error codes.
++ */
++#define ASN1_ERR_NOERROR		0
++#define ASN1_ERR_DEC_EMPTY		2
++#define ASN1_ERR_DEC_EOC_MISMATCH	3
++#define ASN1_ERR_DEC_LENGTH_MISMATCH	4
++#define ASN1_ERR_DEC_BADVALUE		5
++
++/* 
++ * ASN.1 context.
++ */
++struct asn1_ctx
++{
++	int error;			/* Error condition */
++	unsigned char *pointer;		/* Octet just to be decoded */
++	unsigned char *begin;		/* First octet */
++	unsigned char *end;		/* Octet after last octet */
++};
++
++/*
++ * Octet string (not null terminated)
++ */
++struct asn1_octstr
++{
++	unsigned char *data;
++	unsigned int len;
++};
++	
++static void asn1_open(struct asn1_ctx *ctx,
++                      unsigned char *buf,
++                      unsigned int len)
++{
++	ctx->begin = buf;
++	ctx->end = buf + len;
++	ctx->pointer = buf;
++	ctx->error = ASN1_ERR_NOERROR;
++}
++
++static unsigned char asn1_octet_decode(struct asn1_ctx *ctx, unsigned char *ch)
++{
++	if (ctx->pointer >= ctx->end) {
++		ctx->error = ASN1_ERR_DEC_EMPTY;
++		return 0;
++	}
++	*ch = *(ctx->pointer)++;
++	return 1;
++}
++
++static unsigned char asn1_tag_decode(struct asn1_ctx *ctx, unsigned int *tag)
++{
++	unsigned char ch;
++	
++	*tag = 0;
++	
++	do
++	{
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++		*tag <<= 7;
++		*tag |= ch & 0x7F;
++	} while ((ch & 0x80) == 0x80);
++	return 1;
++}
++
++static unsigned char asn1_id_decode(struct asn1_ctx *ctx, 
++                                    unsigned int *cls,
++                                    unsigned int *con,
++                                    unsigned int *tag)
++{
++	unsigned char ch;
++	
++	if (!asn1_octet_decode(ctx, &ch))
++		return 0;
++		
++	*cls = (ch & 0xC0) >> 6;
++	*con = (ch & 0x20) >> 5;
++	*tag = (ch & 0x1F);
++	
++	if (*tag == 0x1F) {
++		if (!asn1_tag_decode(ctx, tag))
++			return 0;
++	}
++	return 1;
++}
++
++static unsigned char asn1_length_decode(struct asn1_ctx *ctx,
++                                        unsigned int *def,
++                                        unsigned int *len)
++{
++	unsigned char ch, cnt;
++	
++	if (!asn1_octet_decode(ctx, &ch))
++		return 0;
++		
++	if (ch == 0x80)
++		*def = 0;
++	else {
++		*def = 1;
++		
++		if (ch < 0x80)
++			*len = ch;
++		else {
++			cnt = (unsigned char) (ch & 0x7F);
++			*len = 0;
++			
++			while (cnt > 0) {
++				if (!asn1_octet_decode(ctx, &ch))
++					return 0;
++				*len <<= 8;
++				*len |= ch;
++				cnt--;
++			}
++		}
++	}
++	return 1;
++}
++
++static unsigned char asn1_header_decode(struct asn1_ctx *ctx,
++                                        unsigned char **eoc,
++                                        unsigned int *cls,
++                                        unsigned int *con,
++                                        unsigned int *tag)
++{
++	unsigned int def, len;
++	
++	if (!asn1_id_decode(ctx, cls, con, tag))
++		return 0;
++		
++	if (!asn1_length_decode(ctx, &def, &len))
++		return 0;
++		
++	if (def)
++		*eoc = ctx->pointer + len;
++	else
++		*eoc = 0;
++	return 1;
++}
++
++static unsigned char asn1_eoc_decode(struct asn1_ctx *ctx, unsigned char *eoc)
++{
++	unsigned char ch;
++	
++	if (eoc == 0) {
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++			
++		if (ch != 0x00) {
++			ctx->error = ASN1_ERR_DEC_EOC_MISMATCH;
++			return 0;
++		}
++		
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++			
++		if (ch != 0x00) {
++			ctx->error = ASN1_ERR_DEC_EOC_MISMATCH;
++			return 0;
++		}
++		return 1;
++	} else {
++		if (ctx->pointer != eoc) {
++			ctx->error = ASN1_ERR_DEC_LENGTH_MISMATCH;
++			return 0;
++		}
++		return 1;
++	}
++}
++
++static unsigned char asn1_null_decode(struct asn1_ctx *ctx, unsigned char *eoc)
++{
++	ctx->pointer = eoc;
++	return 1;
++}
++
++static unsigned char asn1_long_decode(struct asn1_ctx *ctx,
++                                      unsigned char *eoc,
++                                      long *integer)
++{
++	unsigned char ch;
++	unsigned int  len;
++	
++	if (!asn1_octet_decode(ctx, &ch))
++		return 0;
++		
++	*integer = (signed char) ch;
++	len = 1;
++	
++	while (ctx->pointer < eoc) {
++		if (++len > sizeof (long)) {
++			ctx->error = ASN1_ERR_DEC_BADVALUE;
++			return 0;
++		}
++		
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++			
++		*integer <<= 8;
++		*integer |= ch;
++	}
++	return 1;
++}
++
++static unsigned char asn1_uint_decode(struct asn1_ctx *ctx,
++                                      unsigned char *eoc,
++                                      unsigned int *integer)
++{
++	unsigned char ch;
++	unsigned int  len;
++	
++	if (!asn1_octet_decode(ctx, &ch))
++		return 0;
++		
++	*integer = ch;
++	if (ch == 0) len = 0;
++	else len = 1;
++	
++	while (ctx->pointer < eoc) {
++		if (++len > sizeof (unsigned int)) {
++			ctx->error = ASN1_ERR_DEC_BADVALUE;
++			return 0;
++		}
++		
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++			
++		*integer <<= 8;
++		*integer |= ch;
++	}
++	return 1;
++}
++
++static unsigned char asn1_ulong_decode(struct asn1_ctx *ctx,
++                                       unsigned char *eoc,
++                                       unsigned long *integer)
++{
++	unsigned char ch;
++	unsigned int  len;
++	
++	if (!asn1_octet_decode(ctx, &ch))
++		return 0;
++		
++	*integer = ch;
++	if (ch == 0) len = 0;
++	else len = 1;
++	
++	while (ctx->pointer < eoc) {
++		if (++len > sizeof (unsigned long)) {
++			ctx->error = ASN1_ERR_DEC_BADVALUE;
++			return 0;
++		}
++		
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++			
++		*integer <<= 8;
++		*integer |= ch;
++	}
++	return 1;
++}
++
++static unsigned char asn1_octets_decode(struct asn1_ctx *ctx,
++                                        unsigned char *eoc,
++                                        unsigned char **octets,
++                                        unsigned int *len)
++{
++	unsigned char *ptr;
++	
++	*len = 0;
++	
++	*octets = kmalloc(eoc - ctx->pointer, GFP_ATOMIC);
++	if (*octets == NULL) {
++		if (net_ratelimit())
++			printk("OOM in bsalg (%d)\n", __LINE__);
++		return 0;
++	}
++	
++	ptr = *octets;
++	while (ctx->pointer < eoc) {
++		if (!asn1_octet_decode(ctx, (unsigned char *)ptr++)) {
++			kfree(*octets);
++			*octets = NULL;
++			return 0;
++		}
++		(*len)++;
++	}
++	return 1;
++}
++
++static unsigned char asn1_subid_decode(struct asn1_ctx *ctx,
++                                       unsigned long *subid)
++{
++	unsigned char ch;
++	
++	*subid = 0;
++	
++	do {
++		if (!asn1_octet_decode(ctx, &ch))
++			return 0;
++		
++		*subid <<= 7;
++		*subid |= ch & 0x7F;
++	} while ((ch & 0x80) == 0x80);
++	return 1;
++}
++
++static unsigned char asn1_oid_decode(struct asn1_ctx *ctx,
++                                     unsigned char *eoc,
++                                     unsigned long **oid,
++                                     unsigned int *len)
++{
++	unsigned long subid;
++	unsigned int  size;
++	unsigned long *optr;
++	
++	size = eoc - ctx->pointer + 1;
++	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
++	if (*oid == NULL) {
++		if (net_ratelimit())
++			printk("OOM in bsalg (%d)\n", __LINE__);
++		return 0;
++	}
++	
++	optr = *oid;
++	
++	if (!asn1_subid_decode(ctx, &subid)) {
++		kfree(*oid);
++		*oid = NULL;
++		return 0;
++	}
++	
++	if (subid < 40) {
++		optr [0] = 0;
++		optr [1] = subid;
++	} else if (subid < 80) {
++		optr [0] = 1;
++		optr [1] = subid - 40;
++	} else {
++		optr [0] = 2;
++		optr [1] = subid - 80;
++	}
++	
++	*len = 2;
++	optr += 2;
++	
++	while (ctx->pointer < eoc) {
++		if (++(*len) > size) {
++			ctx->error = ASN1_ERR_DEC_BADVALUE;
++			kfree(*oid);
++			*oid = NULL;
++			return 0;
++		}
++		
++		if (!asn1_subid_decode(ctx, optr++)) {
++			kfree(*oid);
++			*oid = NULL;
++			return 0;
++		}
++	}
++	return 1;
++}
++
++/*****************************************************************************
++ *
++ * SNMP decoding routines (gxsnmp author Dirk Wisse)
++ *
++ *****************************************************************************/
++
++/* SNMP Versions */
++#define SNMP_V1				0
++#define SNMP_V2C			1
++#define SNMP_V2				2
++#define SNMP_V3				3
++
++/* Default Sizes */
++#define SNMP_SIZE_COMM			256
++#define SNMP_SIZE_OBJECTID		128
++#define SNMP_SIZE_BUFCHR		256
++#define SNMP_SIZE_BUFINT		128
++#define SNMP_SIZE_SMALLOBJECTID		16
++
++/* Requests */
++#define SNMP_PDU_GET			0
++#define SNMP_PDU_NEXT			1
++#define SNMP_PDU_RESPONSE		2
++#define SNMP_PDU_SET			3
++#define SNMP_PDU_TRAP1			4
++#define SNMP_PDU_BULK			5
++#define SNMP_PDU_INFORM			6
++#define SNMP_PDU_TRAP2			7
++
++/* Errors */
++#define SNMP_NOERROR			0
++#define SNMP_TOOBIG			1
++#define SNMP_NOSUCHNAME			2
++#define SNMP_BADVALUE			3
++#define SNMP_READONLY			4
++#define SNMP_GENERROR			5
++#define SNMP_NOACCESS			6
++#define SNMP_WRONGTYPE			7
++#define SNMP_WRONGLENGTH		8
++#define SNMP_WRONGENCODING		9
++#define SNMP_WRONGVALUE			10
++#define SNMP_NOCREATION			11
++#define SNMP_INCONSISTENTVALUE		12
++#define SNMP_RESOURCEUNAVAILABLE	13
++#define SNMP_COMMITFAILED		14
++#define SNMP_UNDOFAILED			15
++#define SNMP_AUTHORIZATIONERROR		16
++#define SNMP_NOTWRITABLE		17
++#define SNMP_INCONSISTENTNAME		18
++
++/* General SNMP V1 Traps */
++#define SNMP_TRAP_COLDSTART		0
++#define SNMP_TRAP_WARMSTART		1
++#define SNMP_TRAP_LINKDOWN		2
++#define SNMP_TRAP_LINKUP		3
++#define SNMP_TRAP_AUTFAILURE		4
++#define SNMP_TRAP_EQPNEIGHBORLOSS	5
++#define SNMP_TRAP_ENTSPECIFIC		6
++
++/* SNMPv1 Types */
++#define SNMP_NULL                0
++#define SNMP_INTEGER             1    /* l  */
++#define SNMP_OCTETSTR            2    /* c  */
++#define SNMP_DISPLAYSTR          2    /* c  */
++#define SNMP_OBJECTID            3    /* ul */
++#define SNMP_IPADDR              4    /* uc */
++#define SNMP_COUNTER             5    /* ul */
++#define SNMP_GAUGE               6    /* ul */
++#define SNMP_TIMETICKS           7    /* ul */
++#define SNMP_OPAQUE              8    /* c  */
++
++/* Additional SNMPv2 Types */
++#define SNMP_UINTEGER            5    /* ul */
++#define SNMP_BITSTR              9    /* uc */
++#define SNMP_NSAP               10    /* uc */
++#define SNMP_COUNTER64          11    /* ul */
++#define SNMP_NOSUCHOBJECT       12
++#define SNMP_NOSUCHINSTANCE     13
++#define SNMP_ENDOFMIBVIEW       14
++
++union snmp_syntax
++{
++	unsigned char uc[0];	/* 8 bit unsigned */
++	char c[0];		/* 8 bit signed */
++	unsigned long ul[0];	/* 32 bit unsigned */
++	long l[0];		/* 32 bit signed */
++};
++
++struct snmp_object
++{
++	unsigned long *id;
++	unsigned int id_len;
++	unsigned short type;
++	unsigned int syntax_len;
++	union snmp_syntax syntax;
++};
++
++struct snmp_request
++{
++	unsigned long id;
++	unsigned int error_status;
++	unsigned int error_index;
++};
++
++struct snmp_v1_trap
++{
++	unsigned long *id;
++	unsigned int id_len;
++	unsigned long ip_address;	/* pointer  */
++	unsigned int general;
++	unsigned int specific;
++	unsigned long time;
++};
++
++/* SNMP types */
++#define SNMP_IPA    0
++#define SNMP_CNT    1
++#define SNMP_GGE    2
++#define SNMP_TIT    3
++#define SNMP_OPQ    4
++#define SNMP_C64    6
++
++/* SNMP errors */
++#define SERR_NSO    0
++#define SERR_NSI    1
++#define SERR_EOM    2
++
++static void inline mangle_address(unsigned char *begin,
++                                  unsigned char *addr,
++                                  const struct oct1_map *map,
++                                  u_int16_t *check);
++struct snmp_cnv
++{
++	unsigned int class;
++	unsigned int tag;
++	int syntax;
++};
++
++static struct snmp_cnv snmp_conv [] =
++{
++	{ASN1_UNI, ASN1_NUL, SNMP_NULL},
++	{ASN1_UNI, ASN1_INT, SNMP_INTEGER},
++	{ASN1_UNI, ASN1_OTS, SNMP_OCTETSTR},
++	{ASN1_UNI, ASN1_OTS, SNMP_DISPLAYSTR},
++	{ASN1_UNI, ASN1_OJI, SNMP_OBJECTID},
++	{ASN1_APL, SNMP_IPA, SNMP_IPADDR},
++	{ASN1_APL, SNMP_CNT, SNMP_COUNTER},	/* Counter32 */
++	{ASN1_APL, SNMP_GGE, SNMP_GAUGE},	/* Gauge32 == Unsigned32  */
++	{ASN1_APL, SNMP_TIT, SNMP_TIMETICKS},
++	{ASN1_APL, SNMP_OPQ, SNMP_OPAQUE},
++	
++	/* SNMPv2 data types and errors */
++	{ASN1_UNI, ASN1_BTS, SNMP_BITSTR},
++	{ASN1_APL, SNMP_C64, SNMP_COUNTER64},
++	{ASN1_CTX, SERR_NSO, SNMP_NOSUCHOBJECT},
++	{ASN1_CTX, SERR_NSI, SNMP_NOSUCHINSTANCE},
++	{ASN1_CTX, SERR_EOM, SNMP_ENDOFMIBVIEW},
++	{0,       0,       -1}
++};
++
++static unsigned char snmp_tag_cls2syntax(unsigned int tag,
++                                         unsigned int cls,
++                                         unsigned short *syntax)
++{
++	struct snmp_cnv *cnv;
++	
++	cnv = snmp_conv;
++	
++	while (cnv->syntax != -1) {
++		if (cnv->tag == tag && cnv->class == cls) {
++			*syntax = cnv->syntax;
++			return 1;
++		}
++		cnv++;
++	}
++	return 0;
++}
++
++static unsigned char snmp_object_decode(struct asn1_ctx *ctx,
++                                        struct snmp_object **obj)
++{
++	unsigned int cls, con, tag, len, idlen;
++	unsigned short type;
++	unsigned char *eoc, *end, *p;
++	unsigned long *lp, *id;
++	unsigned long ul;
++	long  l;
++	
++	*obj = NULL;
++	id = NULL;
++	
++	if (!asn1_header_decode(ctx, &eoc, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_CON || tag != ASN1_SEQ)
++		return 0;
++	
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		return 0;
++	
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_OJI)
++		return 0;
++	
++	if (!asn1_oid_decode(ctx, end, &id, &idlen))
++		return 0;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag)) {
++		kfree(id);
++		return 0;
++	}
++	
++	if (con != ASN1_PRI) {
++		kfree(id);
++		return 0;
++	}
++	
++	if (!snmp_tag_cls2syntax(tag, cls, &type)) {
++		kfree(id);
++		return 0;
++	}
++	
++	switch (type) {
++		case SNMP_INTEGER:
++			len = sizeof(long);
++			if (!asn1_long_decode(ctx, end, &l)) {
++				kfree(id);
++				return 0;
++			}
++			*obj = kmalloc(sizeof(struct snmp_object) + len,
++			               GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			(*obj)->syntax.l[0] = l;
++			break;
++		case SNMP_OCTETSTR:
++		case SNMP_OPAQUE:
++			if (!asn1_octets_decode(ctx, end, &p, &len)) {
++				kfree(id);
++				return 0;
++			}
++			*obj = kmalloc(sizeof(struct snmp_object) + len,
++			               GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			memcpy((*obj)->syntax.c, p, len);
++			kfree(p);
++			break;
++		case SNMP_NULL:
++		case SNMP_NOSUCHOBJECT:
++		case SNMP_NOSUCHINSTANCE:
++		case SNMP_ENDOFMIBVIEW:
++			len = 0;
++			*obj = kmalloc(sizeof(struct snmp_object), GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			if (!asn1_null_decode(ctx, end)) {
++				kfree(id);
++				kfree(*obj);
++				*obj = NULL;
++				return 0;
++			}
++			break;
++		case SNMP_OBJECTID:
++			if (!asn1_oid_decode(ctx, end, (unsigned long **)&lp, &len)) {
++				kfree(id);
++				return 0;
++			}
++			len *= sizeof(unsigned long);
++			*obj = kmalloc(sizeof(struct snmp_object) + len, GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			memcpy((*obj)->syntax.ul, lp, len);
++			kfree(lp);
++			break;
++		case SNMP_IPADDR:
++			if (!asn1_octets_decode(ctx, end, &p, &len)) {
++				kfree(id);
++				return 0;
++			}
++			if (len != 4) {
++				kfree(p);
++				kfree(id);
++				return 0;
++			}
++			*obj = kmalloc(sizeof(struct snmp_object) + len, GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(p);
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			memcpy((*obj)->syntax.uc, p, len);
++			kfree(p);
++			break;
++		case SNMP_COUNTER:
++		case SNMP_GAUGE:
++		case SNMP_TIMETICKS:
++			len = sizeof(unsigned long);
++			if (!asn1_ulong_decode(ctx, end, &ul)) {
++				kfree(id);
++				return 0;
++			}
++			*obj = kmalloc(sizeof(struct snmp_object) + len, GFP_ATOMIC);
++			if (*obj == NULL) {
++				kfree(id);
++				if (net_ratelimit())
++					printk("OOM in bsalg (%d)\n", __LINE__);
++				return 0;
++			}
++			(*obj)->syntax.ul[0] = ul;
++			break;
++		default:
++			kfree(id);
++			return 0;
++	}
++	
++	(*obj)->syntax_len = len;
++	(*obj)->type = type;
++	(*obj)->id = id;
++	(*obj)->id_len = idlen;
++	
++	if (!asn1_eoc_decode(ctx, eoc)) {
++		kfree(id);
++		kfree(*obj);
++		*obj = NULL;
++		return 0;
++	}
++	return 1;
++}
++
++static unsigned char snmp_request_decode(struct asn1_ctx *ctx,
++                                         struct snmp_request *request)
++{
++	unsigned int cls, con, tag;
++	unsigned char *end;
++	
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		return 0;
++		
++	if (!asn1_ulong_decode(ctx, end, &request->id))
++		return 0;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		return 0;
++		
++	if (!asn1_uint_decode(ctx, end, &request->error_status))
++		return 0;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		return 0;
++		
++	if (!asn1_uint_decode(ctx, end, &request->error_index))
++		return 0;
++	
++	return 1;
++}
++
++static unsigned char snmp_trap_decode(struct asn1_ctx *ctx,
++                                      struct snmp_v1_trap *trap,
++                                      const struct oct1_map *map,
++                                      u_int16_t *check)
++{
++	unsigned int cls, con, tag, len;
++	unsigned char *end;
++
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_OJI)
++		return 0;
++	
++	if (!asn1_oid_decode(ctx, end, &trap->id, &trap->id_len))
++		return 0;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		goto err_id_free;
++
++	if (!((cls == ASN1_APL && con == ASN1_PRI && tag == SNMP_IPA) ||
++	      (cls == ASN1_UNI && con == ASN1_PRI && tag == ASN1_OTS)))
++		goto err_id_free;
++	
++	if (!asn1_octets_decode(ctx, end, (unsigned char **)&trap->ip_address, &len))
++		goto err_id_free;
++	
++	/* IPv4 only */
++	if (len != 4)
++		goto err_addr_free;
++	
++	mangle_address(ctx->begin, ctx->pointer - 4, map, check);
++	
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		goto err_addr_free;
++		
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		goto err_addr_free;;
++		
++	if (!asn1_uint_decode(ctx, end, &trap->general))
++		goto err_addr_free;;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		goto err_addr_free;
++	
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		goto err_addr_free;
++		
++	if (!asn1_uint_decode(ctx, end, &trap->specific))
++		goto err_addr_free;
++		
++	if (!asn1_header_decode(ctx, &end, &cls, &con, &tag))
++		goto err_addr_free;
++		
++	if (!((cls == ASN1_APL && con == ASN1_PRI && tag == SNMP_TIT) ||
++	      (cls == ASN1_UNI && con == ASN1_PRI && tag == ASN1_INT)))
++		goto err_addr_free;
++		
++	if (!asn1_ulong_decode(ctx, end, &trap->time))
++		goto err_addr_free;
++		
++	return 1;
++
++err_id_free:
++	kfree(trap->id);
++
++err_addr_free:
++	kfree((unsigned long *)trap->ip_address);
++	
++	return 0;
++}
++
++/*****************************************************************************
++ *
++ * Misc. routines
++ *
++ *****************************************************************************/
++
++static void hex_dump(unsigned char *buf, size_t len)
++{
++	size_t i;
++	
++	for (i = 0; i < len; i++) {
++		if (i && !(i % 16))
++			printk("\n");
++		printk("%02x ", *(buf + i));
++	}
++	printk("\n");
++}
++
++/* 
++ * Fast checksum update for possibly oddly-aligned UDP byte, from the
++ * code example in the draft.
++ */
++static void fast_csum(unsigned char *csum,
++                      const unsigned char *optr,
++                      const unsigned char *nptr,
++                      int odd)
++{
++	long x, old, new;
++	
++	x = csum[0] * 256 + csum[1];
++	
++	x =~ x & 0xFFFF;
++	
++	if (odd) old = optr[0] * 256;
++	else old = optr[0];
++	
++	x -= old & 0xFFFF;
++	if (x <= 0) {
++		x--;
++		x &= 0xFFFF;
++	}
++	
++	if (odd) new = nptr[0] * 256;
++	else new = nptr[0];
++	
++	x += new & 0xFFFF;
++	if (x & 0x10000) {
++		x++;
++		x &= 0xFFFF;
++	}
++	
++	x =~ x & 0xFFFF;
++	csum[0] = x / 256;
++	csum[1] = x & 0xFF;
++}
++
++/* 
++ * Mangle IP address.
++ * 	- begin points to the start of the snmp messgae
++ *      - addr points to the start of the address
++ */
++static void inline mangle_address(unsigned char *begin,
++                                  unsigned char *addr,
++                                  const struct oct1_map *map,
++                                  u_int16_t *check)
++{
++	if (map->from == NOCT1(*addr)) {
++		u_int32_t old;
++		
++		if (debug)
++			memcpy(&old, (unsigned char *)addr, sizeof(old));
++			
++		*addr = map->to;
++		
++		/* Update UDP checksum if being used */
++		if (*check) {
++			unsigned char odd = !((addr - begin) % 2);
++			
++			fast_csum((unsigned char *)check,
++			          &map->from, &map->to, odd);
++			          
++		}
++		
++		if (debug)
++			printk(KERN_DEBUG "bsalg: mapped %u.%u.%u.%u to "
++			       "%u.%u.%u.%u\n", NIPQUAD(old), NIPQUAD(*addr));
++	}
++}
++
++/*
++ * Parse and mangle SNMP message according to mapping.
++ * (And this is the fucking 'basic' method).
++ */
++static int snmp_parse_mangle(unsigned char *msg,
++                             u_int16_t len,
++                             const struct oct1_map *map,
++                             u_int16_t *check)
++{
++	unsigned char *eoc, *end;
++	unsigned int cls, con, tag, vers, pdutype;
++	struct asn1_ctx ctx;
++	struct asn1_octstr comm;
++	struct snmp_object **obj;
++	
++	if (debug > 1)
++		hex_dump(msg, len);
++
++	asn1_open(&ctx, msg, len);
++	
++	/* 
++	 * Start of SNMP message.
++	 */
++	if (!asn1_header_decode(&ctx, &eoc, &cls, &con, &tag))
++		return 0;
++	if (cls != ASN1_UNI || con != ASN1_CON || tag != ASN1_SEQ)
++		return 0;
++	
++	/* 
++	 * Version 1 or 2 handled.
++	 */
++	if (!asn1_header_decode(&ctx, &end, &cls, &con, &tag))
++		return 0;
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_INT)
++		return 0;
++	if (!asn1_uint_decode (&ctx, end, &vers))
++		return 0;
++	if (debug > 1)
++		printk(KERN_DEBUG "bsalg: snmp version: %u\n", vers + 1);
++	if (vers > 1)
++		return 1;
++	
++	/*
++	 * Community.
++	 */
++	if (!asn1_header_decode (&ctx, &end, &cls, &con, &tag))
++		return 0;
++	if (cls != ASN1_UNI || con != ASN1_PRI || tag != ASN1_OTS)
++		return 0;
++	if (!asn1_octets_decode(&ctx, end, &comm.data, &comm.len))
++		return 0;
++	if (debug > 1) {
++		unsigned int i;
++		
++		printk(KERN_DEBUG "bsalg: community: ");
++		for (i = 0; i < comm.len; i++)
++			printk("%c", comm.data[i]);
++		printk("\n");
++	}
++	kfree(comm.data);
++	
++	/*
++	 * PDU type
++	 */
++	if (!asn1_header_decode(&ctx, &eoc, &cls, &con, &pdutype))
++		return 0;
++	if (cls != ASN1_CTX || con != ASN1_CON)
++		return 0;
++	if (debug > 1) {
++		unsigned char *pdus[] = {
++			[SNMP_PDU_GET] = "get",
++			[SNMP_PDU_NEXT] = "get-next",
++			[SNMP_PDU_RESPONSE] = "response",
++			[SNMP_PDU_SET] = "set",
++			[SNMP_PDU_TRAP1] = "trapv1",
++			[SNMP_PDU_BULK] = "bulk",
++			[SNMP_PDU_INFORM] = "inform",
++			[SNMP_PDU_TRAP2] = "trapv2"
++		};
++		
++		if (pdutype > SNMP_PDU_TRAP2)
++			printk(KERN_DEBUG "bsalg: bad pdu type %u\n", pdutype);
++		else
++			printk(KERN_DEBUG "bsalg: pdu: %s\n", pdus[pdutype]);
++	}
++	if (pdutype != SNMP_PDU_RESPONSE &&
++	    pdutype != SNMP_PDU_TRAP1 && pdutype != SNMP_PDU_TRAP2)
++		return 1;
++	
++	/*
++	 * Request header or v1 trap
++	 */
++	if (pdutype == SNMP_PDU_TRAP1) {
++		struct snmp_v1_trap trap;
++		unsigned char ret = snmp_trap_decode(&ctx, &trap, map, check);
++		
++		/* Discard trap allocations regardless */
++		kfree(trap.id);
++		kfree((unsigned long *)trap.ip_address);
++		
++		if (!ret)
++			return ret;
++		
++	} else {
++		struct snmp_request req;
++		
++		if (!snmp_request_decode(&ctx, &req))
++			return 0;
++			
++		if (debug > 1)
++			printk(KERN_DEBUG "bsalg: request: id=0x%lx error_status=%u "
++			"error_index=%u\n", req.id, req.error_status,
++			req.error_index);
++	}
++	
++	/*
++	 * Loop through objects, look for IP addresses to mangle.
++	 */
++	if (!asn1_header_decode(&ctx, &eoc, &cls, &con, &tag))
++		return 0;
++		
++	if (cls != ASN1_UNI || con != ASN1_CON || tag != ASN1_SEQ)
++		return 0;
++	
++	obj = kmalloc(sizeof(struct snmp_object), GFP_ATOMIC);
++	if (obj == NULL) {
++		if (net_ratelimit())
++			printk(KERN_WARNING "OOM in bsalg(%d)\n", __LINE__);
++		return 0;	
++	}
++
++	while (!asn1_eoc_decode(&ctx, eoc)) {
++		unsigned int i;
++		
++		if (!snmp_object_decode(&ctx, obj)) {
++			if (*obj) {
++				if ((*obj)->id)
++					kfree((*obj)->id);
++				kfree(*obj);
++			}	
++			kfree(obj);
++			return 0;
++		}
++
++		if (debug > 1) {
++			printk(KERN_DEBUG "bsalg: object: ");
++			for (i = 0; i < (*obj)->id_len; i++) {
++				if (i > 0)
++					printk(".");
++				printk("%lu", (*obj)->id[i]);
++			}
++			printk(": type=%u\n", (*obj)->type);
++			
++		}
++
++		if ((*obj)->type == SNMP_IPADDR)
++			mangle_address(ctx.begin, ctx.pointer - 4 , map, check);
++		
++		kfree((*obj)->id);
++		kfree(*obj);
++	}
++	kfree(obj);
++	
++	if (!asn1_eoc_decode(&ctx, eoc))
++		return 0;
++		
++	return 1;
++}
++
++/*****************************************************************************
++ *
++ * NAT routines.
++ *
++ *****************************************************************************/
++
++/* 
++ * SNMP translation routine.
++ */
++static int snmp_translate(struct ip_conntrack *ct,
++                          struct ip_nat_info *info,
++                          enum ip_conntrack_info ctinfo,
++                          unsigned int hooknum,
++                          struct sk_buff **pskb)
++{
++	struct iphdr *iph = (*pskb)->nh.iph;
++	struct udphdr *udph = (struct udphdr *)((u_int32_t *)iph + iph->ihl);
++	u_int16_t udplen = ntohs(udph->len);
++	u_int16_t paylen = udplen - sizeof(struct udphdr);
++	int dir = CTINFO2DIR(ctinfo);
++	struct oct1_map map;
++
++	/*
++	 * Determine mappping for application layer addresses based
++	 * on NAT manipulations for the packet.
++	 */
++	if (dir == IP_CT_DIR_ORIGINAL) {
++		/* SNAT traps */
++		map.from = NOCT1(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.ip);
++		map.to = NOCT1(ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.ip);
++	} else {
++		/* DNAT replies */
++		map.from = NOCT1(ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.ip);
++		map.to = NOCT1(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.ip);
++	}
++	
++	if (map.from == map.to)
++		return NF_ACCEPT;
++	
++	if (!snmp_parse_mangle((unsigned char *)udph + sizeof(struct udphdr),
++	                       paylen, &map, &udph->check)) {
++		printk(KERN_WARNING "bsalg: parser failed\n");
++		return NF_DROP;
++	}
++	return NF_ACCEPT;
++}
++
++/* 
++ * NAT helper function, packets arrive here from NAT code.
++ */
++static unsigned int nat_help(struct ip_conntrack *ct,
++                             struct ip_nat_info *info,
++                             enum ip_conntrack_info ctinfo,
++                             unsigned int hooknum,
++                             struct sk_buff **pskb)
++{
++	int dir = CTINFO2DIR(ctinfo);
++	struct iphdr *iph = (*pskb)->nh.iph;
++	struct udphdr *udph = (struct udphdr *)((u_int32_t *)iph + iph->ihl);
++
++	spin_lock_bh(&snmp_lock);
++	
++	/*
++	 * Translate snmp replies on pre-routing (DNAT) and snmp traps
++	 * on post routing (SNAT).
++	 */
++	if (!((dir == IP_CT_DIR_REPLY && hooknum == NF_IP_PRE_ROUTING &&
++			udph->source == __constant_ntohs(SNMP_PORT)) ||
++	      (dir == IP_CT_DIR_ORIGINAL && hooknum == NF_IP_POST_ROUTING &&
++	      		udph->dest == __constant_ntohs(SNMP_TRAP_PORT)))) {
++		spin_unlock_bh(&snmp_lock);
++		return NF_ACCEPT;
++	}
++
++	if (debug > 1) {
++		printk(KERN_DEBUG "bsalg: dir=%s hook=%d manip=%s len=%d "
++		       "src=%u.%u.%u.%u:%u dst=%u.%u.%u.%u:%u "
++		       "osrc=%u.%u.%u.%u odst=%u.%u.%u.%u "
++		       "rsrc=%u.%u.%u.%u rdst=%u.%u.%u.%u "
++		       "\n", 
++		       dir == IP_CT_DIR_REPLY ? "reply" : "orig", hooknum, 
++		       HOOK2MANIP(hooknum) == IP_NAT_MANIP_SRC ? "snat" :
++		       "dnat", (*pskb)->len,
++		       NIPQUAD(iph->saddr), ntohs(udph->source),
++		       NIPQUAD(iph->daddr), ntohs(udph->dest),
++		       NIPQUAD(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.src.ip),
++		       NIPQUAD(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.ip),
++		       NIPQUAD(ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.ip),
++		       NIPQUAD(ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.ip));
++	}
++	
++	/* 
++	 * Make sure the packet length is ok.  So far, we were only guaranteed
++	 * to have a valid length IP header plus 8 bytes, which means we have
++	 * enough room for a UDP header.  Just verify the UDP length field so we
++	 * can mess around with the payload.
++	 */
++	 if (ntohs(udph->len) == (*pskb)->len - (iph->ihl << 2)) {
++	 	int ret = snmp_translate(ct, info, ctinfo, hooknum, pskb);
++	 	spin_unlock_bh(&snmp_lock);
++	 	return ret;
++	}
++	
++	if (net_ratelimit())
++		printk(KERN_WARNING "bsalg: dropping malformed packet "
++		       "src=%u.%u.%u.%u dst=%u.%u.%u.%u\n",
++		       NIPQUAD(iph->saddr), NIPQUAD(iph->daddr));
++	spin_unlock_bh(&snmp_lock);
++	return NF_DROP;
++}
++
++static struct ip_nat_helper snmp = { { NULL, NULL },
++	{ { 0, { __constant_htons(SNMP_PORT) } },
++	  { 0, { 0 }, IPPROTO_UDP } },
++	{ { 0, { 0xFFFF } },
++	  { 0, { 0 }, 0xFFFF } },
++	  nat_help, "snmp" };
++ 
++static struct ip_nat_helper snmp_trap = { { NULL, NULL },
++	{ { 0, { __constant_htons(SNMP_TRAP_PORT) } },
++	  { 0, { 0 }, IPPROTO_UDP } },
++	{ { 0, { 0xFFFF } },
++	  { 0, { 0 }, 0xFFFF } },
++	nat_help, "snmp_trap" };
++
++/*****************************************************************************
++ *
++ * Module stuff.
++ *
++ *****************************************************************************/
++ 
++static int __init init(void)
++{
++	int ret = 0;
++
++	ret = ip_nat_helper_register(&snmp);
++	if (ret < 0)
++		return ret;
++	ret = ip_nat_helper_register(&snmp_trap);
++	if (ret < 0) {
++		ip_nat_helper_unregister(&snmp);
++		return ret;
++	}
++	return ret;
++}
++
++static void __exit fini(void)
++{
++	ip_nat_helper_unregister(&snmp);
++	ip_nat_helper_unregister(&snmp_trap);
++	br_write_lock_bh(BR_NETPROTO_LOCK);
++	br_write_unlock_bh(BR_NETPROTO_LOCK);
++}
++
++module_init(init);
++module_exit(fini);
++
++MODULE_PARM(debug, "i");
++MODULE_DESCRIPTION("Basic SNMP Application Layer Gateway");
++MODULE_LICENSE("GPL");
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ip_tables.c linux-2.4.14-plain/net/ipv4/netfilter/ip_tables.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ip_tables.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/ip_tables.c	Wed Oct 31 00:08:12 2001
+@@ -1059,6 +1059,10 @@
+ 	if (len != sizeof(tmp) + tmp.size)
+ 		return -ENOPROTOOPT;
+ 
++	/* Pedantry: prevent them from hitting BUG() in vmalloc.c --RR */
++	if ((SMP_ALIGN(tmp.size) >> PAGE_SHIFT) + 2 > num_physpages)
++		return -ENOMEM;
++
+ 	newinfo = vmalloc(sizeof(struct ipt_table_info)
+ 			  + SMP_ALIGN(tmp.size) * smp_num_cpus);
+ 	if (!newinfo)
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ipt_LOG.c linux-2.4.14-plain/net/ipv4/netfilter/ipt_LOG.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ipt_LOG.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv4/netfilter/ipt_LOG.c	Mon Nov  5 18:53:07 2001
+@@ -95,7 +95,11 @@
+ 		printk("WINDOW=%u ", ntohs(tcph->window));
+ 		/* Max length: 9 "RES=0x3F " */
+ 		printk("RES=0x%02x ", (u_int8_t)(ntohl(tcp_flag_word(tcph) & TCP_RESERVED_BITS) >> 22));
+-		/* Max length: 36 "URG ACK PSH RST SYN FIN " */
++		/* Max length: 32 "CWR ECE URG ACK PSH RST SYN FIN " */
++		if (tcph->cwr)
++			printk("CWR ");
++		if (tcph->ece)
++			printk("ECE ");
+ 		if (tcph->urg)
+ 			printk("URG ");
+ 		if (tcph->ack)
+@@ -254,7 +258,7 @@
+ 
+ 	/* Proto    Max log string length */
+ 	/* IP:      40+46+6+11+127 = 230 */
+-	/* TCP:     10+max(25,20+30+13+9+36+11+127) = 256 */
++	/* TCP:     10+max(25,20+30+13+9+32+11+127) = 252 */
+ 	/* UDP:     10+max(25,20) = 35 */
+ 	/* ICMP:    11+max(25, 18+25+max(19,14,24+3+n+10,3+n+10)) = 91+n */
+ 	/* ESP:     10+max(25)+15 = 50 */
+@@ -263,7 +267,7 @@
+ 
+ 	/* (ICMP allows recursion one level deep) */
+ 	/* maxlen =  IP + ICMP +  IP + max(TCP,UDP,ICMP,unknown) */
+-	/* maxlen = 230+   91  + 230 + 256 = 807 */
++	/* maxlen = 230+   91  + 230 + 252 = 803 */
+ }
+ 
+ static unsigned int
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ipt_length.c linux-2.4.14-plain/net/ipv4/netfilter/ipt_length.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ipt_length.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv4/netfilter/ipt_length.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,55 @@
++/* Kernel module to match packet length. */
++#include <linux/module.h>
++#include <linux/skbuff.h>
++
++#include <linux/netfilter_ipv4/ipt_length.h>
++#include <linux/netfilter_ipv4/ip_tables.h>
++
++MODULE_AUTHOR("James Morris <jmorris@intercode.com.au>");
++MODULE_DESCRIPTION("IP tables packet length matching module");
++MODULE_LICENSE("GPL");
++
++static int
++match(const struct sk_buff *skb,
++      const struct net_device *in,
++      const struct net_device *out,
++      const void *matchinfo,
++      int offset,
++      const void *hdr,
++      u_int16_t datalen,
++      int *hotdrop)
++{
++	const struct ipt_length_info *info = matchinfo;
++	u_int16_t pktlen = ntohs(skb->nh.iph->tot_len);
++	
++	return (pktlen >= info->min && pktlen <= info->max) ^ info->invert;
++}
++
++static int
++checkentry(const char *tablename,
++           const struct ipt_ip *ip,
++           void *matchinfo,
++           unsigned int matchsize,
++           unsigned int hook_mask)
++{
++	if (matchsize != IPT_ALIGN(sizeof(struct ipt_length_info)))
++		return 0;
++
++	return 1;
++}
++
++static struct ipt_match length_match
++= { { NULL, NULL }, "length", &match, &checkentry, NULL, THIS_MODULE };
++
++static int __init init(void)
++{
++	return ipt_register_match(&length_match);
++}
++
++static void __exit fini(void)
++{
++	ipt_unregister_match(&length_match);
++}
++
++module_init(init);
++module_exit(fini);
+diff -Nru linux-2.4.13-plain/net/ipv4/netfilter/ipt_ttl.c linux-2.4.14-plain/net/ipv4/netfilter/ipt_ttl.c
+--- linux-2.4.13-plain/net/ipv4/netfilter/ipt_ttl.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv4/netfilter/ipt_ttl.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,75 @@
++/* IP tables module for matching the value of the TTL 
++ *
++ * ipt_ttl.c,v 1.5 2000/11/13 11:16:08 laforge Exp
++ *
++ * (C) 2000,2001 by Harald Welte <laforge@gnumonks.org>
++ *
++ * This software is distributed under the terms  GNU GPL
++ */
++
++#include <linux/module.h>
++#include <linux/skbuff.h>
++
++#include <linux/netfilter_ipv4/ipt_ttl.h>
++#include <linux/netfilter_ipv4/ip_tables.h>
++
++MODULE_AUTHOR("Harald Welte <laforge@gnumonks.org>");
++MODULE_DESCRIPTION("IP tables TTL matching module");
++MODULE_LICENSE("GPL");
++
++static int match(const struct sk_buff *skb, const struct net_device *in,
++		 const struct net_device *out, const void *matchinfo,
++		 int offset, const void *hdr, u_int16_t datalen,
++		 int *hotdrop)
++{
++	const struct ipt_ttl_info *info = matchinfo;
++	const struct iphdr *iph = skb->nh.iph;
++
++	switch (info->mode) {
++		case IPT_TTL_EQ:
++			return (iph->ttl == info->ttl);
++			break;
++		case IPT_TTL_NE:
++			return (!(iph->ttl == info->ttl));
++			break;
++		case IPT_TTL_LT:
++			return (iph->ttl < info->ttl);
++			break;
++		case IPT_TTL_GT:
++			return (iph->ttl > info->ttl);
++			break;
++		default:
++			printk(KERN_WARNING "ipt_ttl: unknown mode %d\n", 
++				info->mode);
++			return 0;
++	}
++
++	return 0;
++}
++
++static int checkentry(const char *tablename, const struct ipt_ip *ip,
++		      void *matchinfo, unsigned int matchsize,
++		      unsigned int hook_mask)
++{
++	if (matchsize != IPT_ALIGN(sizeof(struct ipt_ttl_info)))
++		return 0;
++
++	return 1;
++}
++
++static struct ipt_match ttl_match = { { NULL, NULL }, "ttl", &match,
++		&checkentry, NULL, THIS_MODULE };
++
++static int __init init(void)
++{
++	return ipt_register_match(&ttl_match);
++}
++
++static void __exit fini(void)
++{
++	ipt_unregister_match(&ttl_match);
++
++}
++
++module_init(init);
++module_exit(fini);
+diff -Nru linux-2.4.13-plain/include/linux/netfilter_ipv4/ip_conntrack.h linux-2.4.14-plain/include/linux/netfilter_ipv4/ip_conntrack.h
+--- linux-2.4.13-plain/include/linux/netfilter_ipv4/ip_conntrack.h	Fri Apr 27 23:15:01 2001
++++ linux-2.4.14-plain/include/linux/netfilter_ipv4/ip_conntrack.h	Wed Oct 31 00:08:12 2001
+@@ -83,6 +83,10 @@
+ 
+ #include <linux/netfilter_ipv4/ip_conntrack_ftp.h>
+ 
++#if defined(CONFIG_IP_NF_IRC) || defined(CONFIG_IP_NF_IRC_MODULE)
++#include <linux/netfilter_ipv4/ip_conntrack_irc.h>
++#endif
++
+ struct ip_conntrack
+ {
+ 	/* Usage count in here is 1 for hash table/destruct timer, 1 per skb,
+@@ -121,6 +125,9 @@
+ 
+ 	union {
+ 		struct ip_ct_ftp ct_ftp_info;
++#if defined(CONFIG_IP_NF_IRC) || defined(CONFIG_IP_NF_IRC_MODULE)
++		struct ip_ct_irc ct_irc_info;
++#endif
+ 	} help;
+ 
+ #ifdef CONFIG_IP_NF_NAT_NEEDED
+diff -Nru linux-2.4.13-plain/include/linux/netfilter_ipv4/ip_conntrack_irc.h linux-2.4.14-plain/include/linux/netfilter_ipv4/ip_conntrack_irc.h
+--- linux-2.4.13-plain/include/linux/netfilter_ipv4/ip_conntrack_irc.h	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/include/linux/netfilter_ipv4/ip_conntrack_irc.h	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,47 @@
++/* IRC extension for IP connection tracking.
++ * (C) 2000 by Harald Welte <laforge@gnumonks.org>
++ * based on RR's ip_conntrack_ftp.h
++ *
++ * ip_conntrack_irc.h,v 1.6 2000/11/07 18:26:42 laforge Exp
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ *
++ *
++ */
++#ifndef _IP_CONNTRACK_IRC_H
++#define _IP_CONNTRACK_IRC_H
++
++#ifndef __KERNEL__
++#error Only in kernel.
++#endif
++
++#include <linux/netfilter_ipv4/lockhelp.h>
++
++#define IP_CONNTR_IRC	2
++
++struct dccproto {
++	char* match;
++	int matchlen;
++};
++
++/* Protects irc part of conntracks */
++DECLARE_LOCK_EXTERN(ip_irc_lock);
++
++/* We record seq number and length of irc ip/port text here: all in
++   host order. */
++struct ip_ct_irc
++{
++	/* This tells NAT that this is an IRC connection */
++	int is_irc;
++	/* sequence number where address part of DCC command begins */
++	u_int32_t seq;
++	/* 0 means not found yet */
++	u_int32_t len;
++	/* Port that was to be used */
++	u_int16_t port;
++};
++
++#endif /* _IP_CONNTRACK_IRC_H */
+diff -Nru linux-2.4.13-plain/include/linux/netfilter_ipv4/ipt_length.h linux-2.4.14-plain/include/linux/netfilter_ipv4/ipt_length.h
+--- linux-2.4.13-plain/include/linux/netfilter_ipv4/ipt_length.h	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/include/linux/netfilter_ipv4/ipt_length.h	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,9 @@
++#ifndef _IPT_LENGTH_H
++#define _IPT_LENGTH_H
++
++struct ipt_length_info {
++    u_int16_t	min, max;
++    u_int8_t	invert;
++};
++
++#endif /*_IPT_LENGTH_H*/
+diff -Nru linux-2.4.13-plain/include/linux/netfilter_ipv4/ipt_ttl.h linux-2.4.14-plain/include/linux/netfilter_ipv4/ipt_ttl.h
+--- linux-2.4.13-plain/include/linux/netfilter_ipv4/ipt_ttl.h	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/include/linux/netfilter_ipv4/ipt_ttl.h	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,21 @@
++/* IP tables module for matching the value of the TTL
++ * (C) 2000 by Harald Welte <laforge@gnumonks.org> */
++
++#ifndef _IPT_TTL_H
++#define _IPT_TTL_H
++
++enum {
++	IPT_TTL_EQ = 0,		/* equals */
++	IPT_TTL_NE,		/* not equals */
++	IPT_TTL_LT,		/* less than */
++	IPT_TTL_GT,		/* greater than */
++};
++
++
++struct ipt_ttl_info {
++	u_int8_t	mode;
++	u_int8_t	ttl;
++};
++
++
++#endif
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/Config.in linux-2.4.14-plain/net/ipv6/netfilter/Config.in
+--- linux-2.4.13-plain/net/ipv6/netfilter/Config.in	Wed May 24 17:36:34 2000
++++ linux-2.4.14-plain/net/ipv6/netfilter/Config.in	Wed Oct 31 00:08:12 2001
+@@ -16,6 +16,11 @@
+ if [ "$CONFIG_IP6_NF_IPTABLES" != "n" ]; then
+ # The simple matches.
+   dep_tristate '  limit match support' CONFIG_IP6_NF_MATCH_LIMIT $CONFIG_IP6_NF_IPTABLES
++  dep_tristate '  MAC address match support' CONFIG_IP6_NF_MATCH_MAC $CONFIG_IP6_NF_IPTABLES
++  dep_tristate '  Multiple port match support' CONFIG_IP6_NF_MATCH_MULTIPORT $CONFIG_IP6_NF_IPTABLES
++  if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
++    dep_tristate '  Owner match support (EXPERIMENTAL)' CONFIG_IP6_NF_MATCH_OWNER $CONFIG_IP6_NF_IPTABLES
++  fi
+ #  dep_tristate '  MAC address match support' CONFIG_IP6_NF_MATCH_MAC $CONFIG_IP6_NF_IPTABLES
+   dep_tristate '  netfilter MARK match support' CONFIG_IP6_NF_MATCH_MARK $CONFIG_IP6_NF_IPTABLES
+ #  dep_tristate '  Multiple port match support' CONFIG_IP6_NF_MATCH_MULTIPORT $CONFIG_IP6_NF_IPTABLES
+@@ -30,6 +35,9 @@
+ 
+ # The targets
+   dep_tristate '  Packet filtering' CONFIG_IP6_NF_FILTER $CONFIG_IP6_NF_IPTABLES 
++  if [ "$CONFIG_IP6_NF_FILTER" != "n" ]; then
++    dep_tristate '    LOG target support' CONFIG_IP6_NF_TARGET_LOG $CONFIG_IP6_NF_FILTER
++  fi
+ 
+ #  if [ "$CONFIG_IP6_NF_FILTER" != "n" ]; then
+ #    dep_tristate '    REJECT target support' CONFIG_IP6_NF_TARGET_REJECT $CONFIG_IP6_NF_FILTER
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/Makefile linux-2.4.14-plain/net/ipv6/netfilter/Makefile
+--- linux-2.4.13-plain/net/ipv6/netfilter/Makefile	Tue Aug  7 17:30:50 2001
++++ linux-2.4.14-plain/net/ipv6/netfilter/Makefile	Wed Oct 31 00:08:12 2001
+@@ -17,8 +17,10 @@
+ obj-$(CONFIG_IP6_NF_MATCH_MARK) += ip6t_mark.o
+ obj-$(CONFIG_IP6_NF_MATCH_MAC) += ip6t_mac.o
+ obj-$(CONFIG_IP6_NF_MATCH_MULTIPORT) += ip6t_multiport.o
++obj-$(CONFIG_IP6_NF_MATCH_OWNER) += ip6t_owner.o
+ obj-$(CONFIG_IP6_NF_FILTER) += ip6table_filter.o
+ obj-$(CONFIG_IP6_NF_MANGLE) += ip6table_mangle.o
+ obj-$(CONFIG_IP6_NF_TARGET_MARK) += ip6t_MARK.o
++obj-$(CONFIG_IP6_NF_TARGET_LOG) += ip6t_LOG.o
+ 
+ include $(TOPDIR)/Rules.make
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6_tables.c linux-2.4.14-plain/net/ipv6/netfilter/ip6_tables.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6_tables.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6_tables.c	Wed Oct 31 00:08:12 2001
+@@ -1102,6 +1102,10 @@
+ 	if (copy_from_user(&tmp, user, sizeof(tmp)) != 0)
+ 		return -EFAULT;
+ 
++	/* Pedantry: prevent them from hitting BUG() in vmalloc.c --RR */
++	if ((SMP_ALIGN(tmp.size) >> PAGE_SHIFT) + 2 > num_physpages)
++		return -ENOMEM;
++
+ 	newinfo = vmalloc(sizeof(struct ip6t_table_info)
+ 			  + SMP_ALIGN(tmp.size) * smp_num_cpus);
+ 	if (!newinfo)
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6t_LOG.c linux-2.4.14-plain/net/ipv6/netfilter/ip6t_LOG.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6t_LOG.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6t_LOG.c	Mon Nov  5 18:53:07 2001
+@@ -0,0 +1,355 @@
++/*
++ * This is a module which is used for logging packets.
++ */
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <linux/ip.h>
++#include <linux/spinlock.h>
++#include <linux/icmpv6.h>
++#include <net/udp.h>
++#include <net/tcp.h>
++#include <net/ipv6.h>
++#include <linux/netfilter_ipv6/ip6_tables.h>
++
++MODULE_AUTHOR("Jan Rekorajski <baggins@pld.org.pl>");
++MODULE_DESCRIPTION("IP6 tables LOG target module");
++MODULE_LICENSE("GPL");
++
++struct in_device;
++#include <net/route.h>
++#include <linux/netfilter_ipv6/ip6t_LOG.h>
++
++#if 0
++#define DEBUGP printk
++#else
++#define DEBUGP(format, args...)
++#endif
++
++#define NIP6(addr) \
++	ntohs((addr).s6_addr16[0]), \
++	ntohs((addr).s6_addr16[1]), \
++	ntohs((addr).s6_addr16[2]), \
++	ntohs((addr).s6_addr16[3]), \
++	ntohs((addr).s6_addr16[4]), \
++	ntohs((addr).s6_addr16[5]), \
++	ntohs((addr).s6_addr16[6]), \
++	ntohs((addr).s6_addr16[7])
++
++struct esphdr {
++	__u32   spi;
++}; /* FIXME evil kludge */
++        
++/* Use lock to serialize, so printks don't overlap */
++static spinlock_t log_lock = SPIN_LOCK_UNLOCKED;
++
++/* takes in current header and pointer to the header */
++/* if another header exists, sets hdrptr to the next header
++   and returns the new header value, else returns 0 */
++static u_int8_t ip6_nexthdr(u_int8_t currenthdr, u_int8_t **hdrptr)
++{
++	u_int8_t hdrlen, nexthdr = 0;
++
++	switch(currenthdr){
++		case IPPROTO_AH:
++		/* whoever decided to do the length of AUTH for ipv6
++		in 32bit units unlike other headers should be beaten...
++		repeatedly...with a large stick...no, an even LARGER
++		stick...no, you're still not thinking big enough */
++			nexthdr = **hdrptr;
++			hdrlen = *hdrptr[1] * 4 + 8;
++			*hdrptr = *hdrptr + hdrlen;
++			break;
++		/*stupid rfc2402 */
++		case IPPROTO_DSTOPTS:
++		case IPPROTO_ROUTING:
++		case IPPROTO_HOPOPTS:
++			nexthdr = **hdrptr;
++			hdrlen = *hdrptr[1] * 8 + 8;
++			*hdrptr = *hdrptr + hdrlen;
++			break;
++		case IPPROTO_FRAGMENT:
++			nexthdr = **hdrptr;
++			*hdrptr = *hdrptr + 8;
++			break;
++	}	
++	return nexthdr;
++
++}
++
++/* One level of recursion won't kill us */
++static void dump_packet(const struct ip6t_log_info *info,
++			struct ipv6hdr *ipv6h, int recurse)
++{
++	u_int8_t currenthdr = ipv6h->nexthdr;
++	u_int8_t *hdrptr;
++	int fragment;
++
++	/* Max length: 88 "SRC=0000.0000.0000.0000.0000.0000.0000.0000 DST=0000.0000.0000.0000.0000.0000.0000.0000" */
++	printk("SRC=%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x ", NIP6(ipv6h->saddr));
++	printk("DST=%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x ", NIP6(ipv6h->daddr));
++
++	/* Max length: 44 "LEN=65535 TC=255 HOPLIMIT=255 FLOWLBL=FFFFF " */
++	printk("LEN=%u TC=%u HOPLIMIT=%u FLOWLBL=%u ",
++	       ntohs(ipv6h->payload_len) + sizeof(struct ipv6hdr),
++	       (ntohl(*(u_int32_t *)ipv6h) & 0x0ff00000) >> 20,
++	       ipv6h->hop_limit,
++	       (ntohl(*(u_int32_t *)ipv6h) & 0x000fffff));
++
++	fragment = 0;
++	hdrptr = (u_int8_t *)(ipv6h + 1);
++	while (currenthdr) {
++		if ((currenthdr == IPPROTO_TCP) ||
++		    (currenthdr == IPPROTO_UDP) ||
++		    (currenthdr == IPPROTO_ICMPV6))
++			break;
++		/* Max length: 48 "OPT (...) " */
++		printk("OPT ( ");
++		switch (currenthdr) {
++		case IPPROTO_FRAGMENT: {
++			struct frag_hdr *fhdr = (struct frag_hdr *)hdrptr;
++
++			/* Max length: 11 "FRAG:65535 " */
++			printk("FRAG:%u ", ntohs(fhdr->frag_off) & 0xFFF8);
++
++			/* Max length: 11 "INCOMPLETE " */
++			if (fhdr->frag_off & __constant_htons(0x0001))
++				printk("INCOMPLETE ");
++
++			printk("ID:%08x ", fhdr->identification);
++
++			if (ntohs(fhdr->frag_off) & 0xFFF8)
++				fragment = 1;
++
++			break;
++		}
++		case IPPROTO_DSTOPTS:
++		case IPPROTO_ROUTING:
++		case IPPROTO_HOPOPTS:
++			break;
++		/* Max Length */
++		case IPPROTO_AH:
++		case IPPROTO_ESP:
++			if (info->logflags & IP6T_LOG_IPOPT) {
++				struct esphdr *esph = (struct esphdr *)hdrptr;
++				int esp = (currenthdr == IPPROTO_ESP);
++
++				/* Max length: 4 "ESP " */
++				printk("%s ",esp ? "ESP" : "AH");
++
++				/* Length: 15 "SPI=0xF1234567 " */
++				printk("SPI=0x%x ", ntohl(esph->spi) );
++				break;
++			}
++		default:
++			break;
++		}
++		printk(") ");
++		currenthdr = ip6_nexthdr(currenthdr, &hdrptr);
++	}
++
++	switch (currenthdr) {
++	case IPPROTO_TCP: {
++		struct tcphdr *tcph = (struct tcphdr *)hdrptr;
++
++		/* Max length: 10 "PROTO=TCP " */
++		printk("PROTO=TCP ");
++
++		if (fragment)
++			break;
++
++		/* Max length: 20 "SPT=65535 DPT=65535 " */
++		printk("SPT=%u DPT=%u ",
++		       ntohs(tcph->source), ntohs(tcph->dest));
++		/* Max length: 30 "SEQ=4294967295 ACK=4294967295 " */
++		if (info->logflags & IP6T_LOG_TCPSEQ)
++			printk("SEQ=%u ACK=%u ",
++			       ntohl(tcph->seq), ntohl(tcph->ack_seq));
++		/* Max length: 13 "WINDOW=65535 " */
++		printk("WINDOW=%u ", ntohs(tcph->window));
++		/* Max length: 9 "RES=0x3F " */
++		printk("RES=0x%02x ", (u_int8_t)(ntohl(tcp_flag_word(tcph) & TCP_RESERVED_BITS) >> 22));
++		/* Max length: 32 "CWR ECE URG ACK PSH RST SYN FIN " */
++		if (tcph->cwr)
++			printk("CWR ");
++		if (tcph->ece)
++			printk("ECE ");
++		if (tcph->urg)
++			printk("URG ");
++		if (tcph->ack)
++			printk("ACK ");
++		if (tcph->psh)
++			printk("PSH ");
++		if (tcph->rst)
++			printk("RST ");
++		if (tcph->syn)
++			printk("SYN ");
++		if (tcph->fin)
++			printk("FIN ");
++		/* Max length: 11 "URGP=65535 " */
++		printk("URGP=%u ", ntohs(tcph->urg_ptr));
++
++		if ((info->logflags & IP6T_LOG_TCPOPT)
++		    && tcph->doff * 4 != sizeof(struct tcphdr)) {
++			unsigned int i;
++
++			/* Max length: 127 "OPT (" 15*4*2chars ") " */
++			printk("OPT (");
++			for (i =sizeof(struct tcphdr); i < tcph->doff * 4; i++)
++				printk("%02X", ((u_int8_t *)tcph)[i]);
++			printk(") ");
++		}
++		break;
++	}
++	case IPPROTO_UDP: {
++		struct udphdr *udph = (struct udphdr *)hdrptr;
++
++		/* Max length: 10 "PROTO=UDP " */
++		printk("PROTO=UDP ");
++
++		if (fragment)
++			break;
++
++		/* Max length: 20 "SPT=65535 DPT=65535 " */
++		printk("SPT=%u DPT=%u LEN=%u ",
++		       ntohs(udph->source), ntohs(udph->dest),
++		       ntohs(udph->len));
++		break;
++	}
++	case IPPROTO_ICMPV6: {
++		struct icmp6hdr *icmp6h = (struct icmp6hdr *)hdrptr;
++
++		/* Max length: 13 "PROTO=ICMPv6 " */
++		printk("PROTO=ICMPv6 ");
++
++		if (fragment)
++			break;
++
++		/* Max length: 18 "TYPE=255 CODE=255 " */
++		printk("TYPE=%u CODE=%u ", icmp6h->icmp6_type, icmp6h->icmp6_code);
++
++		switch (icmp6h->icmp6_type) {
++		case ICMPV6_ECHO_REQUEST:
++		case ICMPV6_ECHO_REPLY:
++			/* Max length: 19 "ID=65535 SEQ=65535 " */
++			printk("ID=%u SEQ=%u ",
++				ntohs(icmp6h->icmp6_identifier),
++				ntohs(icmp6h->icmp6_sequence));
++			break;
++		case ICMPV6_MGM_QUERY:
++		case ICMPV6_MGM_REPORT:
++		case ICMPV6_MGM_REDUCTION:
++			break;
++
++		case ICMPV6_PARAMPROB:
++			/* Max length: 17 "POINTER=ffffffff " */
++			printk("POINTER=%08x ", ntohl(icmp6h->icmp6_pointer));
++			/* Fall through */
++		case ICMPV6_DEST_UNREACH:
++		case ICMPV6_PKT_TOOBIG:
++		case ICMPV6_TIME_EXCEED:
++			/* Max length: 3+maxlen */
++			if (recurse) {
++				printk("[");
++				dump_packet(info, (struct ipv6hdr *)(icmp6h + 1), 0);
++				printk("] ");
++			}
++
++			/* Max length: 10 "MTU=65535 " */
++			if (icmp6h->icmp6_type == ICMPV6_PKT_TOOBIG)
++				printk("MTU=%u ", ntohl(icmp6h->icmp6_mtu));
++		}
++		break;
++	}
++	/* Max length: 10 "PROTO 255 " */
++	default:
++		printk("PROTO=%u ", currenthdr);
++	}
++}
++
++static unsigned int
++ip6t_log_target(struct sk_buff **pskb,
++		unsigned int hooknum,
++		const struct net_device *in,
++		const struct net_device *out,
++		const void *targinfo,
++		void *userinfo)
++{
++	struct ipv6hdr *ipv6h = (*pskb)->nh.ipv6h;
++	const struct ip6t_log_info *loginfo = targinfo;
++	char level_string[4] = "< >";
++
++	level_string[1] = '0' + (loginfo->level % 8);
++	spin_lock_bh(&log_lock);
++	printk(level_string);
++	printk("%sIN=%s OUT=%s ",
++		loginfo->prefix,
++		in ? in->name : "",
++		out ? out->name : "");
++	if (in && !out) {
++		/* MAC logging for input chain only. */
++		printk("MAC=");
++		if ((*pskb)->dev && (*pskb)->dev->hard_header_len && (*pskb)->mac.raw != (void*)ipv6h) {
++			int i;
++			unsigned char *p = (*pskb)->mac.raw;
++			for (i = 0; i < (*pskb)->dev->hard_header_len; i++,p++)
++				printk("%02x%c", *p,
++				       i==(*pskb)->dev->hard_header_len - 1
++				       ? ' ':':');
++		} else
++			printk(" ");
++	}
++
++	dump_packet(loginfo, ipv6h, 1);
++	printk("\n");
++	spin_unlock_bh(&log_lock);
++
++	return IP6T_CONTINUE;
++}
++
++static int ip6t_log_checkentry(const char *tablename,
++			       const struct ip6t_entry *e,
++			       void *targinfo,
++			       unsigned int targinfosize,
++			       unsigned int hook_mask)
++{
++	const struct ip6t_log_info *loginfo = targinfo;
++
++	if (targinfosize != IP6T_ALIGN(sizeof(struct ip6t_log_info))) {
++		DEBUGP("LOG: targinfosize %u != %u\n",
++		       targinfosize, IP6T_ALIGN(sizeof(struct ip6t_log_info)));
++		return 0;
++	}
++
++	if (loginfo->level >= 8) {
++		DEBUGP("LOG: level %u >= 8\n", loginfo->level);
++		return 0;
++	}
++
++	if (loginfo->prefix[sizeof(loginfo->prefix)-1] != '\0') {
++		DEBUGP("LOG: prefix term %i\n",
++		       loginfo->prefix[sizeof(loginfo->prefix)-1]);
++		return 0;
++	}
++
++	return 1;
++}
++
++static struct ip6t_target ip6t_log_reg
++= { { NULL, NULL }, "LOG", ip6t_log_target, ip6t_log_checkentry, NULL, 
++    THIS_MODULE };
++
++static int __init init(void)
++{
++	if (ip6t_register_target(&ip6t_log_reg))
++		return -EINVAL;
++
++	return 0;
++}
++
++static void __exit fini(void)
++{
++	ip6t_unregister_target(&ip6t_log_reg);
++}
++
++module_init(init);
++module_exit(fini);
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6t_limit.c linux-2.4.14-plain/net/ipv6/netfilter/ip6t_limit.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6t_limit.c	Sun Sep 30 21:26:08 2001
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6t_limit.c	Wed Oct 31 00:08:12 2001
+@@ -13,7 +13,7 @@
+ #include <linux/interrupt.h>
+ 
+ #include <linux/netfilter_ipv6/ip6_tables.h>
+-#include <linux/netfilter_ipv4/ipt_limit.h>
++#include <linux/netfilter_ipv6/ip6t_limit.h>
+ 
+ /* The algorithm used is the Simple Token Bucket Filter (TBF)
+  * see net/sched/sch_tbf.c in the linux source tree
+@@ -42,7 +42,7 @@
+ #define CREDITS_PER_JIFFY 128
+ 
+ static int
+-ipt_limit_match(const struct sk_buff *skb,
++ip6t_limit_match(const struct sk_buff *skb,
+ 		const struct net_device *in,
+ 		const struct net_device *out,
+ 		const void *matchinfo,
+@@ -51,7 +51,7 @@
+ 		u_int16_t datalen,
+ 		int *hotdrop)
+ {
+-	struct ipt_rateinfo *r = ((struct ipt_rateinfo *)matchinfo)->master;
++	struct ip6t_rateinfo *r = ((struct ip6t_rateinfo *)matchinfo)->master;
+ 	unsigned long now = jiffies;
+ 
+ 	spin_lock_bh(&limit_lock);
+@@ -77,32 +77,32 @@
+ 	/* If multiplying would overflow... */
+ 	if (user > 0xFFFFFFFF / (HZ*CREDITS_PER_JIFFY))
+ 		/* Divide first. */
+-		return (user / IPT_LIMIT_SCALE) * HZ * CREDITS_PER_JIFFY;
++		return (user / IP6T_LIMIT_SCALE) * HZ * CREDITS_PER_JIFFY;
+ 
+-	return (user * HZ * CREDITS_PER_JIFFY) / IPT_LIMIT_SCALE;
++	return (user * HZ * CREDITS_PER_JIFFY) / IP6T_LIMIT_SCALE;
+ }
+ 
+ static int
+-ipt_limit_checkentry(const char *tablename,
++ip6t_limit_checkentry(const char *tablename,
+ 		     const struct ip6t_ip6 *ip,
+ 		     void *matchinfo,
+ 		     unsigned int matchsize,
+ 		     unsigned int hook_mask)
+ {
+-	struct ipt_rateinfo *r = matchinfo;
++	struct ip6t_rateinfo *r = matchinfo;
+ 
+-	if (matchsize != IP6T_ALIGN(sizeof(struct ipt_rateinfo)))
++	if (matchsize != IP6T_ALIGN(sizeof(struct ip6t_rateinfo)))
+ 		return 0;
+ 
+ 	/* Check for overflow. */
+ 	if (r->burst == 0
+ 	    || user2credits(r->avg * r->burst) < user2credits(r->avg)) {
+-		printk("Call rusty: overflow in ipt_limit: %u/%u\n",
++		printk("Call rusty: overflow in ip6t_limit: %u/%u\n",
+ 		       r->avg, r->burst);
+ 		return 0;
+ 	}
+ 
+-	/* User avg in seconds * IPT_LIMIT_SCALE: convert to jiffies *
++	/* User avg in seconds * IP6T_LIMIT_SCALE: convert to jiffies *
+ 	   128. */
+ 	r->prev = jiffies;
+ 	r->credit = user2credits(r->avg * r->burst);	 /* Credits full. */
+@@ -115,20 +115,20 @@
+ 	return 1;
+ }
+ 
+-static struct ip6t_match ipt_limit_reg
+-= { { NULL, NULL }, "limit", ipt_limit_match, ipt_limit_checkentry, NULL,
++static struct ip6t_match ip6t_limit_reg
++= { { NULL, NULL }, "limit", ip6t_limit_match, ip6t_limit_checkentry, NULL,
+     THIS_MODULE };
+ 
+ static int __init init(void)
+ {
+-	if (ip6t_register_match(&ipt_limit_reg))
++	if (ip6t_register_match(&ip6t_limit_reg))
+ 		return -EINVAL;
+ 	return 0;
+ }
+ 
+ static void __exit fini(void)
+ {
+-	ip6t_unregister_match(&ipt_limit_reg);
++	ip6t_unregister_match(&ip6t_limit_reg);
+ }
+ 
+ module_init(init);
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6t_mac.c linux-2.4.14-plain/net/ipv6/netfilter/ip6t_mac.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6t_mac.c	Sat Oct 13 00:30:00 2001
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6t_mac.c	Wed Oct 31 00:08:12 2001
+@@ -27,7 +27,7 @@
+ }
+ 
+ static int
+-ipt_mac_checkentry(const char *tablename,
++ip6t_mac_checkentry(const char *tablename,
+ 		   const struct ip6t_ip6 *ip,
+ 		   void *matchinfo,
+ 		   unsigned int matchsize,
+@@ -35,7 +35,7 @@
+ {
+ 	if (hook_mask
+ 	    & ~((1 << NF_IP6_PRE_ROUTING) | (1 << NF_IP6_LOCAL_IN))) {
+-		printk("ipt_mac: only valid for PRE_ROUTING or LOCAL_IN.\n");
++		printk("ip6t_mac: only valid for PRE_ROUTING or LOCAL_IN.\n");
+ 		return 0;
+ 	}
+ 
+@@ -46,7 +46,7 @@
+ }
+ 
+ static struct ip6t_match mac_match
+-= { { NULL, NULL }, "mac", &match, &ipt_mac_checkentry, NULL, THIS_MODULE };
++= { { NULL, NULL }, "mac", &match, &ip6t_mac_checkentry, NULL, THIS_MODULE };
+ 
+ static int __init init(void)
+ {
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6t_multiport.c linux-2.4.14-plain/net/ipv6/netfilter/ip6t_multiport.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6t_multiport.c	Tue Jun 20 23:32:27 2000
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6t_multiport.c	Wed Oct 31 00:08:12 2001
+@@ -51,7 +51,7 @@
+ 	if (offset == 0 && datalen < sizeof(struct udphdr)) {
+ 		/* We've been asked to examine this packet, and we
+ 		   can't.  Hence, no choice but to drop. */
+-			duprintf("ipt_multiport:"
++			duprintf("ip6t_multiport:"
+ 				 " Dropping evil offset=0 tinygram.\n");
+ 			*hotdrop = 1;
+ 			return 0;
+diff -Nru linux-2.4.13-plain/net/ipv6/netfilter/ip6t_owner.c linux-2.4.14-plain/net/ipv6/netfilter/ip6t_owner.c
+--- linux-2.4.13-plain/net/ipv6/netfilter/ip6t_owner.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.14-plain/net/ipv6/netfilter/ip6t_owner.c	Wed Oct 31 00:08:12 2001
+@@ -0,0 +1,158 @@
++/* Kernel module to match various things tied to sockets associated with
++   locally generated outgoing packets.
++
++   Copyright (C) 2000,2001 Marc Boucher
++ */
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <linux/file.h>
++#include <net/sock.h>
++
++#include <linux/netfilter_ipv6/ip6t_owner.h>
++#include <linux/netfilter_ipv6/ip6_tables.h>
++
++MODULE_AUTHOR("Marc Boucher <marc@mbsi.ca>");
++MODULE_DESCRIPTION("IP6 tables owner matching module");
++MODULE_LICENSE("GPL");
++
++static int
++match_pid(const struct sk_buff *skb, pid_t pid)
++{
++	struct task_struct *p;
++	struct files_struct *files;
++	int i;
++
++	read_lock(&tasklist_lock);
++	p = find_task_by_pid(pid);
++	if (!p)
++		goto out;
++	task_lock(p);
++	files = p->files;
++	if(files) {
++		read_lock(&files->file_lock);
++		for (i=0; i < files->max_fds; i++) {
++			if (fcheck_files(files, i) == skb->sk->socket->file) {
++				read_unlock(&files->file_lock);
++				task_unlock(p);
++				read_unlock(&tasklist_lock);
++				return 1;
++			}
++		}
++		read_unlock(&files->file_lock);
++	}
++	task_unlock(p);
++out:
++	read_unlock(&tasklist_lock);
++	return 0;
++}
++
++static int
++match_sid(const struct sk_buff *skb, pid_t sid)
++{
++	struct task_struct *p;
++	struct file *file = skb->sk->socket->file;
++	int i, found=0;
++
++	read_lock(&tasklist_lock);
++	for_each_task(p) {
++		struct files_struct *files;
++		if (p->session != sid)
++			continue;
++
++		task_lock(p);
++		files = p->files;
++		if (files) {
++			read_lock(&files->file_lock);
++			for (i=0; i < files->max_fds; i++) {
++				if (fcheck_files(files, i) == file) {
++					found = 1;
++					break;
++				}
++			}
++			read_unlock(&files->file_lock);
++		}
++		task_unlock(p);
++		if(found)
++			break;
++	}
++	read_unlock(&tasklist_lock);
++
++	return found;
++}
++
++static int
++match(const struct sk_buff *skb,
++      const struct net_device *in,
++      const struct net_device *out,
++      const void *matchinfo,
++      int offset,
++      const void *hdr,
++      u_int16_t datalen,
++      int *hotdrop)
++{
++	const struct ip6t_owner_info *info = matchinfo;
++
++	if (!skb->sk || !skb->sk->socket || !skb->sk->socket->file)
++		return 0;
++
++	if(info->match & IP6T_OWNER_UID) {
++		if((skb->sk->socket->file->f_uid != info->uid) ^
++		    !!(info->invert & IP6T_OWNER_UID))
++			return 0;
++	}
++
++	if(info->match & IP6T_OWNER_GID) {
++		if((skb->sk->socket->file->f_gid != info->gid) ^
++		    !!(info->invert & IP6T_OWNER_GID))
++			return 0;
++	}
++
++	if(info->match & IP6T_OWNER_PID) {
++		if (!match_pid(skb, info->pid) ^
++		    !!(info->invert & IP6T_OWNER_PID))
++			return 0;
++	}
++
++	if(info->match & IP6T_OWNER_SID) {
++		if (!match_sid(skb, info->sid) ^
++		    !!(info->invert & IP6T_OWNER_SID))
++			return 0;
++	}
++
++	return 1;
++}
++
++static int
++checkentry(const char *tablename,
++           const struct ip6t_ip6 *ip,
++           void *matchinfo,
++           unsigned int matchsize,
++           unsigned int hook_mask)
++{
++        if (hook_mask
++            & ~((1 << NF_IP6_LOCAL_OUT) | (1 << NF_IP6_POST_ROUTING))) {
++                printk("ip6t_owner: only valid for LOCAL_OUT or POST_ROUTING.\n");
++                return 0;
++        }
++
++	if (matchsize != IP6T_ALIGN(sizeof(struct ip6t_owner_info)))
++		return 0;
++
++	return 1;
++}
++
++static struct ip6t_match owner_match
++= { { NULL, NULL }, "owner", &match, &checkentry, NULL, THIS_MODULE };
++
++static int __init init(void)
++{
++	return ip6t_register_match(&owner_match);
++}
++
++static void __exit fini(void)
++{
++	ip6t_unregister_match(&owner_match);
++}
++
++module_init(init);
++module_exit(fini);

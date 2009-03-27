@@ -1,0 +1,41 @@
+diff -u --recursive --new-file linux/net/core/rtnetlink.c
+--- linux/net/core/rtnetlink.c	Wed May 19 10:15:08 1999
++++ linux/net/core/rtnetlink.c	Wed May 19 10:50:23 1999
+@@ -139,7 +139,7 @@
+ }
+ 
+ static int rtnetlink_fill_ifinfo(struct sk_buff *skb, struct device *dev,
+-				 int type, u32 pid, u32 seq)
++				 int type, u32 pid, u32 seq, u32 change)
+ {
+ 	struct ifinfomsg *r;
+ 	struct nlmsghdr  *nlh;
+@@ -152,7 +152,7 @@
+ 	r->ifi_type = dev->type;
+ 	r->ifi_index = dev->ifindex;
+ 	r->ifi_flags = dev->flags;
+-	r->ifi_change = ~0U;
++	r->ifi_change = change;
+ 
+ 	RTA_PUT(skb, IFLA_IFNAME, strlen(dev->name)+1, dev->name);
+ 	if (dev->addr_len) {
+@@ -192,7 +196,7 @@
+ 	for (dev=dev_base, idx=0; dev; dev = dev->next, idx++) {
+ 		if (idx < s_idx)
+ 			continue;
+-		if (rtnetlink_fill_ifinfo(skb, dev, RTM_NEWLINK, NETLINK_CB(cb->skb).pid, cb->nlh->nlmsg_seq) <= 0)
++		if (rtnetlink_fill_ifinfo(skb, dev, RTM_NEWLINK, NETLINK_CB(cb->skb).pid, cb->nlh->nlmsg_seq, 0) <= 0)
+ 			break;
+ 	}
+ 	cb->args[0] = idx;
+@@ -235,7 +239,7 @@
+ 	if (!skb)
+ 		return;
+ 
+-	if (rtnetlink_fill_ifinfo(skb, dev, type, 0, 0) < 0) {
++	if (rtnetlink_fill_ifinfo(skb, dev, type, 0, 0, ~0U) < 0) {
+ 		kfree_skb(skb);
+ 		return;
+ 	}
+
+

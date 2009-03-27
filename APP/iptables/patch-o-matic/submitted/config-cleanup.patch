@@ -1,0 +1,59 @@
+diff -Nru linuxppc-benh-270202-nfpom/include/linux/netfilter_ipv4/ip_conntrack.h linuxppc-benh-270202-cleanup/include/linux/netfilter_ipv4/ip_conntrack.h
+--- linuxppc-benh-270202-nfpom/include/linux/netfilter_ipv4/ip_conntrack.h	Tue Feb 26 21:05:05 2002
++++ linuxppc-benh-270202-cleanup/include/linux/netfilter_ipv4/ip_conntrack.h	Wed Mar  6 12:32:05 2002
+@@ -82,10 +82,7 @@
+ #endif
+ 
+ #include <linux/netfilter_ipv4/ip_conntrack_ftp.h>
+-
+-#if defined(CONFIG_IP_NF_IRC) || defined(CONFIG_IP_NF_IRC_MODULE)
+ #include <linux/netfilter_ipv4/ip_conntrack_irc.h>
+-#endif
+ 
+ struct ip_conntrack
+ {
+@@ -125,9 +122,7 @@
+ 
+ 	union {
+ 		struct ip_ct_ftp ct_ftp_info;
+-#if defined(CONFIG_IP_NF_IRC) || defined(CONFIG_IP_NF_IRC_MODULE)
+ 		struct ip_ct_irc ct_irc_info;
+-#endif
+ 	} help;
+ 
+ #ifdef CONFIG_IP_NF_NAT_NEEDED
+diff -Nru linuxppc-benh-270202-nfpom/net/ipv4/netfilter/Config.in linuxppc-benh-270202-cleanup/net/ipv4/netfilter/Config.in
+--- linuxppc-benh-270202-nfpom/net/ipv4/netfilter/Config.in	Thu Feb 28 23:56:10 2002
++++ linuxppc-benh-270202-cleanup/net/ipv4/netfilter/Config.in	Wed Mar  6 12:33:56 2002
+@@ -78,9 +78,7 @@
+     dep_tristate '    MARK target support' CONFIG_IP_NF_TARGET_MARK $CONFIG_IP_NF_MANGLE
+   fi
+   dep_tristate '  LOG target support' CONFIG_IP_NF_TARGET_LOG $CONFIG_IP_NF_IPTABLES
+-  if [ "$CONFIG_NETLINK" != "n" ]; then
+-     dep_tristate '  ULOG target support' CONFIG_IP_NF_TARGET_ULOG $CONFIG_NETLINK $CONFIG_IP_NF_IPTABLES
+-  fi
++  dep_tristate '  ULOG target support' CONFIG_IP_NF_TARGET_ULOG $CONFIG_IP_NF_IPTABLES
+   dep_tristate '  TCPMSS target support' CONFIG_IP_NF_TARGET_TCPMSS $CONFIG_IP_NF_IPTABLES
+ fi
+ 
+diff -Nru linuxppc-benh-270202-nfpom/net/ipv4/netfilter/Makefile linuxppc-benh-270202-cleanup/net/ipv4/netfilter/Makefile
+--- linuxppc-benh-270202-nfpom/net/ipv4/netfilter/Makefile	Thu Feb 28 23:56:12 2002
++++ linuxppc-benh-270202-cleanup/net/ipv4/netfilter/Makefile	Wed Mar  6 12:32:40 2002
+@@ -31,15 +31,13 @@
+ # connection tracking
+ obj-$(CONFIG_IP_NF_CONNTRACK) += ip_conntrack.o
+ 
+-# IRC support
+-obj-$(CONFIG_IP_NF_IRC) += ip_conntrack_irc.o
+-obj-$(CONFIG_IP_NF_NAT_IRC) += ip_nat_irc.o
+-
+ # connection tracking helpers
+ obj-$(CONFIG_IP_NF_FTP) += ip_conntrack_ftp.o
++obj-$(CONFIG_IP_NF_IRC) += ip_conntrack_irc.o
+ 
+ # NAT helpers 
+ obj-$(CONFIG_IP_NF_NAT_FTP) += ip_nat_ftp.o
++obj-$(CONFIG_IP_NF_NAT_IRC) += ip_nat_irc.o
+ 
+ # generic IP tables 
+ obj-$(CONFIG_IP_NF_IPTABLES) += ip_tables.o

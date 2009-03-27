@@ -1,0 +1,61 @@
+#!/bin/sh
+
+start() {
+echo "Mounting ramdisk if RAM >= 16MB"
+MEM_SIZE=`free | grep Total | awk '{ print $2/10000 }' | cut -d '.' -f1`
+
+if [ "$MEM_SIZE" = "0" ]; then
+    MEM_SIZE=8M
+    echo "Memsize <= 8MB" >> /var/log/boot.log
+else
+    echo "Creating tmpfs and mount it into /var"
+    rm -rf /tmp/*
+    cp -r /var/* /tmp
+    rm -rf /var
+    mkdir /var
+    /bin/mount -v ramfs /var -n -t ramfs
+    cp -rf /tmp/* /var
+    rm -rf /tmp/*
+    mkdir /var/tmp
+    rm -rf /tmp
+    ln -s /var/tmp /tmp
+    MEM_SIZE=16M
+    echo "Create tmpfs and mount it into /var OK" >> /var/log/boot.log
+    echo "Memsize >= 16MB" >> /var/log/boot.log
+fi
+
+#create /dev/pts for pts devices
+mkdir /dev/pts
+mount -t devpts /dev/pts /dev/pts
+mknod /dev/ptmx c 5 2
+#symlink for random urandom
+ln -s /dev/urandom /dev/random
+#start userspace watchdog
+nice --19 "watchdog" &
+}
+
+stop() {
+echo "Umount ramdisk "
+/bin/umount /var
+
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac
+

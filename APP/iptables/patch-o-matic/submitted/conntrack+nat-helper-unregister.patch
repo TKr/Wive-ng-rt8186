@@ -1,0 +1,63 @@
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_ftp.c linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_conntrack_ftp.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_ftp.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_conntrack_ftp.c	Thu Mar 14 14:38:46 2002
+@@ -15,7 +15,7 @@
+ 
+ #define MAX_PORTS 8
+ static int ports[MAX_PORTS];
+-static int ports_c;
++static int ports_c = 0;
+ #ifdef MODULE_PARM
+ MODULE_PARM(ports, "1-" __MODULE_STRING(MAX_PORTS) "i");
+ #endif
+@@ -380,7 +380,7 @@
+ static void fini(void)
+ {
+ 	int i;
+-	for (i = 0; (i < MAX_PORTS) && ports[i]; i++) {
++	for (i = 0; i < ports_c; i++) {
+ 		DEBUGP("ip_ct_ftp: unregistering helper for port %d\n",
+ 				ports[i]);
+ 		ip_conntrack_helper_unregister(&ftp[i]);
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_irc.c linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_conntrack_irc.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_irc.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_conntrack_irc.c	Thu Mar 14 14:39:31 2002
+@@ -29,7 +29,7 @@
+ 
+ #define MAX_PORTS 8
+ static int ports[MAX_PORTS];
+-static int ports_n_c = 0;
++static int ports_c = 0;
+ 
+ MODULE_AUTHOR("Harald Welte <laforge@gnumonks.org>");
+ MODULE_DESCRIPTION("IRC (DCC) connection tracking module");
+@@ -256,7 +256,7 @@
+ 			fini();
+ 			return -EBUSY;
+ 		}
+-		ports_n_c++;
++		ports_c++;
+ 	}
+ 	return 0;
+ }
+@@ -266,7 +266,7 @@
+ static void fini(void)
+ {
+ 	int i;
+-	for (i = 0; (i < MAX_PORTS) && ports[i]; i++) {
++	for (i = 0; i < ports_c; i++) {
+ 		DEBUGP("unregistering port %d\n",
+ 		       ports[i]);
+ 		ip_conntrack_helper_unregister(&irc_helpers[i]);
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_nat_ftp.c linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_nat_ftp.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_nat_ftp.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-ports_c/net/ipv4/netfilter/ip_nat_ftp.c	Thu Mar 14 14:38:35 2002
+@@ -317,7 +317,7 @@
+ {
+ 	int i;
+ 
+-	for (i = 0; (i < MAX_PORTS) && ports[i]; i++) {
++	for (i = 0; i < ports_c; i++) {
+ 		DEBUGP("ip_nat_ftp: unregistering port %d\n", ports[i]);
+ 		ip_nat_helper_unregister(&ftp[i]);
+ 	}

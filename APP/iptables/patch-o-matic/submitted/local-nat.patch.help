@@ -1,0 +1,8 @@
+Author: Henrrik Nordstrom <hno@marasystems.com>, 
+ 	Harald Welte <laforge@gnumonks.org>
+Status: Submitted for kernel inclusion at 2.4.19-pre3 time
+
+This adds CONFIG_IP_NF_NAT_LOCAL, which enables the user to do destination
+NAT on locally-originated connections.
+
+Locally-originating means originating on the nat box itself. 

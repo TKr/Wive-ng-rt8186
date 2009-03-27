@@ -1,0 +1,23 @@
+#!/bin/sh
+
+#Flag to enable/disable high power check (enabled by default)
+iwpriv wlan0 set_mib HighPowerChk=1
+#Charge pump value for Tx/Rx on Realtek's mini-PCI demo board
+iwpriv wlan0 set_mib txChargePump=6
+iwpriv wlan0 set_mib rxChargePump=3
+#Don’t clean RSN IE while reinitialize the interface
+iwpriv wlan0 set_mib keep_rsnie=0
+#Default state of 802.1x control port 
+#0 – data packet is not allowed to pass through until 802.1x authentication is ok
+#1 – data packet is allowed pass through even 802.1x authentication is not ok
+iwpriv wlan0 set_mib default_port=0
+#Software mode for cryptoengine 
+iwpriv wlan0 set_mib swcrypto=0
+iwpriv wlan0 set_mib swTkipMic=0
+
+#not documented mib`s
+iwpriv wlan0 set_mib TxPowerCtrl=1 #default 0
+iwpriv wlan0 set_mib zebraVersion=2
+iwpriv wlan0 set_mib bias=30
+iwpriv wlan0 set_mib hith_h=100
+iwpriv wlan0 set_mib hith_l=90

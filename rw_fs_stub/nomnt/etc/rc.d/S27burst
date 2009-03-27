@@ -1,0 +1,47 @@
+#!/bin/sh
+
+. /etc/network/wifi/general
+
+start() {
+ echo BurstModeStart
+  if [ "$WLAN_BURST" = "yes" ] ; then
+    #----------------Perfect options-----------------------------------
+    iwpriv wlan0 write_reg dw,40,18e00606 #Wlan TX bus config
+    iwpriv wlan0 write_reg b,35,4f #EIFS Timer
+    iwpriv wlan0 write_reg b,37,e #Command Register - RX/TX bus at once
+    iwpriv wlan0 write_reg b,b6,1 #Slot Time
+    iwpriv wlan0 write_reg b,b7,3f #Microsecond FineTune config
+    iwpriv wlan0 write_reg b,bd,31 #Contention Window max and min.
+    #-----------------FinuTune-----------------------------------------
+    #iwpriv wlan0 write_reg dw,44,1054670e #Wlan RX bus config
+    #iwpriv wlan0 write_reg b,be,83 #AutoRate FallBack by retries.
+    #iwpriv wlan0 write_reg b,b4,10 #SIFS Timer
+    #iwpriv wlan0 write_reg b,b5,c #DIFS Timer
+    #iwpriv wlan0 write_reg b,34,83 #ResponseRate min and max
+    #iwpriv wlan0 write_reg b,9e,0 #Automatic Gain for CCK
+    #iwpriv wlan0 write_reg b,9d,0 #Automatic Gain for OFDM
+  fi
+}
+
+stop() {
+ echo BurstModeStop
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

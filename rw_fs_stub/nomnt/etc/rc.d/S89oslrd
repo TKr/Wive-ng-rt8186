@@ -1,0 +1,50 @@
+#!/bin/sh
+
+. /etc/boot
+. /etc/network/interfaces
+. /etc/network/wifi/general
+
+start() {
+if [ "$MESH_MODE" == "yes" ]; then
+ if [ "$RMODE" == "ADHOC" ]; then
+    echo  "Starting MESH daemon: "
+    if [ "$WLAN_IN_BR0" == "yes" ]; then
+      /sbin/olsrd -f /etc/olsrd.conf -i br0 -d 0
+     else
+      /sbin/olsrd -f /etc/olsrd.conf -i wlan0 eth0 -d 0
+    fi
+     echo "Add iptables rule for mesh daemon"
+     iptables -A INPUT -p udp --dport 698 -j ACCEPT
+   else
+    echo  "Need ADHOC mode for  MESH operation! "
+ fi
+ echo " Ok"
+fi
+}
+
+stop() {
+ echo  "Stopping MESH daemon: "
+  killall olsrd
+  echo "Add iptables rule for mesh daemon"
+  iptables -D INPUT -p udp --dport 698 -j ACCEPT
+ echo " Ok"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        stop)
+            stop
+            ;;
+
+        restart)
+            stop
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start|stop|restart}"
+            exit 1
+esac

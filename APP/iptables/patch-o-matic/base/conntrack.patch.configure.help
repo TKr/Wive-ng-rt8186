@@ -1,0 +1,12 @@
+CONFIG_IP_NF_MATCH_STATE
+conntrack match support
+CONFIG_IP_NF_MATCH_CONNTRACK
+  This is a general conntrack match module, a superset of the state match.
+
+  It allows matching on additional conntrack information, which is
+  useful in complex configurations, such as NAT gateways with multiple
+  internet links or tunnels.
+
+  If you want to compile it as a module, say M here and read
+  Documentation/modules.txt.  If unsure, say `N'.
+

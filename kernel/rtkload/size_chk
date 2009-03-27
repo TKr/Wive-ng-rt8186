@@ -1,0 +1,23 @@
+#!/bin/sh
+MEM_BASE=80000000
+IMG_NAME=$1
+LOAD_START=`echo $2 | cut -b 3-`
+TMP1=`ls -al $IMG_NAME | awk '{printf($5);}'`
+TMP2=`echo "obase=10;ibase=16; $MEM_BASE;" | bc`
+DECOMP_SIZE=`expr $TMP1 + $TMP2`
+DECOMP_SIZE_HEX=`echo "obase=16;ibase=10; $DECOMP_SIZE;" | bc`
+LOAD_START_DEC=`echo "obase=10;ibase=16; $LOAD_START;" | bc`
+
+
+	echo "=============================================="
+	echo "Summary ==>"
+	echo "Image loading  addr          :0x$LOAD_START"
+	echo "Image decompress end addr    :0x$DECOMP_SIZE_HEX"
+if [ $DECOMP_SIZE -gt  $LOAD_START_DEC ]; then
+	echo "Error!!!! : Kernel image decompress will overwirte load image"
+	exit 1
+else
+	AVAILABLE=`expr  $LOAD_START_DEC - $DECOMP_SIZE`
+	AVAILABLE=`echo "obase=16;ibase=10; $AVAILABLE;" | bc`
+	echo "Available size               :0x$AVAILABLE"
+fi

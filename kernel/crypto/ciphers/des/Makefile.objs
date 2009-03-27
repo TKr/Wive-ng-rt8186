@@ -1,0 +1,7 @@
+obj-$(CONFIG_IPSEC_ENC_3DES) += cbc_enc.o
+#obj-$(CONFIG_IPSEC_ENC_3DES) += des_opts.o
+obj-$(CONFIG_IPSEC_ENC_3DES) += ecb_enc.o
+obj-$(CONFIG_IPSEC_ENC_3DES) += des_enc.o
+#obj-$(CONFIG_IPSEC_ENC_3DES) += fcrypt.o
+obj-$(CONFIG_IPSEC_ENC_3DES) += set_key.o
+

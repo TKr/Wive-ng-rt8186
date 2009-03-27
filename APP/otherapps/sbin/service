@@ -1,0 +1,21 @@
+#!/bin/sh
+
+INITDIR="/etc/init.d"
+
+if [ $# -eq 0 ]; then
+   echo "Usage:"
+   echo "      service <type> <args>"
+   exit 1
+fi
+
+if [ "$1" == "list" ];then
+  ls $INITDIR/
+  exit 1;
+fi
+
+if [ -x $INITDIR/$1 ];then
+   $INITDIR/$1 $2
+else
+   echo "No such Service: $1";
+fi
+

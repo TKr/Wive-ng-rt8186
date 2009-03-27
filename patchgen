@@ -1,0 +1,11 @@
+#!/bin/sh
+
+make clean
+
+cd ../
+
+PATCHNAME="/mnt/svalka/linux/wive/wive-current-`date +%H%M-%d%m%Y`.patch"
+
+diff -N -u -r -b Wive-stable-0.2.14 Wive > $PATCHNAME
+
+7za a -r -m0=PPMd -m0mem=1000m -m0o=20 $PATCHNAME.7z $PATCHNAME

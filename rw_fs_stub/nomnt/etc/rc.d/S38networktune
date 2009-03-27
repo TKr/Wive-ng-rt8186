@@ -1,0 +1,42 @@
+#!/bin/sh
+
+start() {
+ echo  "Tune up network interfaces "
+ ifconfig  eth0		txqueuelen 1000
+ ifconfig  eth1		txqueuelen 1000
+ ifconfig  wlan0	txqueuelen 200
+ ifconfig  wlan0-wds0	txqueuelen 1000
+ ifconfig  wlan0-wds1	txqueuelen 1000
+ ifconfig  wlan0-wds2	txqueuelen 1000
+ ifconfig  wlan0-wds3	txqueuelen 1000
+ ifconfig  wlan0-wds4	txqueuelen 1000
+ ifconfig  wlan0-wds5	txqueuelen 1000
+ ifconfig  wlan0-wds6	txqueuelen 1000
+ ifconfig  wlan0-wds7	txqueuelen 1000
+ ifconfig  wlan0-vxd	txqueuelen 1000
+ echo " Ok"
+}
+
+stop() {
+ echo  "Stopping netup "
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

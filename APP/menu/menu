@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#Author: Evgeniy Manachkin <sfstudio@mail.ru>
+#This is software distributed under version 3 of the General Public License
+
+while [ "2" != "1" ] ; do
+    clear
+    cat /version
+    echo "Please report of any bug to sfstudio@mail.ru"
+    echo "	"
+    echo "-=General menu=-"
+    echo "	"
+    echo "1) Boot 2)Interfaces 3)General 4)WPA 5)Stat 6)Scan 7)RSSI 8)ExtendedMenu"
+    echo "9) Change password 10) WiFi reset 11)Save 12)Reboot 13)Quit"
+    echo "	"
+    echo "Enter choice number: "
+    echo "	"
+    read Keypress
+    case "$Keypress" in
+        1 )		vi /etc/boot;;
+        2 )		vi /etc/network/interfaces;;
+        3 )		vi /etc/network/wifi/general;;
+        4 )         	vi /etc/wpa.conf;;
+        5 )		wl sta ; echo "Press enter: " ; read Keypress;;
+        6 )		echo "Scanning please wait" ; wl scan ; sleep 20 ; echo "Scan result:" ; wl scanresults ; echo "Press enter: " ; read Keypress;;
+        7 )		rssi ; echo "Press enter: " ; read Keypress;;
+        8 )		extendedmenu;;
+        9 )		passwd;;
+        10 )		wifireset;;
+        11 )		fs save;;
+        12 )		reboot;;
+        13 )		exit;;
+    esac
+done

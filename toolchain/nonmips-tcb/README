@@ -1,0 +1,76 @@
+nonmips-tcb - a GNU toolchain builder for patent-free MIPS clones
+
+1. Introduction
+
+This is a set of scripts allowing easy compilation of GNU cross-compiler 
+toolchains for MIPS clone CPUs that don't support the patented MIPS 
+instruction subset (such as Realtek's RTL8181 SoC).
+The scripts are a variation of Erik Andersen's toolchain builder from 
+uClibc.org, with a few changes in kernel headers and gcc patches.
+
+For more information about open-source support for patent-free MIPS
+clones, see the project's website at http://nonmips.sourceforge.net
+
+2. Quick start instructions
+
+- Edit the top-level Makefile, change the CROSSTOOLS_HOMEDIR variable 
+if not happy with the default.
+- If building for other CPU than RTL8181, edit the uClibc.config 
+file in the ./sources directory to match your architecture specifics. 
+This step is *not* necessary when building for RTL8181.
+- Type "make" and wait for the process to complete. The scripts will 
+download all necessary sources from the Internet (~40 MiB), build the 
+toolchain and install it in the specified directory. It may take quite 
+a lot of time to complete the entire process, so be patient. 
+- Set your PATH to include $CROSSTOOLS_HOMEDIR/mips-patfree-uclibc/bin 
+(/opt/cross/mips-patfree-uclibc/bin in the default case).
+- Go compile something. :)
+
+3. More information
+
+The enabling bit of the patent-free port is the gcc-patfree patch. 
+This "unofficial" patch disables the generation of patented MIPS 
+instructions, by falling back to less optimal code generation strategies 
+that don't use these instructions.
+A copy of the gcc-patfree patch for gcc-3.3.3 is included in the current 
+distribution, as "gcc-uclibc-3.3-300-patfree.patch" (to comply with the 
+uClibc patch naming convention).
+
+Other modifications from Erik's original toolchain builder include:
+- a set of kernel headers from the RTL8181 Linux project (a patent-free 
+MIPS kernel), possibly modified from the original kernel.org version.
+- better control of installation target directory through the use of a 
+new Makefile variable (CROSSTOOLS_HOMEDIR).
+- a modified uClibc.config file, tailored for the specifics of the 
+RTL8181 project (MIPS1, Big-endian, MMU).
+- the file that you're reading now.
+
+4. What exactly are the files being downloaded?
+
+- GCC sources from gcc.gnu.org
+- BINUTILS from ftp.kernel.org
+- CCACHE from ccache.samba.org
+- Patched Linux kernel headers from the RTL8181 project (rtl8181.sf.net)
+- UCLIBC from www.uClibc.org
+
+See the corresponding .mk files in ./make for details. All files are 
+downloaded to ./sources/dl.
+
+
+Copyright (c) 2002-2004, Erik B. Andersen
+Copyright (c) 2004, Streetdata Pty Ltd
+Website: http://nonmips.sourceforge.net/
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA

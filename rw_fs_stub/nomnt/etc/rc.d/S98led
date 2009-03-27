@@ -1,0 +1,35 @@
+#!/bin/sh
+
+start() {
+ echo "Starting LED: "
+   echo 100,200,100,200,100,200>/proc/leds/led1
+   echo 100,200,100,200,100,200>/proc/leds/led0
+ echo " Ok"
+
+}
+
+stop() {
+ echo "Stopping LED: "
+    echo 0,0,0,0>/proc/leds/led1
+    echo 0,0,0,0>/proc/leds/led0
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

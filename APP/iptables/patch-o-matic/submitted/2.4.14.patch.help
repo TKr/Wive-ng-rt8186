@@ -1,0 +1,14 @@
+Author: Harald Welte <laforge@gnumonks.org> and others.
+Status: Recommended (Already in 2.4.14 and above).
+
+This contains numerous fixes and new features:
+
+1) new IPv6 port of owner match 
+2) fixes for IPv6 limit, mac and multiport matches
+3) new IRC (DCC) connection tracking and NAT support
+4) new SNMP NAT (ALG) support
+5) new TTL match
+6) new length match
+7) new LOG target for IPv6
+8) fix logging of ECN bits in LOG target
+

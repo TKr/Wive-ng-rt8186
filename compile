@@ -1,0 +1,64 @@
+#!/bin/sh
+
+#load build config options
+. config
+
+#debug info to file. 
+if [ "$DEBUG" = "YES" ] ; then
+    echo > rw_fs_stub/etc/debug
+    else
+    rm -f rw_fs_stub/etc/debug
+fi
+
+#for wantusoid`s like. 
+if [ "$DOS2UNIX" = "YES" ] ; then
+    find -type f -exec dos2unix -U -b {} \;
+fi
+
+#remove ccache cache
+if [ "$CLEANCCACHE" = "YES" ] ; then
+    rm -rf toolchain/nonmips-tcb/toolchain_build_mips/ccache-2.4/cache/*
+fi
+
+#rebuild non-mips toolchain 
+if [ "$REBUILDTOOLCHAIN" = "YES" ] ; then
+    cd toolchain/nonmips-tcb
+    make 
+    cd ../../
+    sh toolchain/make_links.sh
+fi
+
+#select kernel config for current mode
+if [ "$BASE_STATION" = "YES" ] ; then
+	cp -f kernel/.config.bs kernel/.config
+    else	
+	cp -f kernel/.config.cl kernel/.config
+fi
+
+#for full rebuild
+if [ "$FULLREBUILD" = "YES" ] ; then
+	make clean
+        rm -f kernel/.config.old
+	echo Full build
+    else
+	cd kernel && make clean && cd ..
+	echo Build only kernel
+fi
+
+
+echo "========================BUILD-TOOLS===================="
+make all -C tools
+
+echo "========================DROP-RAMDISK==================="
+echo > kernel/arch/mips/ramdisk/ramdisk.img
+
+echo "======================BUILD-USERSPACE==================="
+make root
+
+echo "======================BUILD-FULLIMAGE==================="
+make
+
+#remove ccache cache
+if [ "$CLEANCCACHE" = "YES" ] ; then
+    rm -rf toolchain/nonmips-tcb/toolchain_build_mips/ccache-2.4/cache/*
+fi

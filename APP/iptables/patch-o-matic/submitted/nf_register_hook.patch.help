@@ -1,0 +1,6 @@
+Author: Jamal Hadi Selim <drj@cyberus.ca>
+Status: Submitted at 2.4.18-pre9 time
+
+Have nf_register_hook() return an error in case somebody registers the
+same function at the same hook twice.
+

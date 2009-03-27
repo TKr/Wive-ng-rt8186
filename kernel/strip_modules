@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. ../config
+
+files=`find ./modules_install -type f`;
+for i in $files; do
+  echo $i;
+  mips-linux-objcopy --strip-debug --strip-unneeded $i $i
+done

@@ -1,0 +1,10 @@
+Author: The core linux hackers
+Status: Included in kernel 2.4.10
+
+This patch adds a new macro called MODULE_LICENSE to the kernel.
+
+You will need this patch if you have a kernel < 2.4.10 and want to use
+any of the patches of patch-o-matic.
+
+Please say yes, it won't hurt anything :)
+

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+if [ "$START_IGMPPROXY" == "yes" ]; then
+ echo "Starting IGMPPROXY: "
+    echo 1 > /proc/bridge/br_igmpsnoop
+    ip route add $MCASTNET dev $MCASTDEV metric 20
+    /bin/igmpproxy -c /etc/igmpproxy.conf &
+    iptables -t filter -I INPUT -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
+    iptables -t filter -I FORWARD -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
+ echo " Ok"
+fi
+}
+
+stop() {
+ echo "Stopping IGMPPROXY: "
+    killall igmpproxy
+    iptables -t filter -D INPUT -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
+    iptables -t filter -D FORWARD -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
+    ip route del $MCASTNET dev $MCASTDEV metric 20
+    echo 0 > /proc/bridge/br_igmpsnoop
+ echo " Ok"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        stop)
+            stop
+            ;;
+
+        restart)
+            stop
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start|stop|restart}"
+            exit 1
+esac

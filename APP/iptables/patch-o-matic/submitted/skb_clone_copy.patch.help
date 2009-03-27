@@ -1,0 +1,9 @@
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Status: Included in 2.4.18-pre7
+
+There are some problems when a raw socket has a cloned skb of a packet
+where some netfilter code is doing packet payload modification.
+
+In this case, we have to use skb_copy to unshare the skb. This patch
+fixes the problem.
+

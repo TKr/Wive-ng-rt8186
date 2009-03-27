@@ -1,0 +1,18 @@
+--- linux-2.4.18-plain/net/ipv4/netfilter/ipt_REJECT.c.	Mon Feb 25 14:11:19 2002
++++ linux-2.4.17-reject/net/ipv4/netfilter/ipt_REJECT.c	Sat Mar  9 20:16:30 2002
+@@ -237,11 +237,8 @@
+ 	iph->tos=tos;
+ 	iph->tot_len = htons(length);
+ 
+-	/* This abbreviates icmp->send->ip_build_xmit->ip_dont_fragment */
+-	if (!ipv4_config.no_pmtu_disc
+-	    && !(rt->u.dst.mxlock&(1<<RTAX_MTU)))
+-		iph->frag_off = htons(IP_DF);
+-	else iph->frag_off = 0;
++	/* PMTU discovery never applies to ICMP packets. */
++	iph->frag_off = 0;
+ 
+ 	iph->ttl = MAXTTL;
+ 	ip_select_ident(iph, &rt->u.dst, NULL);
+
+

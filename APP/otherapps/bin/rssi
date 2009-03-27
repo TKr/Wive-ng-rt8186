@@ -1,0 +1,50 @@
+#!/bin/sh
+
+BSSID=`cat /proc/wlan0/sta_info|grep hwaddr|cut -d ' ' -f6`
+RSSI=`cat /proc/wlan0/sta_info|grep rssi|cut -d ' ' -f6`
+TXSPEED=`cat /proc/wlan0/sta_info|grep current_tx_rate|cut -d ' ' -f6`
+RXSPEED=`cat /proc/wlan0/sta_info|grep current_rx_rate|cut -d ' ' -f6`
+ERROROFWLAN=`cat /proc/wlan0/sta_info|grep tx_fail|cut -d ' ' -f6`
+    
+echo "--------===RSSSI dump in Db===--------"
+echo -n "BSSID::: "
+for i in $BSSID; do
+   echo -n "$i    "
+done
+echo
+
+echo -n "RSSI:::: "
+for i in $RSSI; do
+   OUT=`expr $i / 2 - 97`
+   echo -n "     $OUT        "
+done
+echo
+
+echo -n "PERC:::: "
+for i in $RSSI; do
+   echo -n "      $i        "
+done
+echo
+
+echo "-----------Current speed--------------"
+
+echo -n "TXSPEED: "
+for i in $TXSPEED; do
+   echo -n "      $i        "
+done
+echo
+
+echo -n "RXSPEED: "
+for i in $RXSPEED; do
+   echo -n "      $i        "
+done
+echo
+
+echo "-----------Errors on wireless---------"
+echo -n "SENDFAIL: "
+for i in $ERROROFWLAN; do
+   echo -n "    $i        "
+done
+echo
+
+echo "______________________________________"

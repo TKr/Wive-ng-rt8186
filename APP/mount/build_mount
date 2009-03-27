@@ -1,0 +1,8 @@
+#!/bin/bash
+CROSS_COMPILER=mips-linux-
+
+CC=$CROSS_COMPILER\gcc;
+OBJCOPY=$CROSS_COMPILER\objcopy;
+rm ./mount.cifs
+$CC -Os ./mount.cifs.c -o ./mount.cifs
+$OBJCOPY --strip-all ./mount.cifs ./mount.cifs

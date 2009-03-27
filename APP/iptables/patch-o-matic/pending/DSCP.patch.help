@@ -1,0 +1,8 @@
+Author: Harald Welte <laforge@gnumonks.org>,
+        Matthew G. Marsh <mgm@paktronix.com>
+Status: Pending for kernel inclusion.
+
+This adds CONFIG_IP_NF_TARGET_DSCP option, which allows setting the
+DSCP (formerly called TOS) field within the packet to any value between 
+0x0 and 0x4f.
+

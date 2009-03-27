@@ -1,0 +1,34 @@
+Author: Marc Boucher <marc+nf@mbsi.ca>
+Status: Works For Me.
+
+This is a general conntrack match module, a superset of the state match.
+(Kernel 2.4.18-pre4 or higher is required)
+
+It allows matching on additional conntrack information, which is
+useful in complex configurations, such as NAT gateways with multiple
+internet links or tunnels.
+
+It presently supports the following options:
+
+
+conntrack match v1.2.4 options:
+ [!] --ctstate [INVALID|ESTABLISHED|NEW|RELATED|SNAT|DNAT][,...]
+                                State(s) to match
+ [!] --ctproto  proto           Protocol to match; by number or name, eg. `tcp'
+     --ctorigsrc  [!] address[/mask]
+                                Original source specification
+     --ctorigdst  [!] address[/mask]
+                                Original destination specification
+     --ctreplsrc  [!] address[/mask]
+                                Reply source specification
+     --ctrepldst  [!] address[/mask]
+                                Reply destination specification
+ [!] --ctstatus [NONE|EXPECTED|SEEN_REPLY|ASSURED][,...]
+                                Status(es) to match
+ [!] --ctexpire  time[:time]    Match remaining lifetime in seconds against
+                                value or range of values (inclusive)
+
+
+The "new" SNAT and DNAT states are virtual ones, matching if the original
+source address is differs from the reply destination, or if the original
+destination differs from the reply source..  

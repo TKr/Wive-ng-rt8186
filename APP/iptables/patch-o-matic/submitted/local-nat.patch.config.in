@@ -1,0 +1,2 @@
+      dep_tristate '    REDIRECT target support' CONFIG_IP_NF_TARGET_REDIRECT $CONFIG_IP_NF_NAT
+      bool '    NAT of local connections' CONFIG_IP_NF_NAT_LOCAL

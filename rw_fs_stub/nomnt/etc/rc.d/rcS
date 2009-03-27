@@ -1,0 +1,44 @@
+#!/bin/sh
+
+. /etc/boot
+
+# Start Loopback network interface (start first fo correct logging boot, sfstudio)
+/sbin/ifconfig lo 127.0.0.1 netmask 255.0.0.0 up
+
+# Start all init scripts in /etc/rc.d
+# executing them in numerical order.
+# and loggin to /var/log/boot.log (sfstudio)
+
+for i in /etc/rc.d/S??* ;do
+     # Ignore dangling symlinks (if any).
+     [ ! -f "$i" ] && continue
+     test ! -x $i && continue
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    # If file /etc/debug exist logout to console instead boot.log
+	    if [ -f /etc/debug ]; then
+		$i start
+	    else
+		($i start 2>&1) >> /var/log/boot.log
+	    fi
+	    ;;
+    esac
+done
+
+#Remove unused modules after AP boot
+if [ "$REMOVE_UNUSED" == "yes" ]; then
+    echo "Remove unused kernel modules"
+    rmmod `lsmod | grep unused | awk {' print $1'}`
+fi
+        
+CURRDATE=`date`
+echo "Start complete at $CURRDATE" >> /var/log/boot.log

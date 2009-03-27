@@ -1,0 +1,75 @@
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/include/linux/netfilter_ipv4/ip_conntrack_protocol.h linuxppc-benh-270202-nfpom/include/linux/netfilter_ipv4/ip_conntrack_protocol.h
+--- linuxppc-benh-270202-plain/include/linux/netfilter_ipv4/ip_conntrack_protocol.h	Tue Feb 26 21:05:05 2002
++++ linuxppc-benh-270202-nfpom/include/linux/netfilter_ipv4/ip_conntrack_protocol.h	Wed Mar  6 14:13:29 2002
+@@ -42,6 +42,9 @@
+ 	int (*new)(struct ip_conntrack *conntrack, struct iphdr *iph,
+ 		   size_t len);
+ 
++	/* Called when a conntrack entry is destroyed */
++	void (*destroy)(struct ip_conntrack *conntrack);
++
+ 	/* Module (if any) which this is connected to. */
+ 	struct module *me;
+ };
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_core.c linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_core.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_core.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_core.c	Wed Mar  6 13:41:22 2002
+@@ -175,12 +175,20 @@
+ destroy_conntrack(struct nf_conntrack *nfct)
+ {
+ 	struct ip_conntrack *ct = (struct ip_conntrack *)nfct;
++	struct ip_conntrack_protocol *proto;
+ 
+ 	IP_NF_ASSERT(atomic_read(&nfct->use) == 0);
+ 	IP_NF_ASSERT(!timer_pending(&ct->timeout));
+ 
+ 	if (ct->master.master)
+ 		nf_conntrack_put(&ct->master);
++
++	/* Let's hope we don't get any weird locking issues here.
++	 * destroy_conntrack MUST NOT be called with a write lock
++	 * to ip_conntrack_lock!!! -HW */
++	proto = find_proto(ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.protonum);
++	if (proto && proto->destroy)
++		proto->destroy(ct);
+ 
+ 	if (ip_conntrack_destroyed)
+ 		ip_conntrack_destroyed(ct);
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_generic.c linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_generic.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_generic.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_generic.c	Wed Mar  6 13:41:22 2002
+@@ -57,5 +57,5 @@
+ struct ip_conntrack_protocol ip_conntrack_generic_protocol
+ = { { NULL, NULL }, 0, "unknown",
+     generic_pkt_to_tuple, generic_invert_tuple, generic_print_tuple,
+-    generic_print_conntrack, established, new, NULL };
++    generic_print_conntrack, established, new, NULL, NULL };
+ 
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_icmp.c linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_icmp.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_icmp.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_icmp.c	Wed Mar  6 13:41:22 2002
+@@ -113,4 +113,4 @@
+ struct ip_conntrack_protocol ip_conntrack_protocol_icmp
+ = { { NULL, NULL }, IPPROTO_ICMP, "icmp",
+     icmp_pkt_to_tuple, icmp_invert_tuple, icmp_print_tuple,
+-    icmp_print_conntrack, icmp_packet, icmp_new, NULL };
++    icmp_print_conntrack, icmp_packet, icmp_new, NULL, NULL };
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_tcp.c linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_tcp.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_tcp.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_tcp.c	Wed Mar  6 13:41:22 2002
+@@ -230,4 +230,4 @@
+ struct ip_conntrack_protocol ip_conntrack_protocol_tcp
+ = { { NULL, NULL }, IPPROTO_TCP, "tcp",
+     tcp_pkt_to_tuple, tcp_invert_tuple, tcp_print_tuple, tcp_print_conntrack,
+-    tcp_packet, tcp_new, NULL };
++    tcp_packet, tcp_new, NULL, NULL };
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_udp.c linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_udp.c
+--- linuxppc-benh-270202-plain/net/ipv4/netfilter/ip_conntrack_proto_udp.c	Tue Feb 26 15:36:23 2002
++++ linuxppc-benh-270202-nfpom/net/ipv4/netfilter/ip_conntrack_proto_udp.c	Wed Mar  6 13:41:22 2002
+@@ -71,4 +71,4 @@
+ struct ip_conntrack_protocol ip_conntrack_protocol_udp
+ = { { NULL, NULL }, IPPROTO_UDP, "udp",
+     udp_pkt_to_tuple, udp_invert_tuple, udp_print_tuple, udp_print_conntrack,
+-    udp_packet, udp_new, NULL };
++    udp_packet, udp_new, NULL, NULL };
+

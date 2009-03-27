@@ -1,0 +1,73 @@
+diff -urN linux-2.4.18-pre4/include/linux/netfilter_ipv4/ipt_owner.h linux-2.4.18-pre4-mb/include/linux/netfilter_ipv4/ipt_owner.h
+--- linux-2.4.18-pre4/include/linux/netfilter_ipv4/ipt_owner.h	Thu Jan  1 01:00:00 1970
++++ linux-2.4.18-pre4-mb/include/linux/netfilter_ipv4/ipt_owner.h	Sat Jan 19 12:21:55 2002
+@@ -6,12 +6,14 @@
+ #define IPT_OWNER_GID	0x02
+ #define IPT_OWNER_PID	0x04
+ #define IPT_OWNER_SID	0x08
++#define IPT_OWNER_COMM	0x10
+ 
+ struct ipt_owner_info {
+     uid_t uid;
+     gid_t gid;
+     pid_t pid;
+     pid_t sid;
++    char comm[16];
+     u_int8_t match, invert;	/* flags */
+ };
+ 
+diff -urN linux-2.4.18-pre4/net/ipv4/netfilter/ipt_owner.c linux-2.4.18-pre4-mb/net/ipv4/netfilter/ipt_owner.c
+--- linux-2.4.18-pre4/net/ipv4/netfilter/ipt_owner.c	Thu Jan  1 01:00:00 1970
++++ linux-2.4.18-pre4-mb/net/ipv4/netfilter/ipt_owner.c	Sat Jan 19 12:21:55 2002
+@@ -12,6 +12,38 @@
+ #include <linux/netfilter_ipv4/ip_tables.h>
+ 
+ static int
++match_comm(const struct sk_buff *skb, const char *comm)
++{
++	struct task_struct *p;
++	struct files_struct *files;
++	int i;
++
++	read_lock(&tasklist_lock);
++	for_each_task(p) {
++		if(strncmp(p->comm, comm, sizeof(p->comm)))
++			continue;
++
++		task_lock(p);
++		files = p->files;
++		if(files) {
++			read_lock(&files->file_lock);
++			for (i=0; i < files->max_fds; i++) {
++				if (fcheck_files(files, i) == skb->sk->socket->file) {
++					read_unlock(&files->file_lock);
++					task_unlock(p);
++					read_unlock(&tasklist_lock);
++					return 1;
++				}
++			}
++			read_unlock(&files->file_lock);
++		}
++		task_unlock(p);
++	}
++	read_unlock(&tasklist_lock);
++	return 0;
++}
++
++static int
+ match_pid(const struct sk_buff *skb, pid_t pid)
+ {
+ 	struct task_struct *p;
+@@ -115,6 +147,12 @@
+ 			return 0;
+ 	}
+ 
++	if(info->match & IPT_OWNER_COMM) {
++		if (!match_comm(skb, info->comm) ^
++		    !!(info->invert & IPT_OWNER_COMM))
++			return 0;
++	}
++
+ 	return 1;
+ }
+ 

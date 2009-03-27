@@ -1,0 +1,26 @@
+diff -uNr linux-2.4.14-pre8/net/ipv4/netfilter/ipt_unclean.c linux-tcprb-fixed/net/ipv4/netfilter/ipt_unclean.c
+--- linux-2.4.14-pre8/net/ipv4/netfilter/ipt_unclean.c	Wed Oct 31 14:38:23 2001
++++ linux-tcprb-fixed/net/ipv4/netfilter/ipt_unclean.c	Sun Nov  4 08:30:58 2001
+@@ -257,6 +257,8 @@
+ #define	TH_PUSH	0x08
+ #define	TH_ACK	0x10
+ #define	TH_URG	0x20
++#define	TH_ECE	0x40
++#define	TH_CWR	0x80
+ 
+ /* TCP-specific checks. */
+ static int
+@@ -328,9 +330,10 @@
+ 	}
+ 
+ 	/* CHECK: TCP flags. */
+-	tcpflags = ((u_int8_t *)tcph)[13];
++	tcpflags = (((u_int8_t *)tcph)[13] & ~(TH_ECE|TH_CWR));
+ 	if (tcpflags != TH_SYN
+ 	    && tcpflags != (TH_SYN|TH_ACK)
++		&& tcpflags != TH_RST
+ 	    && tcpflags != (TH_RST|TH_ACK)
+ 	    && tcpflags != (TH_RST|TH_ACK|TH_PUSH)
+ 	    && tcpflags != (TH_FIN|TH_ACK)
+
+

@@ -1,0 +1,5 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Submitted to the kernel at 2.4.18-
+
+This patch fixes some missed, unexported symbols in ip_nat_standalone.c
+

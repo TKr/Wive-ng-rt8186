@@ -1,0 +1,8 @@
+# cryptoapi/kernel/crypto/ciphers/Config.in
+
+if [ "$CONFIG_CIPHERS" != "n" ]; then
+	comment '128 bit blocksize'
+	dep_tristate ' AES (aka Rijndael) cipher' CONFIG_CIPHER_AES $CONFIG_CIPHERS
+	dep_tristate ' Identity Function cipher' CONFIG_CIPHER_IDENTITY $CONFIG_CIPHERS
+fi
+

@@ -1,0 +1,1 @@
+#define CONFIG_BRIDGE_MODULE 1

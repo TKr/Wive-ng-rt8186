@@ -1,0 +1,13 @@
+# name of tunnel, used to select lines in secrets files
+remotename pptp
+
+# name of tunnel, used to name /var/run pid file
+linkname pptp
+
+#on connect add route to VPN server to route table
+#connect "ip route add `ip route get 10.0.0.254 | head -1`; exit 0"
+
+# domain and username, used to select lines in secrets files
+name pptp
+
+file /etc/ppp/options.pptp

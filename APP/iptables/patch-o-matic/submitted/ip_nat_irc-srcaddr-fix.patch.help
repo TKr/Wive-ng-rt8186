@@ -1,0 +1,8 @@
+Author: Bob Hockney <bhockney@ix.netcom.com>
+Status: Submitted for kernel inclusion
+
+The IRC nat helper module has a small bug where it NAT's the source address
+of a DCC connection to the address of the IRC server instead of the other
+client.  While this doesn't hurt functionality, it is nonetheless a bug and
+it might confuse users who do a netstat on their IRC client machine.
+

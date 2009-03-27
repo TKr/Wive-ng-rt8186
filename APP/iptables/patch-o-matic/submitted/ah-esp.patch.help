@@ -1,0 +1,6 @@
+Author: Yon Uriarte <yon@astaro.de>
+Status: Included in 2.4.18-pre7
+
+This adds CONFIG_IP_NF_MATCH_AH_ESP, which supplies two match
+extensions (`ah' and `esp') allow you to match a range of SPIs inside
+AH or ESP headers of IPSec packets.

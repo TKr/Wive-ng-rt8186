@@ -1,0 +1,7 @@
+filemap.c: In function `generic_file_direct_IO':
+filemap.c:1553: warning: passing arg 2 of pointer to function from incompatible pointer type
+filemap.c: In function `sys_sendfile':
+filemap.c:1745: warning: use of cast expressions as lvalues is deprecated
+filemap.c: In function `generic_file_write':
+filemap.c:3029: warning: use of cast expressions as lvalues is deprecated
+filemap.c:3030: warning: use of cast expressions as lvalues is deprecated

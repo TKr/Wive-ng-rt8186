@@ -1,0 +1,390 @@
+#!/bin/sh
+
+. config
+
+# linked ram disk size in Kbytes
+RAMDISK_SIZE=1024
+# Temporary file system mount point
+MOUNTDIR=./tools/ram
+# System paths
+KERNEL_SOURCE=$WIVEROOT/kernel
+APPIMG_DIR=$KERNEL_SOURCE/arch/mips/ramdisk
+STRIP=$CROSSPATH/bin/mips-linux-strip
+SSTRIP=tools/sstrip/sstrip
+# Destination images path
+IMAGES_PATH=$WIVEROOT/images
+# Files system stubs and pre-creation tree's path
+RO_FS_STUB=$WIVEROOT/ro_fs_stub
+RW_FS_STUB=$WIVEROOT/rw_fs_stub
+RO_ROOT=$WIVEROOT/ro_root
+RW_ROOT=$WIVEROOT/rw_root
+# Applications path
+APP_PATH=$WIVEROOT/APP
+# Tools
+MKSQUASHFS=$WIVEROOT/tools/mksquashfs
+CVIMG=$WIVEROOT/tools/cvimg
+#Temp image
+TEMP_IMG=images/tmpramfs.bin
+#Lib path
+UCLIB_VER=0.9.26
+#UCLIB_PATH=/opt/Wive/toolchain/lexra-nnop-v5
+UCLIB_PATH=/opt/Wive/toolchain/mips-linux-uclibc
+
+
+
+# ------------------------------------------------------------------------- #
+#                       Statring file manipulations
+# ------------------------------------------------------------------------- #
+
+#Generate version file
+if [ "$BASE_STATION" = "YES" ] ; then
+    echo $VERSION > ro_fs_stub/version
+    echo "Base station firmware version" >> ro_fs_stub/version
+    echo "Enter 'menu' for config router" >> ro_fs_stub/version
+    echo "::sysinit:/etc/rc.d/start" > rw_fs_stub/etc/inittab
+    echo "ttyS0::respawn:-/bin/sh" >> rw_fs_stub/etc/inittab
+    else
+    echo $VERSION > ro_fs_stub/version
+    echo "Serial firmware firmware version" >> ro_fs_stub/version
+    echo "::sysinit:/etc/rc.d/start" > rw_fs_stub/etc/inittab
+    echo "ttyS0::off:-/bin/sh" >> rw_fs_stub/etc/inittab
+fi
+
+# Remove all old filesystem
+rm -rf $RO_ROOT/*
+rm -rf $RW_ROOT/*
+
+#create root file systems dirs
+cp -fR $RO_FS_STUB/* $RO_ROOT
+cp -fR $RW_FS_STUB/* $RW_ROOT
+
+# Create devices in /dev. Devices must be created in rw filesystem
+DEVICES="
+         ttyS0,c,4,64     ttyS1,c,4,65
+	 
+	 ptyp0,c,2,0DDD   ptyp1,c,2,1      ptyp2,c,2,2      ptyp3,c,2,3      ptyp4,c,2,4
+	 ptyp5,c,2,5      ptyp6,c,2,6      ptyp7,c,2,7      ptyp8,c,2,8      ptyp9,c,2,9
+	 ptyp10,c,2,10    ptyp11,c,2,11    ptyp12,c,2,12    ptyp13,c,2,13    ptyp14,c,2,14
+	 ptyp15,c,2,15    ptyp16,c,2,16 
+	    
+         ttyp0,c,3,0      ttyp1,c,3,1      ttyp2,c,3,2      ttyp3,c,3,3      ttyp4,c,3,4
+         ttyp5,c,3,5      ttyp6,c,3,6      ttyp7,c,3,7      ttyp8,c,3,8      ttyp9,c,3,9
+         ttyp10,c,3,10    ttyp11,c,3,11    ttyp12,c,3,12    ttyp13,c,3,13    ttyp14,c,4,14
+         ttyp15,c,3,15    ttyp16,c,3,16
+         
+         console,c,4,64   null,c,1,3       ppp,c,108,0      wl_chr0,c,13,0   wl_chr1,c,13,1  
+         mtd,b,31,0       mtd1,b,31,1      mtd2,b,31,2      mtd3,b,31,3
+         urandom,c,1,9    ram0,b,1,0       ram1,b,1,1	    tty,c,5,0	     
+         mmc/disc0/disc,b,121,0"
+
+for dev in $DEVICES; do
+	name=`echo $dev |cut -d"," -f1`
+	type=`echo $dev |cut -d"," -f2 `
+	major=`echo $dev |cut -d"," -f3 `
+	minor=`echo $dev |cut -d"," -f4 `
+	mknod -m666 $RW_ROOT/dev/$name $type $major $minor
+done
+
+# ------------------------------------------------------------------------- #
+#                       Application & libraries
+# ------------------------------------------------------------------------- #
+echo "Add application to image ..."
+# busybox
+echo -n " BusyBox "
+cp -R -p $APP_PATH/busybox/filesystem/* $RO_ROOT/
+
+# Bridge utilites
+echo -n " Bridge "
+cp -R $APP_PATH/bridge-utils/filesystem/* $RO_ROOT
+
+#iptables
+echo -n " Iptables "
+rm -f $APP_PATH/iptables/filesystem/sbin/ip6tables
+$STRIP $APP_PATH/iptables/filesystem/sbin/*
+cp $APP_PATH/iptables/filesystem/sbin/iptables $RO_ROOT/sbin
+
+#WL
+echo -n " WLscan "
+cp $APP_PATH/wl/filesystem/bin/wl $RO_ROOT/bin
+
+#arg
+echo -n " arg "
+cp $APP_PATH/arg/filesystem/bin/arg $RO_ROOT/bin
+
+#ader
+echo -n " ader "
+cp $APP_PATH/ader/filesystem/bin/ader $RO_ROOT/bin
+
+# wireless LAN configure tool
+echo -n " WLAN "
+$STRIP $APP_PATH/wireless_tools/filesystem/lib/*
+cp -d $APP_PATH/wireless_tools/filesystem/sbin/iwpriv   $RO_ROOT/sbin
+cp -d $APP_PATH/wireless_tools/filesystem/lib/libiw.so.25 $RO_ROOT/lib/libiw.so
+
+# dropbear
+if [ "$INCLUDE_DROPBEAR" = "YES" ] ; then
+  echo -n " dropbear "
+  cp -R $APP_PATH/dropbear/filesystem/sbin/* $RO_ROOT/sbin
+  cp -R $APP_PATH/dropbear/filesystem/bin/dropbearkey $RO_ROOT/bin/dropbearkey
+fi
+
+#ntpclient
+if [ "$INCLUDE_NTP_CLIENT" = "YES" ] ; then
+  echo -n " ntp_client "
+  cp -R $APP_PATH/ntpclient/filesystem/bin/* $RO_ROOT/bin
+fi
+
+#---------------------------PPPD AND VPN--------------------------------------------
+#pppd
+if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then
+  echo -n " pppd "
+  $STRIP /opt/Wive/APP/ppp/filesystem/lib/pppd/2.4.5/*
+  cp -R $APP_PATH/ppp/filesystem/sbin/pppd $RO_ROOT/sbin/pppd
+fi
+#PPPOE 
+if [ "$INCLUDE_PPPOE" = "YES" ] ; then
+  echo -n " PPPOE "
+  #usermode
+  cp -R $APP_PATH/rp-pppoe/filesystem/sbin/pppoe $RO_ROOT/sbin/pppoe
+  cp -R $APP_PATH/rp-pppoe/filesystem/sbin/pppoe-relay $RO_ROOT/sbin/pppoe-relay
+  cp -R $APP_PATH/ppp/filesystem/sbin/pppoe-discovery $RO_ROOT/sbin/pppoe-discovery
+  #plugins
+  #cp -R $APP_PATH/rp-pppoe/rp-pppoe.so $RO_ROOT/lib/rp-pppoe.so
+  cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/rp-pppoe.so $RO_ROOT/lib/rp-pppoe.so
+fi
+#l2tp-client
+if [ "$INCLUDE_L2TP_CLIENT" = "YES" ] ; then
+  echo -n " l2tp "
+  cp -R $APP_PATH/l2tpd/filesystem/sbin/xl2tpd $RO_ROOT/sbin/xl2tpd
+  #for kernel mode
+  cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/pppol2tp.so $RO_ROOT/lib/pppol2tp.so
+  cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/openl2tp.so $RO_ROOT/lib/openl2tp.so
+fi
+#pptp-client
+if [ "$INCLUDE_PPTP_CLIENT" = "YES" ] ; then
+  echo -n " pptp "
+  cp -R $APP_PATH/pptp/filesystem/usr/sbin/pptp $RO_ROOT/sbin/pptp
+fi
+
+#kernel-pptp-client
+if [ "$INCLUDE_KERNEL_PPTP" = "YES" ] ; then
+  echo -n " kernel-pptp "
+  cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/pptp.so $RO_ROOT/lib/pptp.so
+  cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/libpptp.so $RO_ROOT/lib/libpptp.so
+fi
+
+#--------------------------END VPN-----------------------------------------------------
+
+#igmpproxy
+if [ "$INCLUDE_IGMPPROXY" = "YES" ] ; then
+  echo -n " igmpproxy "
+  cp -R $APP_PATH/igmpproxy/filesystem/bin $RO_ROOT/bin/igmpproxy
+fi
+
+#TC shape
+if [ "$INCLUDE_TC" = "YES" ] ; then
+  echo -n " TC "
+  cp -R $APP_PATH/iproute2/tc/tc $RO_ROOT/bin/tc
+fi
+
+#iwcontrol daemon
+if [ "$INCLUDE_CONTROL" = "YES" ] ; then
+  echo -n " IW control "
+  cp -R $APP_PATH/non-sources/iwcontrol $RO_ROOT/bin/iwcontrol
+fi
+
+#iapp roaming daemon
+if [ "$INCLUDE_IAPP" = "YES" ] ; then
+  echo -n " IAPP daemon "
+  cp -R $APP_PATH/non-sources/iapp $RO_ROOT/bin/iapp
+fi
+
+#WPA auth daemon 
+if [ "$INCLUDE_AUTH" = "YES" ] ; then
+  echo -n " WPA AUTH "
+  cp -R $APP_PATH/non-sources/auth $RO_ROOT/bin/auth
+fi
+
+#HDC util
+if [ "$INCLUDE_HDC" = "YES" ] ; then
+  echo -n " HDC "
+  cp -R $APP_PATH/non-sources/hdc $RO_ROOT/bin/hdc
+fi
+
+#WPS daemon & upnp 
+if [ "$INCLUDE_WPS" = "YES" ] ; then
+  echo -n " TC "
+  cp -R $APP_PATH/non-sources/wscd $RO_ROOT/bin/wscd
+  cp -R $APP_PATH/non-sources/mini_upnp.so $RO_ROOT/lib/mini_upnp.so
+fi
+
+#CIFS-Mount 
+if [ "$INCLUDE_CIFS" = "YES" ] ; then
+  echo -n " MOUNT CIFS "
+  cp -R $APP_PATH/mount/mount.cifs $RO_ROOT/bin/mount.cifs
+fi
+
+#DNSMASQ
+if [ "$INCLUDE_DNS" = "YES" ] ; then
+  echo -n " DMSMASQ "
+  cp -R $APP_PATH/dnsmasq/filesystem/sbin/dnsmasq $RO_ROOT/sbin/dnsmasq
+fi
+
+#LWINS
+if [ "$INCLUDE_WINS" = "YES" ] ; then
+  echo -n " LWINS "
+  cp -R $APP_PATH/lwins/lwins $RO_ROOT/sbin/lwins
+fi
+
+#OLSR
+if [ "$INCLUDE_OLSR" = "YES" ] ; then
+  echo -n " OLSR MESH "
+  cp -R $APP_PATH/mesh/filesystem/usr/sbin/olsrd $RO_ROOT/sbin/olsrd
+fi
+
+#MII-TOOL
+if [ "$INCLUDE_MII" = "YES" ] ; then
+  echo -n " MII-TOOL "
+  cp -R $APP_PATH/mii-tool/filesystem/sbin/mii-tool $RO_ROOT/sbin/mii-tool
+fi
+
+#ETHTOOL
+if [ "$INCLUDE_ETHTOOL" = "YES" ] ; then
+  echo -n " MII-TOOL "
+  cp -R $APP_PATH/ethtool/filesystem/sbin/ethtool $RO_ROOT/sbin/ethtool
+fi
+
+#menu
+if [ "$INCLUDE_MENU" = "YES" ] ; then
+  echo -n "menu "
+  cp -R $APP_PATH/menu/* $RO_ROOT/bin
+fi
+
+# Other applications (to rw filesystem)
+echo -n " Other applications "
+cp -R $APP_PATH/otherapps/* $RO_ROOT
+
+#kernel modules
+if [ "$MODULES_ENABLED" = "YES" ] ; then
+  echo -n " kernel_modules "
+  cp -Rf $KERNEL_SOURCE/modules_install/* $RO_ROOT/lib/modules
+fi
+
+echo Strip binary files
+NON_STRIPS_BIN=`find $RO_ROOT/bin -type f -print -exec file {} \; | grep "not stripped" | grep -v "modules" | cut -d":" -f1`
+NON_STRIPS_SBIN=`find $RO_ROOT/sbin -type f -print -exec file {} \; | grep "not stripped" | grep -v "modules" | cut -d":" -f1`
+NON_STRIPS_LIB=`find $RO_ROOT/lib -type f -print -exec file {} \; | grep "not stripped" | grep -v "modules" | cut -d":" -f1`
+NON_STRIPS_MODULES=`find $RO_ROOT/lib -type f -print -exec file {} \; | grep "not stripped" | grep "modules" | cut -d":" -f1`
+if [ "$NON_STRIPS_BIN" != "" ]; then 
+  echo BIN: $NON_STRIPS_BIN 
+  $STRIP $NON_STRIPS_BIN
+  $SSTRIP $NON_STRIPS_BIN
+fi
+if [ "$NON_STRIPS_SBIN" != "" ]; then
+  echo SBIN: $NON_STRIPS_SBIN 
+  $STRIP $NON_STRIPS_SBIN
+  $SSTRIP $NON_STRIPS_SBIN
+fi
+if [ "$NON_STRIPS_LIB" != "" ]; then
+  echo LIB: $NON_STRIPS_LIB
+  $STRIP $NON_STRIPS_LIB
+  $SSTRIP $NON_STRIPS_LIB
+fi
+for i in $NON_STRIPS_MODULES; do
+  echo $i;
+  mips-linux-objcopy --strip-debug --strip-unneeded $i $i
+done
+    
+#restore non-stripped
+cp -fR $RO_FS_STUB/* $RO_ROOT
+
+
+SAVE_PATH=$PWD
+
+cd $RO_ROOT/lib
+
+#Need for 2 or more base apps
+cp $UCLIB_PATH/lib/libuClibc-$UCLIB_VER.so $RO_ROOT/lib/libc.so.0
+cp $UCLIB_PATH/lib/ld-uClibc-$UCLIB_VER.so $RO_ROOT/lib/ld-uClibc.so.0
+cp $UCLIB_PATH/lib/libdl-$UCLIB_VER.so $RO_ROOT/lib/libdl.so.0
+
+#Need for OLSR
+if [ "$INCLUDE_OLSR" = "YES" ] ; then
+    cp $UCLIB_PATH/lib/libpthread-$UCLIB_VER.so $RO_ROOT/lib/libpthread.so.0
+fi
+
+#Need for pppd
+if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then
+    cp $UCLIB_PATH/lib/libcrypt-$UCLIB_VER.so $RO_ROOT/lib/libcrypt.so.0
+fi
+
+#Needed for tc
+if [ "$INCLUDE_TC" = "YES" ] ; then
+    cp $UCLIB_PATH/lib/libm-$UCLIB_VER.so $RO_ROOT/lib/libm.so.0
+    cp $UCLIB_PATH/lib/libresolv-$UCLIB_VER.so $RO_ROOT/lib/libresolv.so.0
+fi
+
+#Needed for pptp
+if [ "$INCLUDE_PPTP_CLIENT" = "YES" ] ; then
+    cp $UCLIB_PATH/lib/libutil-$UCLIB_VER.so $RO_ROOT/lib/libutil.so.0
+fi
+
+##Making timestamp
+ts=`date -R`
+echo "Timestamp on RO_fs: $ts"
+echo "$ts">>$RO_ROOT/version
+cd $SAVE_PATH
+echo "Ok! "
+sync;sync;sync;
+
+echo Strip rootfs file , but not strip shared library
+NON_STRIPS=`find $RW_ROOT -type f -print -exec file {} \; | grep "not stripped" | grep -v "\.so" | cut -d":" -f1`
+if [ "$NON_STRIPS" != "" ]; then
+  $STRIP $NON_STRIPS
+fi
+
+echo "********************* RW filesystem *********************"
+rm -f ./ramdisk.gz ./ramdisk
+echo "==>Making ramdisk size $RAMDISK_SIZE KBytes"
+ROOTSIZE=`du -s $RW_ROOT | cut -f1`
+if [ $ROOTSIZE -gt $RAMDISK_SIZE ];then
+  echo "Error! :Your rootfs size $ROOTSIZE KBytes over ramdisk size"
+  exit 1
+else
+  dd if=/dev/zero of=$TEMP_IMG bs=1k count=$RAMDISK_SIZE >>/dev/null
+  mke2fs -F -i 1024 $TEMP_IMG $RAMDISK_SIZE >>/dev/null|| exit
+  mount -t ext2 -o loop $TEMP_IMG $MOUNTDIR || exit
+  cp -fR $RW_ROOT/* $MOUNTDIR
+  rm -rf $MOUNTDIR/lost+found
+  umount $MOUNTDIR
+  gzip -9v -f $TEMP_IMG
+  cp -fv "$TEMP_IMG".gz $APPIMG_DIR/ramdisk.img
+  rm -f "$TEMP_IMG".*
+  echo Create OK
+  # show ramdisk size
+  AVAIL_SIZE=`expr $RAMDISK_SIZE - $ROOTSIZE`
+  echo "==============================================="
+  echo "Summary:"
+  echo "==>Total size     = $RAMDISK_SIZE	KBytes"
+  echo "==>Ramdisk size   = $ROOTSIZE	KBytes"
+  echo "==>Available size = $AVAIL_SIZE	KBytes"
+  echo "==============================================="
+fi
+
+echo "********************* RO filesystem *********************"
+echo "============Create Squashfs====================="
+rm -rf ./images/root.bin
+$MKSQUASHFS $RO_ROOT squashfs.o -be -all-root -2.0 >>/dev/null
+$CVIMG root squashfs.o $IMAGES_PATH/root.bin 100000 100000
+IMGSIZE=`du -s squashfs.o |  cut -f1`
+rm -rf squashfs.o
+ROOTSIZE=`du -s $RO_ROOT | cut -f1`
+echo "==============================================="
+echo "Summary:"
+echo "==>Squashfs disk size  = $ROOTSIZE KBytes"
+echo "==>Squashfs image size = $IMGSIZE	 KBytes"
+echo "==============================================="
+
+echo Remove temp compile files
+rm -rf rw_root/*
+rm -rf ro_root/*

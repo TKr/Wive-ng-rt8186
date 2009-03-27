@@ -1,0 +1,12 @@
+This is a patch needed to queue IPv6 packets via
+NETLINK to user space with the QUEUE target.
+
+(C) Fernando Anton 2001
+IPv64 Project - Work based in IPv64 draft by Arturo Azcorra.
+Universidad Carlos III de Madrid
+Universidad Politecnica de Alcala de Henares
+email: fanton@it.uc3m.es
+
+Status: experimental, pending
+
+

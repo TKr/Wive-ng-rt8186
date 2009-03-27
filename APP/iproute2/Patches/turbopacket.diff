@@ -1,0 +1,542 @@
+--- ../v224/linux/include/linux/if_packet.h	Fri Aug 28 06:33:08 1998
++++ linux/include/linux/if_packet.h	Wed Mar 17 18:55:19 1999
+@@ -34,6 +34,45 @@
+ 
+ #define PACKET_ADD_MEMBERSHIP		1
+ #define PACKET_DROP_MEMBERSHIP		2
++#define PACKET_RECV_OUTPUT		3
++#define PACKET_TRECV			4
++#define PACKET_TSEND			5
++#define PACKET_STATISTICS		6
++
++struct tpacket_stats
++{
++	unsigned int	tp_packets;
++	unsigned int	tp_drops;
++};
++
++struct tpacket_hdr
++{
++	unsigned long	tp_status;
++	unsigned int	tp_len;
++	unsigned int	tp_snaplen;
++	unsigned short	tp_mac;
++	unsigned short	tp_net;
++	unsigned int	tp_sec;
++	unsigned int	tp_usec;
++};
++
++#define TPACKET_ALIGNMENT	16
++#define TPACKET_ALIGN(x)	(((x)+TPACKET_ALIGNMENT-1)&~(TPACKET_ALIGNMENT-1))
++#define TPACKET_HDRLEN		(TPACKET_ALIGN(sizeof(struct tpacket_hdr)) + sizeof(struct sockaddr_ll))
++
++/*
++   Frame structure:
++
++   - Start. Frame must be aligned to TPACKET_ALIGNMENT=16
++   - struct tpacket_hdr
++   - pad to TPACKET_ALIGNMENT=16
++   - struct sockaddr_ll
++   - Gap, chosen so that packet data (Start+tp_net) alignes to TPACKET_ALIGNMENT=16
++   - Start+tp_mac: [ Optional MAC header ]
++   - Start+tp_net: Packet data, aligned to TPACKET_ALIGNMENT=16.
++   - Pad to align to TPACKET_ALIGNMENT=16
++   - int reference count (used only by PACKET_TSEND)
++ */
+ 
+ struct packet_mreq
+ {
+--- ../v224/linux/net/packet/af_packet.c	Sun Mar 21 18:22:00 1999
++++ linux/net/packet/af_packet.c	Thu Mar 25 22:45:14 1999
+@@ -1,3 +1,4 @@
++#define CONFIG_PACKET_TURBO
+ /*
+  * INET		An implementation of the TCP/IP protocol suite for the LINUX
+  *		operating system.  INET is implemented using the  BSD Socket
+@@ -63,6 +64,8 @@
+ #include <asm/uaccess.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/poll.h>
++#include <asm/pgtable.h>
+ 
+ #ifdef CONFIG_INET
+ #include <net/inet_common.h>
+@@ -184,11 +187,23 @@
+ 	struct packet_type	prot_hook;
+ 	char			running;	/* prot_hook is attached*/
+ 	int			ifindex;	/* bound device		*/
++#ifdef CONFIG_PACKET_TURBO
++	struct iovec		*iovec;
++	struct iovec		*s_iovec;
++	unsigned int		iovmax;
++	unsigned int		s_iovmax;
++	struct tpacket_stats	stats;
++	unsigned int		head;
++#endif
+ #ifdef CONFIG_PACKET_MULTICAST
+ 	struct packet_mclist	*mclist;
+ #endif
+ };
+ 
++#ifdef CONFIG_PACKET_TURBO
++static void tpacket_release_iov(struct iovec *iov, int iovsize);
++#endif
++
+ extern struct proto_ops packet_ops;
+ 
+ #ifdef CONFIG_SOCK_PACKET
+@@ -363,6 +378,90 @@
+ }
+ #endif
+ 
++#ifdef CONFIG_PACKET_TURBO
++static int tpacket_rcv(struct sk_buff *skb, struct device *dev,  struct packet_type *pt)
++{
++	struct sock *sk;
++	struct packet_opt *po;
++	struct sockaddr_ll *sll;
++	struct tpacket_hdr *h;
++	unsigned snaplen;
++
++	if (skb->pkt_type == PACKET_LOOPBACK)
++		goto drop;
++
++	sk = (struct sock *) pt->data;
++	po = sk->protinfo.af_packet;
++
++	if (dev->hard_header) {
++		if (sk->type != SOCK_DGRAM)
++			skb_push(skb, skb->data - skb->mac.raw);
++		else if (skb->pkt_type == PACKET_OUTGOING) {
++			/* Special case: outgoing packets have ll header at head */
++			skb_pull(skb, skb->nh.raw - skb->data);
++		}
++	}
++
++	snaplen = skb->len;
++	if (sk->filter) {
++		unsigned res = sk_run_filter(skb, sk->filter->insns, sk->filter->len);
++		if (res == 0)
++			goto drop;
++		if (snaplen > res)
++			snaplen = res;
++	}
++
++	po->stats.tp_packets++;
++	h = (struct tpacket_hdr*)po->iovec[po->head].iov_base;
++
++	if (test_bit(0, &h->tp_status)) {
++		po->stats.tp_drops++;
++		sk->data_ready(sk, 0);
++		goto drop;
++	}
++
++	if (sk->type == SOCK_DGRAM) {
++		h->tp_mac = h->tp_net = TPACKET_ALIGN(TPACKET_HDRLEN) + 16;
++	} else {
++		unsigned maclen = skb->nh.raw - skb->data;
++		h->tp_net = TPACKET_ALIGN(TPACKET_HDRLEN + (maclen < 16 ? 16 : maclen));
++		h->tp_mac = h->tp_net - maclen;
++	}
++
++	if (h->tp_mac + snaplen > po->iovec[po->head].iov_len) {
++		snaplen = po->iovec[po->head].iov_len - h->tp_mac;
++		if ((int)snaplen < 0)
++			snaplen = 0;
++	}
++
++	memcpy((u8*)h + h->tp_mac, skb->data, snaplen);
++
++	h->tp_sec = skb->stamp.tv_sec;
++	h->tp_usec = skb->stamp.tv_usec;
++	h->tp_len = skb->len;
++	h->tp_snaplen = snaplen;
++
++	sll = (struct sockaddr_ll*)((u8*)h + TPACKET_ALIGN(sizeof(*h)));
++	sll->sll_halen = 0;
++	if (dev->hard_header_parse)
++		sll->sll_halen = dev->hard_header_parse(skb, sll->sll_addr);
++	sll->sll_family = AF_PACKET;
++	sll->sll_hatype = dev->type;
++	sll->sll_protocol = skb->protocol;
++	sll->sll_pkttype = skb->pkt_type;
++	sll->sll_ifindex = dev->ifindex;
++
++	po->head = po->head != po->iovmax ? po->head+1 : 0;
++	set_bit(0, &h->tp_status);
++	sk->data_ready(sk, 0);
++
++drop:
++        kfree_skb(skb);
++	return 0;
++}
++
++#endif
++
+ static int packet_rcv(struct sk_buff *skb, struct device *dev,  struct packet_type *pt)
+ {
+ 	struct sock *sk;
+@@ -408,6 +507,31 @@
+ 		}
+ 	}
+ 
++#ifdef CONFIG_PACKET_TURBO
++	if (sk->filter) {
++		unsigned res = sk_run_filter(skb, sk->filter->insns, sk->filter->len);
++		if (res == 0)
++			goto drop;
++		if (skb->len > res)
++			skb_trim(skb, res);
++	}
++
++	sk->protinfo.af_packet->stats.tp_packets++;
++
++	if (atomic_read(&sk->rmem_alloc) + skb->truesize >= (unsigned)sk->rcvbuf)
++		goto drop_acct;
++
++	skb_set_owner_r(skb, sk);
++	skb_queue_tail(&sk->receive_queue, skb);
++	sk->data_ready(sk,skb->len);
++	return 0;
++
++drop_acct:
++	sk->protinfo.af_packet->stats.tp_drops++;
++drop:
++	kfree_skb(skb);
++	return 0;
++#else
+ 	/*
+ 	 *	Charge the memory to the socket. This is done specifically
+ 	 *	to prevent sockets using all the memory up.
+@@ -419,6 +543,7 @@
+ 		return 0;
+ 	}
+ 	return(0);
++#endif
+ }
+ 
+ static int packet_sendmsg(struct socket *sock, struct msghdr *msg, int len,
+@@ -560,6 +685,13 @@
+ 	packet_flush_mclist(sk);
+ #endif
+ 
++#ifdef CONFIG_PACKET_TURBO
++	if (sk->protinfo.af_packet->iovec)
++		tpacket_release_iov(sk->protinfo.af_packet->iovec, sk->protinfo.af_packet->iovmax);
++	if (sk->protinfo.af_packet->s_iovec)
++		tpacket_release_iov(sk->protinfo.af_packet->s_iovec, sk->protinfo.af_packet->s_iovmax);
++#endif
++
+ 	/*
+ 	 *	Now the socket is dead. No more input will appear.
+ 	 */
+@@ -888,6 +1020,164 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PACKET_TURBO
++
++/* These two functions are very suspicious, if not worse 8)
++   But this way allows to make API much simpler.
++ */
++
++#define VM_FL_MASK	(VM_MAYREAD|VM_MAYWRITE|VM_LOCKED|VM_SHARED|VM_MAYSHARE)
++#define VM_FL		(VM_MAYREAD|VM_MAYWRITE|VM_LOCKED)
++
++
++static void *
++tpacket_frame_get(unsigned long addr)
++{
++	struct vm_area_struct * vma;
++	pgd_t * pgdir;
++	pmd_t * pgmiddle;
++	pte_t * pgtable;
++	unsigned long page;
++	mem_map_t * map;
++
++	down(&current->mm->mmap_sem);
++
++restart:
++	vma = find_vma(current->mm, addr);
++	if (!vma)
++		 goto bad;
++	if ((vma->vm_flags&VM_FL_MASK) != VM_FL)
++		goto bad;
++	pgdir = pgd_offset(vma->vm_mm, addr);
++	if (pgd_none(*pgdir) || pgd_bad(*pgdir))
++		goto bad;
++	pgmiddle = pmd_offset(pgdir, addr);
++	if (pmd_none(*pgmiddle) || pmd_bad(*pgmiddle))
++		goto bad;
++	pgtable = pte_offset(pgmiddle, addr);
++	if (!pte_present(*pgtable))
++		goto bad;
++	if (!pte_write(*pgtable)) {
++		printk("WP page\n");
++		handle_mm_fault(current, vma, addr, 1);
++		goto restart;
++	}
++	page = pte_page(*pgtable);
++	if (MAP_NR(page) >= max_mapnr)
++		goto bad;
++	map = mem_map + MAP_NR(page);
++	if (PageReserved(map))
++		goto bad;
++	if (atomic_read(&map->count) == 0)
++		goto bad;
++
++	/* Grab the page to prevent random corruption in the case, when user
++	   releases locked area by mistake.
++	 */
++	atomic_inc(&map->count);
++
++	up(&current->mm->mmap_sem);
++	return (void*)(page + (addr&~PAGE_MASK));
++
++
++bad:
++	up(&current->mm->mmap_sem);
++	return 0;
++}
++
++static void tpacket_frame_release(unsigned long addr)
++{
++	unsigned long page;
++	mem_map_t * map;
++
++	page = addr & PAGE_MASK;
++
++	/* PARANOIA: it is not necessary, free_pages checks it */
++
++	if (MAP_NR(page) >= max_mapnr)
++		goto bad;
++	map = mem_map + MAP_NR(page);
++	if (PageReserved(map))
++		goto bad;
++	if (atomic_read(&map->count) <= 0)
++		goto bad;
++
++	free_pages(page, 0);
++	return;
++
++bad:
++	printk("tpacket: problem freeing frame buffer\n");
++}
++
++static void tpacket_release_iov(struct iovec *iov, int iovsize)
++{
++	int i;
++
++	for (i=0; i<=iovsize; i++)
++		tpacket_frame_release((unsigned long)iov[i].iov_base);
++}
++
++
++int packet_set_tiovec(struct sock *sk, char *optval, int optlen, int dir)
++{
++	int err = -EINVAL;
++	struct iovec *iov = NULL;
++	struct packet_opt *po = sk->protinfo.af_packet;
++	unsigned ct = optlen/sizeof(struct iovec);
++	int iovsize = -1;
++
++	if (ct*sizeof(struct iovec) != optlen)
++		goto done;
++
++	if (ct) {
++		int i;
++
++		iov = kmalloc(optlen, GFP_KERNEL);
++		if (!iov)
++			return -ENOMEM;
++		err = -EFAULT;
++		if (copy_from_user(iov, optval, optlen))
++			goto done;
++		for (i=0; i<ct; i++) {
++			unsigned long addr = (unsigned long)iov[i].iov_base;
++			unsigned len = iov[i].iov_len;
++			err = -EINVAL;
++			if (len < TPACKET_HDRLEN)
++				goto done;
++			if ((addr&PAGE_MASK) != ((addr+len-1)&PAGE_MASK))
++				goto done;
++			if ((iov[i].iov_base = tpacket_frame_get(addr)) == NULL)
++				goto done;
++			iovsize = i;
++		}
++	}
++	start_bh_atomic();
++	if (dir == PACKET_TRECV) {
++		iov = xchg(&po->iovec, iov);
++		if (iov)
++			iovsize = po->iovmax;
++		po->iovmax = ct-1;
++		memset(&po->stats, 0, sizeof(po->stats));
++		po->prot_hook.func = ct ? tpacket_rcv : packet_rcv;
++		skb_queue_purge(&sk->receive_queue);
++	} else {
++		iov = xchg(&po->s_iovec, iov);
++		if (iov)
++			iovsize = po->iovmax;
++		po->s_iovmax = ct-1;
++	}
++	end_bh_atomic();
++
++	err = 0;
++
++done:
++	if (iov)
++		tpacket_release_iov(iov, iovsize);
++	return err;
++}
++#endif
++
++
+ #ifdef CONFIG_PACKET_MULTICAST
+ static void packet_dev_mc(struct device *dev, struct packet_mclist *i, int what)
+ {
+@@ -1000,17 +1290,20 @@
+ 		kfree_s(ml, sizeof(*ml));
+ 	}
+ }
++#endif
+ 
++#if defined (CONFIG_PACKET_MULTICAST) || defined(CONFIG_PACKET_TURBO)
+ static int
+ packet_setsockopt(struct socket *sock, int level, int optname, char *optval, int optlen)
+ {
+ 	struct sock *sk = sock->sk;
+-	struct packet_mreq mreq;
+ 
+ 	if (level != SOL_PACKET)
+ 		return -ENOPROTOOPT;
+ 	
+ 	switch(optname)	{
++#ifdef CONFIG_PACKET_MULTICAST
++		struct packet_mreq mreq;
+ 	case PACKET_ADD_MEMBERSHIP:	
+ 	case PACKET_DROP_MEMBERSHIP:
+ 			
+@@ -1022,12 +1315,70 @@
+ 			return packet_mc_add(sk, &mreq);
+ 		else
+ 			return packet_mc_drop(sk, &mreq);
++#endif
++#ifdef CONFIG_PACKET_TURBO
++	case PACKET_TRECV:
++	case PACKET_TSEND:
++		return packet_set_tiovec(sk, optval, optlen, optname);
++#endif
+ 	default:	
+ 		return -ENOPROTOOPT;
+ 	}
+ }
+ #endif
+ 
++#ifdef CONFIG_PACKET_TURBO
++int packet_getsockopt(struct socket *sock, int level, int optname,
++		      char *optval, int *optlen)
++{
++	int len;
++	struct sock *sk = sock->sk;
++
++	if (level != SOL_PACKET)
++		return -ENOPROTOOPT;
++
++  	if (get_user(len,optlen))
++  		return -EFAULT;
++
++	switch(optname)	{
++#ifdef CONFIG_PACKET_TURBO
++		unsigned iovlen;
++		struct iovec *iov;
++	case PACKET_STATISTICS:
++		if (len > sizeof(struct tpacket_stats))
++			len = sizeof(struct tpacket_stats);
++		if (copy_to_user(optval, &sk->protinfo.af_packet->stats, len))
++			return -EFAULT;
++		break;
++	case PACKET_TRECV:
++	case PACKET_TSEND:
++		if (optname == PACKET_TRECV) {
++			iov = sk->protinfo.af_packet->iovec;
++			iovlen = sk->protinfo.af_packet->iovmax+1;
++		} else {
++			iov = sk->protinfo.af_packet->s_iovec;
++			iovlen = sk->protinfo.af_packet->s_iovmax+1;
++		}
++		if (iov == NULL)
++			return -EINVAL;
++		if (len < sizeof(struct iovec)*iovlen)
++			return -EINVAL;
++		len = sizeof(struct iovec)*iovlen;
++		if (copy_to_user(optval, iov, len))
++			return -EFAULT;
++		break;
++#endif
++	default:	
++		return -ENOPROTOOPT;
++	}
++
++  	if (put_user(len, optlen))
++  		return -EFAULT;
++  	return 0;
++}
++#endif
++
++
+ static int packet_notifier(struct notifier_block *this, unsigned long msg, void *data)
+ {
+ 	struct sock *sk;
+@@ -1171,6 +1522,24 @@
+ 	return(0);
+ }
+ 
++#ifdef CONFIG_PACKET_TURBO
++unsigned int packet_poll(struct file * file, struct socket *sock, poll_table *wait)
++{
++	struct sock *sk = sock->sk;
++	struct packet_opt *po = sk->protinfo.af_packet;
++	unsigned int mask = datagram_poll(file, sock, wait);
++	
++	if (po->iovec) {
++		unsigned last = po->head ? po->head-1 : po->iovmax;
++
++		if (test_bit(0, (unsigned long*)po->iovec[last].iov_base))
++			mask |= POLLIN | POLLRDNORM;
++	}
++	return mask;
++}
++#endif
++
++
+ #ifdef CONFIG_SOCK_PACKET
+ struct proto_ops packet_ops_spkt = {
+ 	PF_PACKET,
+@@ -1204,16 +1573,24 @@
+ 	sock_no_socketpair,
+ 	sock_no_accept,
+ 	packet_getname, 
++#ifdef CONFIG_PACKET_TURBO
++	packet_poll,
++#else
+ 	datagram_poll,
++#endif
+ 	packet_ioctl,
+ 	sock_no_listen,
+ 	sock_no_shutdown,
+-#ifdef CONFIG_PACKET_MULTICAST
++#if defined (CONFIG_PACKET_MULTICAST) || defined(CONFIG_PACKET_TURBO)
+ 	packet_setsockopt,
+ #else
+ 	sock_no_setsockopt,
+ #endif
++#ifdef CONFIG_PACKET_TURBO
++	packet_getsockopt,
++#else
+ 	sock_no_getsockopt,
++#endif
+ 	sock_no_fcntl,
+ 	packet_sendmsg,
+ 	packet_recvmsg

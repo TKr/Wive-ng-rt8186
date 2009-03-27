@@ -1,0 +1,12 @@
+--- linux.old/net/ipv4/netfilter/ipt_TOS.c	Mon Dec 17 00:33:50 2001
++++ linux/net/ipv4/netfilter/ipt_TOS.c	Mon Dec 17 00:34:18 2001
+@@ -27,8 +27,8 @@
+			struct sk_buff *nskb = skb_copy(*pskb, GFP_ATOMIC);
+			if (!nskb)
+				return NF_DROP;
+-			*pskb = nskb;
+			kfree_skb(*pskb);
++			*pskb = nskb;
+			iph = (*pskb)->nh.iph;
+		}
+

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+/etc/rc.d/S71wifiapps stop
+/etc/rc.d/S26bridge stop
+/etc/rc.d/S25wifinetwork stop
+/etc/rc.d/S20network stop
+sleep 1
+/etc/rc.d/S03macaddr start
+/etc/rc.d/S20network start
+/etc/rc.d/S25wifinetwork start
+/etc/rc.d/S26bridge start
+/etc/rc.d/S27burst start
+/etc/rc.d/S28routes start
+/etc/rc.d/S38networktune start
+/etc/rc.d/S71wifiapps start

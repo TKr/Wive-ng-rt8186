@@ -1,0 +1,8 @@
+#!/bin/bash
+CROSS_COMPILER=mips-linux-
+
+CC=$CROSS_COMPILER\gcc;
+OBJCOPY=$CROSS_COMPILER\objcopy;
+rm ./wl
+$CC -Os ./wl.c -o ./wl
+$OBJCOPY --strip-all ./wl ./wl

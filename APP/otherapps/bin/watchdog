@@ -1,0 +1,8 @@
+#!/bin/sh
+
+#Touch watchdog device at every 30 seconds
+
+while [ 1 ] ; do
+    cat /proc/user_watchdog  > /dev/null
+    sleep 30
+done

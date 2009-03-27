@@ -1,0 +1,4 @@
+ppp_generic.c: In function `ppp_send_frame':
+ppp_generic.c:1139: warning: implicit declaration of function `sys_kill'
+ppp_generic.c: In function `ppp_connect_channel':
+ppp_generic.c:2563: warning: unsigned int format, long unsigned int arg (arg 2)

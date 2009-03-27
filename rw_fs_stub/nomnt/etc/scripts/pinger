@@ -1,0 +1,43 @@
+#!/bin/sh
+
+#Load configs
+. /etc/boot
+. /etc/network/wifi/general
+
+#Use this script when in AccessPoint mode to prevent reassociation and sleeping of clients
+# Just copy lines and change it to yours ip
+if [ "$PINGER" == "yes" ]; then
+    ping -q -c 1 $PINGER_HOST  > /dev/null
+fi
+
+#If use harddog enable and not pings reply - your AP do reboot
+if [ "$HARD_DOG" == "yes" ]; then
+ MESG=`dmesg | grep -c 'pkt type!'`
+    if [ "$MESG" != "0" ]; then
+        reboot
+    fi
+fi
+
+#If use $WIFI_DOG enable and not pings reply - reset radio interface
+if [ "$WIFI_DOG" == "yes" ]; then
+ PING_RES=`ping -q -c 4  $WIFI_DOGHOST | grep 'loss' | grep '100%'`
+  if [ "$PING_RES" != "" ] ; then 
+    wifireset
+    echo -n `date` >> /var/log/wi-rederg.log
+    echo "No link - rederg..." >> /var/log/wi-rederg.log
+  fi
+fi
+
+#If remote stastion dead - remove from list
+if [ "$RMODE" = "AP" ] ; then
+    if [ "$ZOMBIE_DOG" == "yes" ]; then
+        arp -an | grep 0 | awk '{ print $4 }' | sed 's/://g' > /var/log/station.log
+        brctl showmacs br0 | grep 0 | awk '{ print $2 }' | sed 's/://g' >> /var/log/station.log
+        cat /proc/wlan0/sta_info | grep hwaddr | awk '{ print $2 }' | while read line; do
+        inok=`cat /var/log/station.log | grep -c -i $line`
+	if [ "$inok" = "0" ]; then
+	    iwpriv wlan0 del_sta $line
+	fi
+      done
+    fi
+fi

@@ -1,0 +1,2 @@
+irq.c: In function `do_IRQ':
+irq.c:179: warning: unused variable `status'

@@ -1,0 +1,21 @@
+PLATFORM=-D_RTL8186_
+MODEL=-D_RTL8186_
+ENDIAN=
+GATEWAY=y
+
+CROSS=mips-uclibc-
+CROSS_LINUX=mips-linux-
+
+WLDEV=-D_RTL_WL_DEVICE_
+PSDEV=-D_OFF_PS_DEVICE_
+SDEV=-D_OFF_S_DEVICE_
+
+MODE= -D_general_
+
+CC=$(CROSS)gcc
+STRIP=$(CROSS)strip
+LD=$(CROSS)ld
+AR=$(CROSS)ar
+RANLIB=$(CROSS)ranlib
+CAS=$(CROSS)gcc -c
+CPP=$(CROSS)gcc -E

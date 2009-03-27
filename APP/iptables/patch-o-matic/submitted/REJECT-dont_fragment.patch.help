@@ -1,0 +1,10 @@
+Author: David Miller <davem@redhat.com>
+Status: Submitted to the kernel at 2.4.19-pre time
+
+This patch fixes a bug in ipt_REJECT where we set the IP header's 
+don't fragment bit for the REJECT-generated ICMP message.  
+
+However, there is no PMTU discovery with ICMP - and we should just send
+the ICMP error message wit DF cleared, so intermediate routers are allowed
+to fragment.
+

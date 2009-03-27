@@ -1,0 +1,44 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+echo "Syslog daemon start"
+if [ "$SYSLOG_ENABLE" = "yes" ] ; then
+    /sbin/syslogd -D -S -s 100 &
+    /sbin/klogd &
+    if [ `grep -c "logrotate.daily" /etc/crontabs/root` = "0" ]; then
+        echo "Add logrotate daily to crontabs"
+	echo "02 4 * * * /etc/scripts/logrotate.daily" >> /etc/crontabs/root
+    fi
+    if [ `grep -c "logrotate.weekly" /etc/crontabs/root` = "0" ]; then
+        echo "Add logrotate weekly to crontabs"
+        echo "22 4 * * 0 /etc/scripts/logrotate.weekly" >> /etc/crontabs/root
+    fi
+fi
+}
+
+stop() {
+ echo "Stopping syslog "
+ killall syslogd
+ killall klogd
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

@@ -1,0 +1,24 @@
+#
+# RTL Enchanched mode for NAT/VPN/BRIDGE/IPSEC
+#
+mainmenu_option next_comment
+comment 'RTL Enchanched mode for NAT/VPN/BRIDGE/IPSEC'
+
+bool 'Delay RX for RealTek Ethernet Driver support (POLLING/NAPI)' DELAY_RX
+    if [ "$DELAY_RX" = "y" ]; then
+       define_bool CONFIG_DRIVER_SPEEDUP y
+    fi
+
+bool 'RTL8186 bridge shortcut' BR_SHORTCUT
+
+bool 'Build free opensource nonmips gcc' CONFIG_UCLINUX
+bool 'Fixed BOGOMIPS speedup patch' FIXED_BOGOMIPS
+
+bool 'RealTek IPSEC Enhancement' CONFIG_RTL_IPSEC
+    if [ "$CONFIG_RTL_IPSEC" = "y" ]; then
+	bool '  Enable RealTek IPSEC Crypto Engine' CONFIG_RTL_IPSEC_HW
+	bool '  Enable IPSec Logging for klogd' CONFIG_RTL_IPSEC_USER_LOG
+	bool '  Enable RealTek IPSEC Protocol SPEEDUP' CONFIG_RTL_IPSEC_SPEEDUP
+    fi
+
+endmenu

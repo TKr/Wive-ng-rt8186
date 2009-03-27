@@ -1,0 +1,958 @@
+--- linux/net/ipv4/netfilter/ip_conntrack_standalone.c.orig	Sat Dec  8 17:15:19 2001
++++ linux/net/ipv4/netfilter/ip_conntrack_standalone.c	Sat Dec  8 17:15:36 2001
+@@ -349,7 +349,7 @@
+ 
+ 	ret = nf_register_hook(&ip_conntrack_in_ops);
+ 	if (ret < 0) {
+-		printk("ip_conntrack: can't register in hook.\n");
++		printk("ip_conntrack: can't register pre-routing hook.\n");
+ 		goto cleanup_proc;
+ 	}
+ 	ret = nf_register_hook(&ip_conntrack_local_out_ops);
+diff -urN -I \$.*\$ --exclude TAGS -X /home/rusty/devel/kernel/kernel-patches/current-dontdiff --minimal linux-2.4.17/net/ipv4/netfilter/ip_fw_compat_masq.c working-2.4.17-nfcompat/net/ipv4/netfilter/ip_fw_compat_masq.c
+--- linux-2.4.17/net/ipv4/netfilter/ip_fw_compat_masq.c	Sat Sep 15 07:04:08 2001
++++ working-2.4.17-nfcompat/net/ipv4/netfilter/ip_fw_compat_masq.c	Wed Jan  9 10:08:11 2002
+@@ -157,7 +157,7 @@
+ 		/* Fall thru... */
+ 	case IPPROTO_TCP:
+ 	case IPPROTO_UDP:
+-		IP_NF_ASSERT((skb->nh.iph->frag_off & htons(IP_OFFSET)) == 0);
++		IP_NF_ASSERT(((*pskb)->nh.iph->frag_off & htons(IP_OFFSET)) == 0);
+ 
+ 		if (!get_tuple(iph, (*pskb)->len, &tuple, protocol)) {
+ 			if (net_ratelimit())
+
+diff -Nru --exclude *~ linux-nfpom1/net/ipv6/netfilter/ip6t_MARK.c linux-rc2/net/ipv6/netfilter/ip6t_MARK.c
+--- linux-nfpom1/net/ipv6/netfilter/ip6t_MARK.c	Fri Feb 22 12:23:52 2002
++++ linux-rc2/net/ipv6/netfilter/ip6t_MARK.c	Fri Feb 22 12:24:09 2002
+@@ -51,7 +51,7 @@
+ 
+ static int __init init(void)
+ {
+-	printk(KERN_DEBUG "registreing ipv6 mark target\n");
++	printk(KERN_DEBUG "registering ipv6 mark target\n");
+ 	if (ip6t_register_target(&ip6t_mark_reg))
+ 		return -EINVAL;
+ 
+diff -Nru --exclude *~ linux-nfpom1/include/linux/netfilter_ipv4/ip_conntrack.h linux-rc2/include/linux/netfilter_ipv4/ip_conntrack.h
+--- linux-nfpom1/include/linux/netfilter_ipv4/ip_conntrack.h	Fri Feb 22 12:23:52 2002
++++ linux-rc2/include/linux/netfilter_ipv4/ip_conntrack.h	Fri Feb 22 12:24:09 2002
+@@ -27,6 +27,21 @@
+ 	IP_CT_NUMBER = IP_CT_IS_REPLY * 2 - 1
+ };
+ 
++/* Bitset representing status of connection. */
++enum ip_conntrack_status {
++	/* It's an expected connection: bit 0 set.  This bit never changed */
++	IPS_EXPECTED_BIT = 0,
++	IPS_EXPECTED = (1 << IPS_EXPECTED_BIT),
++
++	/* We've seen packets both ways: bit 1 set.  Can be set, not unset. */
++	IPS_SEEN_REPLY_BIT = 1,
++	IPS_SEEN_REPLY = (1 << IPS_SEEN_REPLY_BIT),
++
++	/* Conntrack should never be early-expired. */
++	IPS_ASSURED_BIT = 2,
++	IPS_ASSURED = (1 << IPS_ASSURED_BIT),
++};
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/types.h>
+@@ -46,21 +61,6 @@
+ #else
+ #define IP_NF_ASSERT(x)
+ #endif
+-
+-/* Bitset representing status of connection. */
+-enum ip_conntrack_status {
+-	/* It's an expected connection: bit 0 set.  This bit never changed */
+-	IPS_EXPECTED_BIT = 0,
+-	IPS_EXPECTED = (1 << IPS_EXPECTED_BIT),
+-
+-	/* We've seen packets both ways: bit 1 set.  Can be set, not unset. */
+-	IPS_SEEN_REPLY_BIT = 1,
+-	IPS_SEEN_REPLY = (1 << IPS_SEEN_REPLY_BIT),
+-
+-	/* Conntrack should never be early-expired. */
+-	IPS_ASSURED_BIT = 2,
+-	IPS_ASSURED = (1 << IPS_ASSURED_BIT),
+-};
+ 
+ struct ip_conntrack_expect
+ {
+diff -Nru --exclude *~ linux-nfpom1/include/linux/netfilter_ipv4/ip_conntrack_tuple.h linux-rc2/include/linux/netfilter_ipv4/ip_conntrack_tuple.h
+--- linux-nfpom1/include/linux/netfilter_ipv4/ip_conntrack_tuple.h	Fri Feb 22 12:23:52 2002
++++ linux-rc2/include/linux/netfilter_ipv4/ip_conntrack_tuple.h	Fri Feb 22 12:24:09 2002
+@@ -62,6 +62,13 @@
+ 	} dst;
+ };
+ 
++enum ip_conntrack_dir
++{
++	IP_CT_DIR_ORIGINAL,
++	IP_CT_DIR_REPLY,
++	IP_CT_DIR_MAX
++};
++
+ #ifdef __KERNEL__
+ 
+ #define DUMP_TUPLE(tp)						\
+@@ -75,13 +82,19 @@
+ /* If we're the first tuple, it's the original dir. */
+ #define DIRECTION(h) ((enum ip_conntrack_dir)(&(h)->ctrack->tuplehash[1] == (h)))
+ 
+-enum ip_conntrack_dir
++/* Connections have two entries in the hash table: one for each way */
++struct ip_conntrack_tuple_hash
+ {
+-	IP_CT_DIR_ORIGINAL,
+-	IP_CT_DIR_REPLY,
+-	IP_CT_DIR_MAX
++	struct list_head list;
++
++	struct ip_conntrack_tuple tuple;
++
++	/* this == &ctrack->tuplehash[DIRECTION(this)]. */
++	struct ip_conntrack *ctrack;
+ };
+ 
++#endif /* __KERNEL__ */
++
+ static inline int ip_ct_tuple_src_equal(const struct ip_conntrack_tuple *t1,
+ 				        const struct ip_conntrack_tuple *t2)
+ {
+@@ -115,16 +128,4 @@
+ 		     & mask->dst.protonum));
+ }
+ 
+-/* Connections have two entries in the hash table: one for each way */
+-struct ip_conntrack_tuple_hash
+-{
+-	struct list_head list;
+-
+-	struct ip_conntrack_tuple tuple;
+-
+-	/* this == &ctrack->tuplehash[DIRECTION(this)]. */
+-	struct ip_conntrack *ctrack;
+-};
+-
+-#endif /* __KERNEL__ */
+ #endif /* _IP_CONNTRACK_TUPLE_H */
+diff -Nru --exclude *~ linux-nfpom1/net/ipv4/netfilter/ip_fw_compat_redir.c linux-rc2/net/ipv4/netfilter/ip_fw_compat_redir.c
+--- linux-nfpom1/net/ipv4/netfilter/ip_fw_compat_redir.c	Fri Feb 22 12:23:52 2002
++++ linux-rc2/net/ipv4/netfilter/ip_fw_compat_redir.c	Fri Feb 22 12:24:09 2002
+@@ -20,6 +20,9 @@
+ 
+ #include <linux/netfilter_ipv4/lockhelp.h>
+ 
++/* Very simple timeout pushed back by each packet */
++#define REDIR_TIMEOUT (240*HZ)
++
+ static DECLARE_LOCK(redir_lock);
+ #define ASSERT_READ_LOCK(x) MUST_BE_LOCKED(&redir_lock)
+ #define ASSERT_WRITE_LOCK(x) MUST_BE_LOCKED(&redir_lock)
+@@ -150,6 +153,14 @@
+ 	skb->nfcache |= NFC_ALTERED;
+ }
+ 
++static void destroyme(unsigned long me)
++{
++	LOCK_BH(&redir_lock);
++	LIST_DELETE(&redirs, (struct redir *)me);
++	UNLOCK_BH(&redir_lock);
++	kfree((struct redir *)me);
++}
++
+ /* REDIRECT a packet. */
+ unsigned int
+ do_redirect(struct sk_buff *skb,
+@@ -172,6 +183,10 @@
+ 		struct udphdr *udph = (struct udphdr *)((u_int32_t *)iph
+ 							+ iph->ihl);
+ 
++		/* Must have whole header */
++		if (skb->len < iph->ihl*4 + sizeof(*udph))
++			return NF_DROP;
++
+ 		if (udph->check) /* 0 is a special case meaning no checksum */
+ 			udph->check = cheat_check(~iph->daddr, newdst,
+ 					  cheat_check(udph->dest ^ 0xFFFF,
+@@ -191,6 +206,10 @@
+ 		struct redir *redir;
+ 		int ret;
+ 
++		/* Must have whole header */
++		if (skb->len < iph->ihl*4 + sizeof(*tcph))
++			return NF_DROP;
++
+ 		DEBUGP("Doing tcp redirect. %08X:%u %08X:%u -> %08X:%u\n",
+ 		       iph->saddr, tcph->source, iph->daddr, tcph->dest,
+ 		       newdst, redirpt);
+@@ -206,7 +225,9 @@
+ 			}
+ 			list_prepend(&redirs, redir);
+ 			init_timer(&redir->destroyme);
+-			redir->destroyme.expires = jiffies + 75*HZ;
++			redir->destroyme.function = destroyme;
++			redir->destroyme.data = (unsigned long)redir;
++			redir->destroyme.expires = jiffies + REDIR_TIMEOUT;
+ 			add_timer(&redir->destroyme);
+ 		}
+ 		/* In case mangling has changed, rewrite this part. */
+@@ -227,13 +248,6 @@
+ 	}
+ }
+ 
+-static void destroyme(unsigned long me)
+-{
+-	LOCK_BH(&redir_lock);
+-	LIST_DELETE(&redirs, (struct redir *)me);
+-	UNLOCK_BH(&redir_lock);
+-}
+-
+ /* Incoming packet: is it a reply to a masqueraded connection, or
+    part of an already-redirected TCP connection? */
+ void
+@@ -247,15 +261,18 @@
+ 	if (iph->protocol != IPPROTO_TCP)
+ 		return;
+ 
++	/* Must have whole header */
++	if (skb->len < iph->ihl*4 + sizeof(*tcph))
++		return;
++
+ 	LOCK_BH(&redir_lock);
+ 	redir = find_redir(iph->saddr, iph->daddr, tcph->source, tcph->dest);
+ 	if (redir) {
+ 		DEBUGP("Doing tcp redirect again.\n");
+ 		do_tcp_redir(skb, redir);
+-		if (tcph->rst || tcph->fin) {
+-			redir->destroyme.function = destroyme;
+-			redir->destroyme.data = (unsigned long)redir;
+-			mod_timer(&redir->destroyme, 75*HZ);
++		if (del_timer(&redir->destroyme)) {
++			redir->destroyme.expires = jiffies + REDIR_TIMEOUT;
++			add_timer(&redir->destroyme);
+ 		}
+ 	}
+ 	UNLOCK_BH(&redir_lock);
+@@ -272,15 +289,18 @@
+ 	if (iph->protocol != IPPROTO_TCP)
+ 		return;
+ 
++	/* Must have whole header */
++	if (skb->len < iph->ihl*4 + sizeof(*tcph))
++		return;
++
+ 	LOCK_BH(&redir_lock);
+ 	redir = find_unredir(iph->saddr, iph->daddr, tcph->source, tcph->dest);
+ 	if (redir) {
+ 		DEBUGP("Doing tcp unredirect.\n");
+ 		do_tcp_unredir(skb, redir);
+-		if (tcph->rst || tcph->fin) {
+-			redir->destroyme.function = destroyme;
+-			redir->destroyme.data = (unsigned long)redir;
+-			mod_timer(&redir->destroyme, 75*HZ);
++		if (del_timer(&redir->destroyme)) {
++			redir->destroyme.expires = jiffies + REDIR_TIMEOUT;
++			add_timer(&redir->destroyme);
+ 		}
+ 	}
+ 	UNLOCK_BH(&redir_lock);
+
+diff -Nru --exclude *~ linuxppc-190102-nfpom/net/ipv4/netfilter/ipchains_core.c linuxppc-190102-usagecount/net/ipv4/netfilter/ipchains_core.c
+--- linuxppc-190102-nfpom/net/ipv4/netfilter/ipchains_core.c	Thu Jan 17 21:46:23 2002
++++ linuxppc-190102-usagecount/net/ipv4/netfilter/ipchains_core.c	Sat Jan 19 22:54:25 2002
+@@ -838,6 +838,7 @@
+ 			i->branch->refcount--;
+ 		kfree(i);
+ 		i = tmp;
++		MOD_DEC_USE_COUNT;
+ 	}
+ 	return 0;
+ }
+@@ -875,13 +876,16 @@
+ 		 * interrupts is not necessary. */
+ 		chainptr->chain = rule;
+ 		if (rule->branch) rule->branch->refcount++;
+-		return 0;
++		goto append_successful;
+ 	}
+ 
+ 	/* Find the rule before the end of the chain */
+ 	for (i = chainptr->chain; i->next; i = i->next);
+ 	i->next = rule;
+ 	if (rule->branch) rule->branch->refcount++;
++
++append_successful:
++	MOD_INC_USE_COUNT;
+ 	return 0;
+ }
+ 
+@@ -900,7 +904,7 @@
+ 		frwl->next = chainptr->chain;
+ 		if (frwl->branch) frwl->branch->refcount++;
+ 		chainptr->chain = frwl;
+-		return 0;
++		goto insert_successful;
+ 	}
+ 	position--;
+ 	while (--position && f != NULL) f = f->next;
+@@ -910,6 +914,9 @@
+ 	frwl->next = f->next;
+ 
+ 	f->next = frwl;
++
++insert_successful:
++	MOD_INC_USE_COUNT;
+ 	return 0;
+ }
+ 
+@@ -943,6 +950,8 @@
+ 		i->next = i->next->next;
+ 		kfree(tmp);
+ 	}
++
++	MOD_DEC_USE_COUNT;
+ 	return 0;
+ }
+ 
+@@ -1049,6 +1058,7 @@
+ 		else
+ 			chainptr->chain = ftmp->next;
+ 		kfree(ftmp);
++		MOD_DEC_USE_COUNT;
+ 		break;
+ 	}
+ 
+@@ -1089,6 +1099,8 @@
+ 
+ 	tmp->next = tmp2->next;
+ 	kfree(tmp2);
++
++	MOD_DEC_USE_COUNT;
+ 	return 0;
+ }
+ 
+@@ -1141,6 +1153,7 @@
+ 					      * user defined chain *
+ 					      * and therefore can be
+ 					      * deleted */
++	MOD_INC_USE_COUNT;
+ 	return 0;
+ }
+ 
+
+diff -urN -I \$.*\$ --exclude TAGS -X /home/rusty/devel/kernel/kernel-patches/current-dontdiff --minimal linux-2.4.18-pre4/net/ipv4/netfilter/ipfwadm_core.c working-2.4.18-pre4-modcount/net/ipv4/netfilter/ipfwadm_core.c
+--- linux-2.4.18-pre4/net/ipv4/netfilter/ipfwadm_core.c	Fri Sep 21 07:12:56 2001
++++ working-2.4.18-pre4-modcount/net/ipv4/netfilter/ipfwadm_core.c	Fri Jan 18 13:41:24 2002
+@@ -20,7 +20,7 @@
+  *	license in recognition of the original copyright.
+  *				-- Alan Cox.
+  *
+- *	$Id: 2.4.18.patch,v 1.1.1.1 2004/08/12 10:33:31 ysc Exp $
++ *	$Id: 2.4.18.patch,v 1.1.1.1 2004/08/12 10:33:31 ysc Exp $
+  *
+  *	Ported from BSD to Linux,
+  *		Alan Cox 22/Nov/1994.
+@@ -104,6 +104,7 @@
+ #include <linux/sched.h>
+ #include <linux/string.h>
+ #include <linux/errno.h>
++#include <linux/module.h>
+ 
+ #include <linux/socket.h>
+ #include <linux/sockios.h>
+@@ -687,6 +688,7 @@
+ 		ftmp = *chainptr;
+ 		*chainptr = ftmp->fw_next;
+ 		kfree(ftmp);
++		MOD_DEC_USE_COUNT;
+ 	}
+ 	restore_flags(flags);
+ }
+@@ -730,6 +732,7 @@
+ 	ftmp->fw_next = *chainptr;
+        	*chainptr=ftmp;
+ 	restore_flags(flags);
++	MOD_INC_USE_COUNT;
+ 	return(0);
+ }
+ 
+@@ -780,6 +783,7 @@
+ 	else
+         	*chainptr=ftmp;
+ 	restore_flags(flags);
++	MOD_INC_USE_COUNT;
+ 	return(0);
+ }
+ 
+@@ -853,9 +857,10 @@
+ 		 }
+ 	}
+ 	restore_flags(flags);
+-	if (was_found)
++	if (was_found) {
++		MOD_DEC_USE_COUNT;
+ 		return 0;
+-	else
++	} else
+ 		return(EINVAL);
+ }
+ 
+
+--- linux/net/ipv4/netfilter/ipt_LOG.c.orig	Mon Jan  1 18:54:07 2001
++++ linux/net/ipv4/netfilter/ipt_LOG.c	Fri Sep 28 11:13:11 2001
+@@ -213,7 +213,7 @@
+ 				printk("[");
+ 				dump_packet(info,
+ 					    (struct iphdr *)(icmph + 1),
+-					    datalen-sizeof(struct iphdr),
++					    datalen-sizeof(struct icmphdr),
+ 					    0);
+ 				printk("] ");
+ 			}
+
+
+diff -Nru linuxppc-190102-nfpom/net/ipv4/netfilter/ip_nat_rule.c linuxppc-190102-usagecount/net/ipv4/netfilter/ip_nat_rule.c
+--- linuxppc-190102-nfpom/net/ipv4/netfilter/ip_nat_rule.c	Thu Jan 17 21:42:51 2002
++++ linuxppc-190102-usagecount/net/ipv4/netfilter/ip_nat_rule.c	Sat Jan 19 21:32:54 2002
+@@ -104,7 +104,7 @@
+ 
+ static struct ipt_table nat_table
+ = { { NULL, NULL }, "nat", &nat_initial_table.repl,
+-    NAT_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL };
++    NAT_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL, THIS_MODULE };
+ 
+ LIST_HEAD(nat_expect_list);
+ 
+diff -Nru linuxppc-190102-nfpom/net/ipv4/netfilter/ip_tables.c linuxppc-190102-usagecount/net/ipv4/netfilter/ip_tables.c
+--- linuxppc-190102-nfpom/net/ipv4/netfilter/ip_tables.c	Thu Jan 17 21:43:42 2002
++++ linuxppc-190102-usagecount/net/ipv4/netfilter/ip_tables.c	Sat Jan 19 21:46:31 2002
+@@ -2,6 +2,11 @@
+  * Packet matching code.
+  *
+  * Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
++ * Copyright (C) 2009-2002 Netfilter core team <coreteam@netfilter.org>
++ *
++ * 19 Jan 2002 Harald Welte <laforge@gnumonks.org>
++ * 	- increase module usage count as soon as we have rules inside
++ * 	  a table
+  */
+ #include <linux/config.h>
+ #include <linux/skbuff.h>
+@@ -84,6 +89,8 @@
+ 	unsigned int size;
+ 	/* Number of entries: FIXME. --RR */
+ 	unsigned int number;
++	/* Initial number of entries. Needed for module usage count */
++	unsigned int initial_entries;
+ 
+ 	/* Entry points and underflows */
+ 	unsigned int hook_entry[NF_IP_NUMHOOKS];
+@@ -902,6 +909,7 @@
+ 	}
+ 	oldinfo = table->private;
+ 	table->private = newinfo;
++	newinfo->initial_entries = oldinfo->initial_entries;
+ 	write_unlock_bh(&table->lock);
+ 
+ 	return oldinfo;
+@@ -1105,6 +1113,16 @@
+ 	if (!oldinfo)
+ 		goto free_newinfo_counters_untrans_unlock;
+ 
++	/* Update module usage count based on number of rules */
++	duprintf("do_replace: oldnum=%u, initnum=%u, newnum=%u\n",
++		oldinfo->number, oldinfo->initial_entries, newinfo->number);
++	if (t->me && (oldinfo->number <= oldinfo->initial_entries) &&
++ 	    (newinfo->number > oldinfo->initial_entries))
++		__MOD_INC_USE_COUNT(t->me);
++	else if (t->me && (oldinfo->number > oldinfo->initial_entries) &&
++	 	 (newinfo->number <= oldinfo->initial_entries))
++		__MOD_DEC_USE_COUNT(t->me);
++
+ 	/* Get the old counters. */
+ 	get_counters(oldinfo, counters);
+ 	/* Decrease module usage counts and free resource */
+@@ -1363,7 +1381,7 @@
+ 	int ret;
+ 	struct ipt_table_info *newinfo;
+ 	static struct ipt_table_info bootstrap
+-		= { 0, 0, { 0 }, { 0 }, { } };
++		= { 0, 0, 0, { 0 }, { 0 }, { } };
+ 
+ 	MOD_INC_USE_COUNT;
+ 	newinfo = vmalloc(sizeof(struct ipt_table_info)
+@@ -1406,6 +1425,9 @@
+ 
+ 	duprintf("table->private->number = %u\n",
+ 		 table->private->number);
++	
++	/* save number of initial entries */
++	table->private->initial_entries = table->private->number;
+ 
+ 	table->lock = RW_LOCK_UNLOCKED;
+ 	list_prepend(&ipt_tables, table);
+@@ -1746,7 +1768,7 @@
+ 	}
+ #endif
+ 
+-	printk("ip_tables: (c)2000 Netfilter core team\n");
++	printk("ip_tables: (C) 2000-2002 Netfilter core team\n");
+ 	return 0;
+ }
+ 
+diff -Nru linuxppc-190102-nfpom/net/ipv4/netfilter/iptable_filter.c linuxppc-190102-usagecount/net/ipv4/netfilter/iptable_filter.c
+--- linuxppc-190102-nfpom/net/ipv4/netfilter/iptable_filter.c	Thu Jan 17 21:47:34 2002
++++ linuxppc-190102-usagecount/net/ipv4/netfilter/iptable_filter.c	Sat Jan 19 21:12:22 2002
+@@ -83,7 +83,7 @@
+ 
+ static struct ipt_table packet_filter
+ = { { NULL, NULL }, "filter", &initial_table.repl,
+-    FILTER_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL };
++    FILTER_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL, THIS_MODULE };
+ 
+ /* The work comes in here from netfilter.c. */
+ static unsigned int
+diff -Nru linuxppc-190102-nfpom/net/ipv4/netfilter/iptable_mangle.c linuxppc-190102-usagecount/net/ipv4/netfilter/iptable_mangle.c
+--- linuxppc-190102-nfpom/net/ipv4/netfilter/iptable_mangle.c	Sat Jan 19 13:22:28 2002
++++ linuxppc-190102-usagecount/net/ipv4/netfilter/iptable_mangle.c	Sat Jan 19 21:33:09 2002
+@@ -116,7 +116,7 @@
+ 
+ static struct ipt_table packet_mangler
+ = { { NULL, NULL }, "mangle", &initial_table.repl,
+-    MANGLE_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL };
++    MANGLE_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL, THIS_MODULE };
+ 
+ /* The work comes in here from netfilter.c. */
+ static unsigned int
+diff -Nru linuxppc-190102-nfpom/include/linux/netfilter_ipv4/ip_tables.h linuxppc-190102-usagecount/include/linux/netfilter_ipv4/ip_tables.h
+--- linuxppc-190102-nfpom/include/linux/netfilter_ipv4/ip_tables.h	Sat Jan 19 14:17:40 2002
++++ linuxppc-190102-usagecount/include/linux/netfilter_ipv4/ip_tables.h	Sat Jan 19 22:01:41 2002
+@@ -428,6 +428,9 @@
+ 
+ 	/* Man behind the curtain... */
+ 	struct ipt_table_info *private;
++
++	/* Set this to THIS_MODULE if you are a module, otherwise NULL */
++	struct module *me;
+ };
+ 
+ extern int ipt_register_table(struct ipt_table *table);
+
+diff -Nru --exclude *.o --exclude *.flags linuxppc-190102-nfpom/net/ipv6/netfilter/ip6_tables.c linuxppc-190102-usagecount/net/ipv6/netfilter/ip6_tables.c
+--- linuxppc-190102-nfpom/net/ipv6/netfilter/ip6_tables.c	Thu Jan 17 21:43:00 2002
++++ linuxppc-190102-usagecount/net/ipv6/netfilter/ip6_tables.c	Sat Jan 19 21:57:17 2002
+@@ -2,6 +2,11 @@
+  * Packet matching code.
+  *
+  * Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
++ * Copyright (C) 2000-2002 Netfilter core team <coreteam@netfilter.org>
++ *
++ * 19 Jan 2002 Harald Welte <laforge@gnumonks.org>
++ * 	- increase module usage count as soon as we have rules inside
++ * 	  a table
+  */
+ #include <linux/config.h>
+ #include <linux/skbuff.h>
+@@ -86,6 +91,8 @@
+ 	unsigned int size;
+ 	/* Number of entries: FIXME. --RR */
+ 	unsigned int number;
++	/* Initial number of entries. Needed for module usage count */
++	unsigned int initial_entries;
+ 
+ 	/* Entry points and underflows */
+ 	unsigned int hook_entry[NF_IP6_NUMHOOKS];
+@@ -949,6 +956,7 @@
+ 	}
+ 	oldinfo = table->private;
+ 	table->private = newinfo;
++	newinfo->initial_entries = oldinfo->initial_entries;
+ 	write_unlock_bh(&table->lock);
+ 
+ 	return oldinfo;
+@@ -1148,6 +1156,16 @@
+ 	if (!oldinfo)
+ 		goto free_newinfo_counters_untrans_unlock;
+ 
++	/* Update module usage count based on number of rules */
++	duprintf("do_replace: oldnum=%u, initnum=%u, newnum=%u\n",
++		oldinfo->number, oldinfo->initial_entries, newinfo->number);
++	if (t->me && (oldinfo->number <= oldinfo->initial_entries) &&
++ 	    (newinfo->number > oldinfo->initial_entries))
++		__MOD_INC_USE_COUNT(t->me);
++	else if (t->me && (oldinfo->number > oldinfo->initial_entries) &&
++	 	 (newinfo->number <= oldinfo->initial_entries))
++		__MOD_DEC_USE_COUNT(t->me);
++
+ 	/* Get the old counters. */
+ 	get_counters(oldinfo, counters);
+ 	/* Decrease module usage counts and free resource */
+@@ -1406,7 +1424,7 @@
+ 	int ret;
+ 	struct ip6t_table_info *newinfo;
+ 	static struct ip6t_table_info bootstrap
+-		= { 0, 0, { 0 }, { 0 }, { }, { } };
++		= { 0, 0, 0, { 0 }, { 0 }, { }, { } };
+ 
+ 	MOD_INC_USE_COUNT;
+ 	newinfo = vmalloc(sizeof(struct ip6t_table_info)
+@@ -1783,7 +1801,7 @@
+ 	}
+ #endif
+ 
+-	printk("ip6_tables: (c)2000 Netfilter core team\n");
++	printk("ip6_tables: (C) 2000-2002 Netfilter core team\n");
+ 	return 0;
+ }
+ 
+diff -Nru --exclude *.o --exclude *.flags linuxppc-190102-nfpom/net/ipv6/netfilter/ip6table_filter.c linuxppc-190102-usagecount/net/ipv6/netfilter/ip6table_filter.c
+--- linuxppc-190102-nfpom/net/ipv6/netfilter/ip6table_filter.c	Thu Jan 17 21:43:41 2002
++++ linuxppc-190102-usagecount/net/ipv6/netfilter/ip6table_filter.c	Sat Jan 19 21:53:29 2002
+@@ -83,7 +83,7 @@
+ 
+ static struct ip6t_table packet_filter
+ = { { NULL, NULL }, "filter", &initial_table.repl,
+-    FILTER_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL };
++    FILTER_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL, THIS_MODULE };
+ 
+ /* The work comes in here from netfilter.c. */
+ static unsigned int
+diff -Nru --exclude *.o --exclude *.flags linuxppc-190102-nfpom/net/ipv6/netfilter/ip6table_mangle.c linuxppc-190102-usagecount/net/ipv6/netfilter/ip6table_mangle.c
+--- linuxppc-190102-nfpom/net/ipv6/netfilter/ip6table_mangle.c	Sat Jan 19 13:22:28 2002
++++ linuxppc-190102-usagecount/net/ipv6/netfilter/ip6table_mangle.c	Sat Jan 19 21:54:20 2002
+@@ -113,7 +113,7 @@
+ 
+ static struct ip6t_table packet_mangler
+ = { { NULL, NULL }, "mangle", &initial_table.repl,
+-    MANGLE_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL };
++    MANGLE_VALID_HOOKS, RW_LOCK_UNLOCKED, NULL, THIS_MODULE };
+ 
+ /* The work comes in here from netfilter.c. */
+ static unsigned int
+diff -Nru linuxppc-190102-nfpom/include/linux/netfilter_ipv4/ip_tables.h linuxppc-190102-usagecount/include/linux/netfilter_ipv4/ip_tables.h
+--- linuxppc-190102-nfpom/include/linux/netfilter_ipv6/ip6_tables.h	Sat Jan 19 14:17:40 2002
++++ linuxppc-190102-usagecount/include/linux/netfilter_ipv6/ip6_tables.h	Sat Jan 19 22:01:41 2002
+@@ -428,6 +428,9 @@
+ 
+ 	/* Man behind the curtain... */
+ 	struct ip6t_table_info *private;
++
++	/* Set this to THIS_MODULE if you are a module, otherwise NULL */
++	struct module *me;
+ };
+ 
+ extern int ip6t_register_table(struct ip6t_table *table);
+diff -urN -I \$.*\$ --exclude TAGS -X /home/rusty/devel/kernel/kernel-patches/current-dontdiff --minimal linux-2.5.3/net/core/netfilter.c working-2.5.3-conf/net/core/netfilter.c
+--- linux-2.5.3/net/core/netfilter.c	Sat Apr 28 07:15:01 2001
++++ working-2.5.3-conf/net/core/netfilter.c	Mon Sep  2 12:56:18 2002
+@@ -122,9 +122,9 @@
+ 	down(&nf_sockopt_mutex);
+ 	if (reg->use != 0) {
+ 		/* To be woken by nf_sockopt call... */
++		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		reg->cleanup_task = current;
+ 		up(&nf_sockopt_mutex);
+-		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		schedule();
+ 		goto restart;
+ 	}
+--- linux.old/net/ipv4/netfilter/ipt_REDIRECT.c.orig	Thu Dec 27 10:39:20 2001
++++ linux/net/ipv4/netfilter/ipt_REDIRECT.c	Thu Dec 27 10:41:44 2001
+@@ -74,10 +74,17 @@
+ 	/* Local packets: make them go to loopback */
+ 	if (hooknum == NF_IP_LOCAL_OUT)
+ 		newdst = htonl(0x7F000001);
+-	else
++	else {
++		struct in_device *indev;
++
++		/* Device might not have an associated in_device. */
++		indev = (struct in_device *)(*pskb)->dev->ip_ptr;
++		if (indev == NULL)
++			return NF_DROP;
++
+ 		/* Grab first address on interface. */
+-		newdst = (((struct in_device *)(*pskb)->dev->ip_ptr)
+-			  ->ifa_list->ifa_local);
++		newdst = indev->ifa_list->ifa_local;
++	}
+ 
+ 	/* Transfer from original range. */
+ 	newrange = ((struct ip_nat_multi_range)
+
+diff -Nru --exclude *~ linux-nfpom1/net/ipv4/netfilter/ip_nat_standalone.c linux-rc2/net/ipv4/netfilter/ip_nat_standalone.c
+--- linux-nfpom1/net/ipv4/netfilter/ip_nat_standalone.c	Fri Feb 22 12:23:52 2002
++++ linux-rc2/net/ipv4/netfilter/ip_nat_standalone.c	Fri Feb 22 12:24:09 2002
+@@ -166,34 +166,6 @@
+ 	return ip_nat_fn(hooknum, pskb, in, out, okfn);
+ }
+ 
+-/* FIXME: change in oif may mean change in hh_len.  Check and realloc
+-   --RR */
+-static int
+-route_me_harder(struct sk_buff *skb)
+-{
+-	struct iphdr *iph = skb->nh.iph;
+-	struct rtable *rt;
+-	struct rt_key key = { dst:iph->daddr,
+-			      src:iph->saddr,
+-			      oif:skb->sk ? skb->sk->bound_dev_if : 0,
+-			      tos:RT_TOS(iph->tos)|RTO_CONN,
+-#ifdef CONFIG_IP_ROUTE_FWMARK
+-			      fwmark:skb->nfmark
+-#endif
+-			    };
+-
+-	if (ip_route_output_key(&rt, &key) != 0) {
+-		printk("route_me_harder: No more route.\n");
+-		return -EINVAL;
+-	}
+-
+-	/* Drop old route. */
+-	dst_release(skb->dst);
+-
+-	skb->dst = &rt->u.dst;
+-	return 0;
+-}
+-
+ static unsigned int
+ ip_nat_local_fn(unsigned int hooknum,
+ 		struct sk_buff **pskb,
+@@ -216,7 +188,7 @@
+ 	if (ret != NF_DROP && ret != NF_STOLEN
+ 	    && ((*pskb)->nh.iph->saddr != saddr
+ 		|| (*pskb)->nh.iph->daddr != daddr))
+-		return route_me_harder(*pskb) == 0 ? ret : NF_DROP;
++		return ip_route_me_harder(pskb) == 0 ? ret : NF_DROP;
+ 	return ret;
+ }
+ 
+diff -Nru --exclude *~ linux-nfpom1/net/ipv4/netfilter/ip_queue.c linux-rc2/net/ipv4/netfilter/ip_queue.c
+--- linux-nfpom1/net/ipv4/netfilter/ip_queue.c	Fri Feb 22 12:23:52 2002
++++ linux-rc2/net/ipv4/netfilter/ip_queue.c	Fri Feb 22 12:24:09 2002
+@@ -216,32 +216,6 @@
+ 	kfree(q);
+ }
+ 
+-/* With a chainsaw... */
+-static int route_me_harder(struct sk_buff *skb)
+-{
+-	struct iphdr *iph = skb->nh.iph;
+-	struct rtable *rt;
+-
+-	struct rt_key key = {
+-				dst:iph->daddr, src:iph->saddr,
+-				oif:skb->sk ? skb->sk->bound_dev_if : 0,
+-				tos:RT_TOS(iph->tos)|RTO_CONN,
+-#ifdef CONFIG_IP_ROUTE_FWMARK
+-				fwmark:skb->nfmark
+-#endif
+-			};
+-
+-	if (ip_route_output_key(&rt, &key) != 0) {
+-		printk("route_me_harder: No more route.\n");
+-		return -EINVAL;
+-	}
+-
+-	/* Drop old route. */
+-	dst_release(skb->dst);
+-	skb->dst = &rt->u.dst;
+-	return 0;
+-}
+-
+ static int ipq_mangle_ipv4(ipq_verdict_msg_t *v, ipq_queue_element_t *e)
+ {
+ 	int diff;
+@@ -287,7 +261,7 @@
+ 		if (!(iph->tos == e->rt_info.tos
+ 		      && iph->daddr == e->rt_info.daddr
+ 		      && iph->saddr == e->rt_info.saddr))
+-			return route_me_harder(e->skb);
++			return ip_route_me_harder(&e->skb);
+ 	}
+ 	return 0;
+ }
+diff -Nru --exclude *~ linux-nfpom1/net/ipv4/netfilter/iptable_mangle.c linux-rc2/net/ipv4/netfilter/iptable_mangle.c
+--- linux-nfpom1/net/ipv4/netfilter/iptable_mangle.c	Fri Feb 22 12:38:11 2002
++++ linux-rc2/net/ipv4/netfilter/iptable_mangle.c	Fri Feb 22 12:24:09 2002
+@@ -129,34 +129,6 @@
+ 	return ipt_do_table(pskb, hook, in, out, &packet_mangler, NULL);
+ }
+ 
+-/* FIXME: change in oif may mean change in hh_len.  Check and realloc
+-   --RR */
+-static int
+-route_me_harder(struct sk_buff *skb)
+-{
+-	struct iphdr *iph = skb->nh.iph;
+-	struct rtable *rt;
+-	struct rt_key key = { dst:iph->daddr,
+-			      src:iph->saddr,
+-			      oif:skb->sk ? skb->sk->bound_dev_if : 0,
+-			      tos:RT_TOS(iph->tos)|RTO_CONN,
+-#ifdef CONFIG_IP_ROUTE_FWMARK
+-			      fwmark:skb->nfmark
+-#endif
+-			    };
+-
+-	if (ip_route_output_key(&rt, &key) != 0) {
+-		printk("route_me_harder: No more route.\n");
+-		return -EINVAL;
+-	}
+-
+-	/* Drop old route. */
+-	dst_release(skb->dst);
+-
+-	skb->dst = &rt->u.dst;
+-	return 0;
+-}
+-
+ static unsigned int
+ ipt_local_hook(unsigned int hook,
+ 		   struct sk_buff **pskb,
+@@ -190,7 +162,7 @@
+ 		|| (*pskb)->nh.iph->daddr != daddr
+ 		|| (*pskb)->nfmark != nfmark
+ 		|| (*pskb)->nh.iph->tos != tos))
+-		return route_me_harder(*pskb) == 0 ? ret : NF_DROP;
++		return ip_route_me_harder(pskb) == 0 ? ret : NF_DROP;
+ 
+ 	return ret;
+ }
+diff -Nru --exclude *~ linux-nfpom1/net/core/netfilter.c linux-rc2/net/core/netfilter.c
+--- linux-nfpom1/net/core/netfilter.c	Fri Feb 22 12:38:32 2002
++++ linux-rc2/net/core/netfilter.c	Fri Feb 22 12:24:09 2002
+@@ -20,6 +20,10 @@
+ #include <linux/if.h>
+ #include <linux/netdevice.h>
+ #include <linux/brlock.h>
++#include <linux/inetdevice.h>
++#include <net/sock.h>
++#include <net/route.h>
++#include <linux/ip.h>
+ 
+ #define __KERNEL_SYSCALLS__
+ #include <linux/unistd.h>
+@@ -562,6 +556,73 @@
+ 	kfree(info);
+ 	return;
+ }
++
++#ifdef CONFIG_INET
++/* route_me_harder function, used by iptable_nat, iptable_mangle + ip_queue */
++int ip_route_me_harder(struct sk_buff **pskb)
++{
++	struct iphdr *iph = (*pskb)->nh.iph;
++	struct rtable *rt;
++	struct rt_key key = { dst:iph->daddr,
++			      src:iph->saddr,
++			      oif:(*pskb)->sk ? (*pskb)->sk->bound_dev_if : 0,
++			      tos:RT_TOS(iph->tos)|RTO_CONN,
++#ifdef CONFIG_IP_ROUTE_FWMARK
++			      fwmark:(*pskb)->nfmark
++#endif
++			    };
++	struct net_device *dev_src = NULL;
++	int err;
++
++	/* accomodate ip_route_output_slow(), which expects the key src to be
++	   0 or a local address; however some non-standard hacks like
++	   ipt_REJECT.c:send_reset() can cause packets with foreign
++           saddr to be appear on the NF_IP_LOCAL_OUT hook -MB */
++	if(key.src && !(dev_src = ip_dev_find(key.src)))
++		key.src = 0;
++
++	if ((err=ip_route_output_key(&rt, &key)) != 0) {
++		printk("route_me_harder: ip_route_output_key(dst=%u.%u.%u.%u, src=%u.%u.%u.%u, oif=%d, tos=0x%x, fwmark=0x%lx) error %d\n",
++			NIPQUAD(iph->daddr), NIPQUAD(iph->saddr),
++			(*pskb)->sk ? (*pskb)->sk->bound_dev_if : 0,
++			RT_TOS(iph->tos)|RTO_CONN,
++#ifdef CONFIG_IP_ROUTE_FWMARK
++			(*pskb)->nfmark,
++#else
++			0UL,
++#endif
++			err);
++		goto out;
++	}
++
++	/* Drop old route. */
++	dst_release((*pskb)->dst);
++
++	(*pskb)->dst = &rt->u.dst;
++
++	/* Change in oif may mean change in hh_len. */
++	if (skb_headroom(*pskb) < (*pskb)->dst->dev->hard_header_len) {
++		struct sk_buff *nskb;
++
++		nskb = skb_realloc_headroom(*pskb,
++					    (*pskb)->dst->dev->hard_header_len);
++		if (!nskb) {
++			err = -ENOMEM;
++			goto out;
++		}
++		if ((*pskb)->sk)
++			skb_set_owner_w(nskb, (*pskb)->sk);
++		kfree_skb(*pskb);
++		*pskb = nskb;
++	}
++
++out:
++	if (dev_src)
++		dev_put(dev_src);
++
++	return err;
++}
++#endif /*CONFIG_INET*/
+ 
+ /* This does not belong here, but ipt_REJECT needs it if connection
+    tracking in use: without this, connection may not be in hash table,
+
+--- linux-nfpom1/net/netsyms.c	Fri Feb 22 12:38:00 2002
++++ linux-rc2/net/netsyms.c	Fri Feb 22 12:24:09 2002
+@@ -573,6 +577,10 @@
+ EXPORT_SYMBOL(nf_setsockopt);
+ EXPORT_SYMBOL(nf_getsockopt);
+ EXPORT_SYMBOL(ip_ct_attach);
++#ifdef CONFIG_INET
++#include <linux/netfilter_ipv4.h>
++EXPORT_SYMBOL(ip_route_me_harder);
++#endif
+ #endif
+ 
+ EXPORT_SYMBOL(register_gifconf);
+--- linux-nfpom3/include/linux/netfilter_ipv4.h	Fri Feb 22 12:23:52 2002
++++ linux-rc2/include/linux/netfilter_ipv4.h	Fri Feb 22 12:24:09 2002
+@@ -59,18 +59,20 @@
+ 	NF_IP_PRI_LAST = INT_MAX,
+ };
+ 
+-#ifdef CONFIG_NETFILTER_DEBUG
++/* Arguments for setsockopt SOL_IP: */
++/* 2.0 firewalling went from 64 through 71 (and +256, +512, etc). */
++/* 2.2 firewalling (+ masq) went from 64 through 76 */
++/* 2.4 firewalling went 64 through 67. */
++#define SO_ORIGINAL_DST 80
++
+ #ifdef __KERNEL__
++#ifdef CONFIG_NETFILTER_DEBUG
+ void nf_debug_ip_local_deliver(struct sk_buff *skb);
+ void nf_debug_ip_loopback_xmit(struct sk_buff *newskb);
+ void nf_debug_ip_finish_output2(struct sk_buff *skb);
+-#endif /*__KERNEL__*/
+ #endif /*CONFIG_NETFILTER_DEBUG*/
+ 
+-/* Arguments for setsockopt SOL_IP: */
+-/* 2.0 firewalling went from 64 through 71 (and +256, +512, etc). */
+-/* 2.2 firewalling (+ masq) went from 64 through 76 */
+-/* 2.4 firewalling went 64 through 67. */
+-#define SO_ORIGINAL_DST 80
++extern int ip_route_me_harder(struct sk_buff **pskb);
++#endif /*__KERNEL__*/
+ 
+ #endif /*__LINUX_IP_NETFILTER_H*/
+

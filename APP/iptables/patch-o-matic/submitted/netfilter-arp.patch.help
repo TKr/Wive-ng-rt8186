@@ -1,0 +1,6 @@
+Author: Rusty Russel <rusty@rustcorp.com.au>
+Status: Submitted for kernel inclusion at 2.4.19-pre3 time
+
+This adds netfilter hooks to the ARP sender and receiver code.
+An ARP tables kernel module will be published soon
+

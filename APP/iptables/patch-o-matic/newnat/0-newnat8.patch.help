@@ -1,0 +1,7 @@
+Author: Harald Welte <laforge@gnumonks.org>, 
+	modified by Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Status: Pending for kernel inclusion
+
+Implementation of the new nat API for kernel 2.4.17 and above.
+
+The whole newnat suite is dependent of it.

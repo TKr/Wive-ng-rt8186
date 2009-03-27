@@ -1,0 +1,10 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/
+
+# run-parts
+*/5 * * * * /etc/scripts/one_port_workaround.sh
+*/8 * * * * /etc/scripts/pinger
+* */1 * * * /etc/scripts/ntp_adjust
+* */2 * * * echo > /var/log/cron.log

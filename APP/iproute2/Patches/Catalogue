@@ -1,0 +1,18 @@
+Location: ./if_change.dif
+Authors: Alexey Zhuravlev <alexey@istu.udm.ru>
+Summary: implemented ifa_change mask in netlink link state notifications.
+
+Location: ./turbopacket.dif.gz
+Authors: ME
+Summary: an extension to packet socket interface. tcpdump from
+	 ip-routing/lbl-tools/ understands and uses it.
+
+Location: Contact Christopher Li <chrisl@turbolinux.com>
+Authors: Christopher Li <chrisl@turbolinux.com>
+Summary: AF_CAPTURE socket. Good alternative to packet socket.
+
+http://lrcwww.epfl.ch/linux-diffserv/
+Authors: Werner Almesberger and Jamal Hadi Salam
+Summary: extensions to kernel and tc utility implementing
+	 DS (Differentiated Service) for Linux-2.2
+

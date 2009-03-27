@@ -1,0 +1,5 @@
+Author: Edward Killips <etkillips@hotmail.com>
+Status: Submitted for kernel inclusion
+
+This patch fixes an Oops regarded to the TOS manipulation target.
+

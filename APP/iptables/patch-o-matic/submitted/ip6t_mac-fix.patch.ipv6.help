@@ -1,0 +1,5 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Included in kernel 2.4.13
+
+Fix a potentially exploitable bug with mac address matching
+in IPv6 and very small packets

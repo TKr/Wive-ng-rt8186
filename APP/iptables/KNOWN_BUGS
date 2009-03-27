@@ -1,0 +1,10 @@
+Known bugs:
+
+1) NAT in the OUTPUT chain does not work in stock kernels.  However,
+   there is a patch in patch-o-matic, called the 'local-nat.patch'. 
+   This patch adds a CONFIG_NF_IP_NAT_LOCAL kernel config option.
+
+2) tcpdump traffic is corrupted by OUTPUT NAT.
+
+3) Connection tracking doesn't wait very long for reply FIN, meaning
+   that half-closed pipes can time out early (seen frequently with squid).

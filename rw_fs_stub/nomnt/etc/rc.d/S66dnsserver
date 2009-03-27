@@ -1,0 +1,36 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+if [ "$START_DNSSERVER" == "yes" ]; then
+ echo "Starting DNSMASQ: "
+  /sbin/dnsmasq --conf-file=/etc/dnsmasq.conf
+ echo " Ok"
+fi
+}
+
+stop() {
+ echo "Stopping DNSMASQ: "
+  killall dnsmasq
+ echo " Ok"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        stop)
+            stop
+            ;;
+
+        restart)
+            stop
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start|stop|restart}"
+            exit 1
+esac

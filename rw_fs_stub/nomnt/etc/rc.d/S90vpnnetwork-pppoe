@@ -1,0 +1,100 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+
+start () {
+
+NICE="nice --15"
+
+#pppoe start sript
+if [ "$PPPOE_CALL_START" = "yes" ] ; then
+    echo "Starting VPN network pppoe..."
+    echo > /etc/ppp/connect-errors
+    #Disable nat ipsec (SDK)
+    echo "0" > /proc/nat_ipsec
+                                                
+    if test -n "$PPPOE_ACNAME" ; then
+        ACNAME="-C $PPPOE_ACNAME"
+    fi
+    if test -n "$PPPOE_SERVICENAME" ; then
+        SERVICENAMEOPT="-S $PPPOE_SERVICENAME"
+    else
+	SERVICENAMEOPT=""
+    fi
+    if test "$PPPOE_PEERDNS" = "yes" ; then
+        PEERDNS="usepeerdns"
+    else
+	PEERDNS=""
+    fi
+    if test "$PPPOE_DEFAULTROUTE" = "yes" ; then
+        DEFAULTROUTE="defaultroute"
+        echo "Remove default route"
+        ip route del default 2> /dev/null
+    else
+        DEFAULTROUTE=""
+    fi
+    if test "$PPPOE_AUTO_REDIAL" = "yes" ; then
+        PPPOE_AUTO_REDIAL="persist"
+    else
+        PPPOE_AUTO_REDIAL=""
+    fi
+    if [ "$PPPOE_MTU" = "" ] ; then
+        PPPOE_MTU=""
+    else
+	PPPOE_MTU="mtu $PPPOE_MTU"
+    fi
+    if [ "$PPPOE_MRU" = "" ] ; then
+        PPPOE_MRU=""
+    else
+	PPPOE_MRU="mru $PPPOE_MRU"
+    fi
+
+    OPTFILE="file /etc/ppp/options.pppoe"
+    
+ #Userspace or kernel mode select
+ if test "$PPPOE_KERNEL_MODE" = "yes" ; then
+    # Standard PPP options we always use
+    PPP_STD_OPTIONS="noipdefault noauth -detach $DEFAULTROUTE $PPPOE_AUTO_REDIAL $PEERDNS"
+    # PPPoE invocation
+    PPPOE_CMD="$PPPOE_ETH rp_pppoe_ac $PPPOE_ACNAME rp_pppoe_service $PPPOE_SERVICENAME \
+        user $PPPOE_USER password $PPPOE_PASSWORD"
+    $NICE pppd $OPTFILE $PPPOE_MTU $PPPOE_MRU $PPP_STD_OPTIONS plugin /lib/rp-pppoe.so $PPPOE_CMD  &
+ else
+    # Standard PPP options we always use
+    PPP_STD_OPTIONS="noipdefault noauth nodetach $DEFAULTROUTE $PPPOE_AUTO_REDIAL $PEERDNS \
+        user $PPPOE_USER password $PPPOE_PASSWORD"
+    # PPPoE invocation
+    PPPOE_OPT="-p /var/lock/pppoe.pid"
+    PPPOE_CMD="pppoe $PPPOE_OPT -I $PPPOE_ETH -T -U $PPPOE_ACNAME $PPPOE_SERVICENAME"
+    $NICE pppd $OPTFILE $PPPOE_MTU $PPPOE_MRU $PPP_STD_OPTIONS pty "$PPPOE_CMD"  &
+ fi 
+
+fi
+}
+
+stop () {
+
+kill `ps | grep pppd | grep pppoe | awk {' print $1 '}`
+killall pppoe
+rm -f /var/lock/pppoe.pid
+
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

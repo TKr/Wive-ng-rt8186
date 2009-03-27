@@ -1,0 +1,5 @@
+Author: Guillaume Morin <guillaume@morinfr.org>
+Status: Submitted for kernel inclusion
+
+This fixes the unclean match to consider ECN bits in tcp header as clean,
+rather than unclean (as it was before).

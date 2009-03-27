@@ -1,0 +1,177 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+. /etc/network/wifi/general
+dhcpc=/sbin/udhcpc
+
+start() {
+if [ "$BRIDGE_START" = "yes" ] ; then
+ #---------------Load modules---------
+ echo Load bridge modules
+ modtest=`uname -r`
+ moddir=/lib/modules/$modtest/kernel/net
+ /sbin/insmod $moddir/bridge/bridge.o
+ #------------------------- Add bridge interface-------------------------
+ echo Add bridge interface
+ brctl addbr br0
+ #----------------------------------BRIDGE UP---------------------------
+ if [ -f /etc/devices/eth0 ]; then
+     if [ "$ETH0_ENABLED" = "yes" ] ; then
+       if [ "$ETH0_IN_BR0" == "yes" ]; then 
+       echo bridge start eth0
+       brctl addif br0 eth0
+       ip link set eth0 up
+       fi
+     fi
+ fi
+ if [ -f /etc/devices/eth1 ]; then
+     if [ "$ETH1_ENABLED" = "yes" ] ; then
+       if [ "$ETH1_IN_BR0" == "yes" ]; then 
+       echo bridge start eth1
+       brctl addif br0 eth1
+       ip link set eth1 up
+       fi
+     fi
+ fi
+  #----------WLAN INTERFACES START---------
+  if [ -f /etc/devices/wlan0 ]; then
+   if [ "$WLAN_ENABLED" = "yes" ] ; then
+    if [ "$WLAN_IN_BR0" == "yes" ]; then 
+      echo bridge start wlan0
+      brctl addif br0 wlan0
+      ip link set wlan0 up
+     fi
+    fi
+  fi
+    #----------WDS INTERFACES START----------
+  if [ "$WDS" == "yes" ]; then
+   if [ "$WDS_IN_BR0" = "yes" ] ; then
+     num=0
+     for i in $WDS0_MAC; do
+     echo bridge start wds$num
+     brctl addif br0 wlan0-wds$num
+     ip link set wlan0-wds$num up
+     num=`expr $num + 1`
+    done
+     echo Is $num WDS interfaces bridge added
+   fi
+  fi
+#---------------------------------BR0 INTERFACE UP-------------------  
+    echo "Set IP for BR"
+    if [ "$BR0_USE_DHCP" = "yes" ] ; then
+        echo "Bridge up for dhcpd br0"
+	ip link set br0 up
+	echo "From DHCP server"
+        $dhcpc -p /var/run/udhcpc-br0.pid -S -i br0 -t 3 -n >>/dev/null
+     else
+        echo "Bridge up for local br0"
+	ip link set br0 up
+	echo "From local config"
+        ip addr add $BR0_IPADDR brd + dev br0
+    fi
+
+#-------------------------ADVANCED BRIDGE OPTIONS-----------------------
+echo Clean multicast filter on br0
+    brctl clrfltrport br0
+echo AdvancedBridge options
+    if [ "$STP_ENABLE" = "yes" ];then
+      echo br0 stp on
+      brctl stp br0 on
+      else
+      echo br0 stp off
+      brctl stp br0 off
+    fi
+    if [ "$FD_TIMER" != "" ];then
+      echo br0 FD $FD_TIMER
+      brctl setfd br0 $FD_TIMER
+      else
+      echo br0 FD 0
+      brctl setfd br0 0
+    fi
+    if [ "$GCINT_TIMER" != "" ];then
+      echo br0 gcint $GCINT_TIMER
+      brctl setgcint br0 $GCINT_TIMER
+      else
+      echo br0 gcint 0
+      brctl setgcint br0 0
+    fi
+    if [ "$PORT_FILT" != "" ];then
+      echo Select port fo multicast filter
+      brctl setfltrport br0 $PORT_FILT 
+    fi
+    if [ "$MCAST_BND_ETH0" != "" ];then
+       if [ "$ETH0_IN_BR0" == "yes" ]; then 
+          echo Set multicast bandwidth on eth0
+	  brctl setbwctrl br0 eth0 $MCAST_BND_ETH0
+       fi
+    fi
+    if [ "$MCAST_BND_ETH1" != "" ];then
+       if [ "$ETH1_IN_BR0" == "yes" ]; then 
+        echo Set multicast bandwidth on eth1
+        brctl setbwctrl br0 eth1 $MCAST_BND_ETH1
+       fi
+    fi
+    if [ "$MCAST_BND_WLAN" != "" ];then
+       if [ "$WLAN_IN_BR0" == "yes" ]; then 
+        echo Set multicast bandwidth on br0
+        brctl setbwctrl br0 wlan0 $MCAST_BND_WLAN
+       fi
+    fi
+    if [ "$MACCLONE_IF" != "" ];then
+	brctl clone br0 $MACCLONE_IF
+    fi
+
+#-------------------------------------VLAN  START---------------------
+echo Vlan
+if [ "$VLAN_START" = "yes" ] ; then
+    echo VLAN modules load
+    /sbin/insmod $moddir/8021q/8021q.o
+    echo starting VLAN br
+    /etc/network/vlan
+    fi
+echo OK
+
+fi
+}
+
+stop() {
+echo UserBridgeStop from S26bridge
+  if [ "$WLAN_IN_BR0" == "yes" ]; then 
+  ip link set wlan0 down
+  brctl delif br0 wlan0
+  fi
+  if [ "$ETH0_IN_BR0" == "yes" ]; then 
+  ip link set eth0 down
+  brctl delif br0 eth0
+  fi
+  if [ "$ETH1_IN_BR0" == "yes" ]; then 
+  ip link set eth1 down
+  brctl delif br0 eth1
+  fi
+  if [ "$WDS_ENABLED" == "yes" ]; then 
+  ip link set wlan0-wds0 down
+  brctl delif br0 wlan0-wds0
+  fi
+  ip link set br0 down
+  brctl delbr br0
+echo OK
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

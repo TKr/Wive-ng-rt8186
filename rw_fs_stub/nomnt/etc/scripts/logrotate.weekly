@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#remove gzipped log at week 
+rm -rf /var/log/*.gz 

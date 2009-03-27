@@ -1,0 +1,341 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/config-language.txt.
+#
+define_bool CONFIG_MIPS y
+define_bool CONFIG_MIPS32 y
+
+mainmenu_name "Linux Kernel Configuration"
+
+mainmenu_option next_comment
+comment 'Code maturity level options'
+bool 'Prompt for development and/or incomplete code/drivers' CONFIG_EXPERIMENTAL
+endmenu
+
+mainmenu_option next_comment
+comment 'RTL8186 Software Package'
+	bool 'RTL8186_AP' CONFIG_RTL8186_AP
+	if [ "$CONFIG_RTL8186_AP" = "y" ]; then
+	    define_bool CONFIG_NINO y
+	    source arch/mips/rtlfastpath/Config.in
+	    else
+	    define_bool CONFIG_NINO n
+	fi
+endmenu
+
+mainmenu_option next_comment
+   comment 'Wive-NG Tiny selection'
+   bool 'No prink in kernel' CONFIG_NO_PRINTK
+   bool 'ELF core off' CONFIG_ELF_CORE_OFF
+   bool 'PANIC off' CONFIG_PANIC_OFF
+   bool 'MTD root' CONFIG_RTK_MTD_ROOT
+   bool 'MTD partition' CONFIG_RTK_MTD_PARTITION
+   bool 'Mount MTD root to /ro_fs' CONFIG_RO_FS_MOUNT
+   if [ "$CONFIG_RO_FS_MOUNT" = "y" ]; then
+	string "RO filesystem nount point" CONFIG_RO_MOUNT_POINT
+   fi
+   bool 'Use single mode init' CONFIG_INIT_SINGLE
+   bool 'Show CPU speed in /proc/bogomips' CONFIG_PROC_BOGOMIPS
+   bool 'Ksoftirq to Real-Time' CONFIG_PREEMPT_SOFTIRQS
+   int 'Timer frequency (HZ) (100)' CONFIG_HZ 100
+   bool 'Create system watchdog at userspace (referenced on /proc/usr_watchdog'  CONFIG_USERSPACE_WATCHDOG
+   bool 'Create leds /proc/led0 and /proc/led1 entries' CONFIG_PROC_LEDS 
+endmenu
+
+mainmenu_option next_comment
+comment 'Machine selection'
+if [ "$CONFIG_NINO" = "y" ]; then
+      bool "  Kernel Floating Point Emulator " 	CONFIG_FPU_EMU
+      bool "  Onboard cache support "		CONFIG_BOARD_SCACHE y
+      bool "  Enable Watch Dog Timer Support?"	CONFIG_RTL8181_WTDOG
+      bool "  Enable RTL8181 GPIO for FLASH Reload DFault?"	CONFIG_RTL8181_GPIO
+      bool '  Enable PCI Support' CONFIG_PCI
+      if [ "$CONFIG_PCI" = "y" ]; then
+       define_bool CONFIG_NEW_PCI y
+      else
+       define_bool CONFIG_NEW_PCI n
+      fi
+      if [ "$CONFIG_NEW_PCI" = "y" ]; then
+   	int  '    Number of PCI Slot support (minimum 1 maximum 2)' CONFIG_PCI_EXTRA_DEVS 1
+      fi      
+fi
+
+define_bool CONFIG_RWSEM_GENERIC_SPINLOCK y
+
+#
+# Select some configuration options automatically for certain systems.
+#
+
+define_bool CONFIG_MCA n
+define_bool CONFIG_SBUS n
+
+if [ "$CONFIG_NINO" = "y" ]; then
+   define_bool CONFIG_NEW_IRQ y
+   define_bool CONFIG_NEW_TIME_C y
+   define_bool CONFIG_NONCOHERENT_IO y
+fi
+if [ "$CONFIG_ISA" != "y" ]; then
+   define_bool CONFIG_ISA n
+   define_bool CONFIG_EISA n
+else
+   define_bool CONFIG_EISA y
+fi
+
+comment 'CPU selection'
+choice 'CPU type' \
+	"R3000 CONFIG_CPU_R3000	\
+	 R39XX CONFIG_CPU_TX39XX	\
+	 R6000 CONFIG_CPU_R6000	\
+	 R41xx CONFIG_CPU_VR41XX \
+	 R4300 CONFIG_CPU_R4300	\
+	 R4x00 CONFIG_CPU_R4X00	\
+	 R49XX CONFIG_CPU_TX49XX	\
+	 R5000 CONFIG_CPU_R5000	\
+	 R5432 CONFIG_CPU_R5432 \
+	 RM7000 CONFIG_CPU_RM7000 \
+	 R52xx CONFIG_CPU_NEVADA \
+	 R10000 CONFIG_CPU_R10000 \
+	 SB1    CONFIG_CPU_SB1    \
+	 MIPS32 CONFIG_CPU_MIPS32 \
+	 MIPS64 CONFIG_CPU_MIPS64" R4x00
+
+if [ "$CONFIG_CPU_MIPS32" = "y" ]; then
+   define_bool CONFIG_CPU_HAS_PREFETCH y
+   bool '  Support for Virtual Tagged I-cache' CONFIG_VTAG_ICACHE
+fi
+
+if [ "$CONFIG_CPU_MIPS64" = "y" ]; then
+   define_bool CONFIG_CPU_HAS_PREFETCH y
+   bool '  Support for Virtual Tagged I-cache' CONFIG_VTAG_ICACHE
+fi
+
+if [ "$CONFIG_CPU_RM7000" = "y" ]; then
+   define_bool CONFIG_CPU_HAS_PREFETCH y
+fi
+
+if [ "$CONFIG_CPU_SB1" = "y" ]; then
+   bool '  Workarounds for pass 1 sb1 bugs' CONFIG_SB1_PASS_1_WORKAROUNDS
+   bool '  Support for SB1 Cache Error handler' CONFIG_SB1_CACHE_ERROR
+   define_bool CONFIG_VTAG_ICACHE y
+   define_bool CONFIG_CPU_HAS_PREFETCH y
+fi
+
+if [ "$CONFIG_CPU_R4X00"  = "y" -o \
+     "$CONFIG_CPU_R5000" = "y" -o \
+     "$CONFIG_CPU_RM7000" = "y" -o \
+     "$CONFIG_CPU_R10000" = "y" -o \
+     "$CONFIG_CPU_SB1" = "y" -o \
+     "$CONFIG_CPU_MIPS32" = "y" -o \
+     "$CONFIG_CPU_MIPS64" = "y" ]; then
+   bool '  Support for 64-bit physical addresspace' CONFIG_64BIT_PHYS_ADDR
+fi
+
+bool 'Override CPU Options' CONFIG_CPU_ADVANCED
+if [ "$CONFIG_CPU_ADVANCED" = "y" ]; then
+   bool '  ll/sc Instructions available' CONFIG_CPU_HAS_LLSC
+   bool '  lld/scd Instructions available' CONFIG_CPU_HAS_LLDSCD
+   bool '  Writeback Buffer available' CONFIG_CPU_HAS_WB
+else
+   if [ "$CONFIG_CPU_R3000" = "y" -o \
+        "$CONFIG_CPU_VR41XX" = "y" -o    \
+        "$CONFIG_CPU_TX39XX" = "y" ]; then
+	 define_bool CONFIG_CPU_HAS_LLSC n
+	 define_bool CONFIG_CPU_HAS_LLDSCD n
+	 define_bool CONFIG_CPU_HAS_WB n
+   else
+      if [ "$CONFIG_CPU_MIPS32" = "y" ]; then
+	 define_bool CONFIG_CPU_HAS_LLSC y
+	 define_bool CONFIG_CPU_HAS_LLDSCD n
+	 define_bool CONFIG_CPU_HAS_WB n
+      else
+	 define_bool CONFIG_CPU_HAS_LLSC y
+	 define_bool CONFIG_CPU_HAS_LLDSCD y
+	 define_bool CONFIG_CPU_HAS_WB n
+      fi
+   fi
+fi
+endmenu
+
+mainmenu_option next_comment
+comment 'Loadable module support'
+bool 'Enable loadable module support' CONFIG_MODULES
+if [ "$CONFIG_MODULES" = "y" ]; then
+   bool '  Set version information on all module symbols' CONFIG_MODVERSIONS
+   bool '  Kernel module loader' CONFIG_KMOD
+fi
+endmenu
+
+mainmenu_option next_comment
+comment 'General setup'
+   bool 'Generate little endian code' CONFIG_CPU_LITTLE_ENDIAN
+   if [ "$CONFIG_PROC_FS" = "y" ]; then
+    define_bool CONFIG_KCORE_ELF y
+   fi
+
+    define_bool CONFIG_ELF_KERNEL y
+
+   if [ "$CONFIG_CPU_LITTLE_ENDIAN" = "n" ]; then
+    bool 'Include IRIX binary compatibility' CONFIG_BINFMT_IRIX 
+    bool 'Include forward keyboard' CONFIG_FORWARD_KEYBOARD 
+   fi
+   if [ "$CONFIG_ARC32" = "y" ]; then
+    bool 'ARC console support' CONFIG_ARC_CONSOLE
+   fi
+
+define_bool CONFIG_BINFMT_AOUT n
+define_bool CONFIG_BINFMT_ELF y
+
+tristate 'Kernel support for MISC binaries' CONFIG_BINFMT_MISC
+if [ "$CONFIG_MIPS_AU1000" = "y" ]; then
+    dep_bool 'Power Management support (experimental)' CONFIG_PM $CONFIG_EXPERIMENTAL
+fi
+
+bool 'System V IPC' CONFIG_SYSVIPC
+bool 'BSD Process Accounting' CONFIG_BSD_PROCESS_ACCT
+bool 'Sysctl support' CONFIG_SYSCTL
+endmenu
+
+define_bool CONFIG_NET y
+source net/Config.in
+source fs/Config.in
+source crypto/Config.in
+source lib/Config.in
+source drivers/mtd/Config.in
+source drivers/flash/Config.in
+source drivers/parport/Config.in
+source drivers/block/Config.in
+source drivers/md/Config.in
+source drivers/pci/Config.in
+source drivers/char/Config.in
+
+if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
+mainmenu_option next_comment
+comment 'ATA/IDE/MFM/RLL support'
+   tristate 'ATA/IDE/MFM/RLL support' CONFIG_IDE
+   if [ "$CONFIG_IDE" != "n" ]; then
+      source drivers/ide/Config.in
+   else
+      define_bool CONFIG_BLK_DEV_IDE_MODES n
+      define_bool CONFIG_BLK_DEV_HD n
+   fi
+endmenu
+
+mainmenu_option next_comment
+comment 'SCSI support'
+    tristate 'SCSI support' CONFIG_SCSI
+    if [ "$CONFIG_SCSI" != "n" ]; then
+       source drivers/scsi/Config.in
+    fi
+endmenu
+fi
+
+if [ "$CONFIG_NET" = "y" ]; then
+   mainmenu_option next_comment
+   comment 'Network device support'
+   bool 'Network device support' CONFIG_NETDEVICES
+   if [ "$CONFIG_NETDEVICES" = "y" ]; then
+      source drivers/net/Config.in
+      if [ "$CONFIG_ATM" = "y" ]; then
+         source drivers/atm/Config.in
+      fi
+   fi
+   endmenu
+fi
+
+
+endmenu
+
+if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
+mainmenu_option next_comment
+comment 'Experimental options'
+   bool 'High Memory Support (experimental)' CONFIG_HIGHMEM
+   bool 'Tiny kernel' CONFIG_TINY_KERNEL
+   bool 'Create cooler /proc/cooler' CONFIG_PROC_COOLER 
+   if [ "$CONFIG_PROC_COOLER" = "y" ]; then
+   choice 'Choose cooler connected CPU pin' \
+        "GPAPIN[6]_CPU_pin_33_JTAG_TDI CONFIG_COOLER_PIN_6 \
+         GPAPIN[7]_CPU_pin_8_JTAG_TMS CONFIG_COOLER_PIN_7 \
+         GPAPIN[8]_CPU_pin_146_JTAG_TRSTN CONFIG_COOLER_PIN_8 \
+         GPAPIN[9]_CPU_pin_116_JTAG_TDO CONFIG_COOLER_PIN_9 \
+         GPAPIN[10]_CPU_pin_188_JTAG_EXTERNAL_RESET CONFIG_COOLER_PIN_10" CONFIG_COOLER_PIN_6
+   fi
+   bool 'Create DS1820 temperature sensor at /proc/thermal' CONFIG_PROC_DS1820
+   if [ "$CONFIG_PROC_DS1820" = "y" ]; then
+   choice 'Choose thermal sensor connected CPU pin' \
+        "GPAPIN[B]_CPU_pin_78_BUTTON2 CONFIG_DS1820_PIN_B \
+	 GPAPIN[6]_CPU_pin_33_JTAG_TDI CONFIG_DS1820_PIN_6 \
+         GPAPIN[7]_CPU_pin_8_JTAG_TMS CONFIG_DS1820_PIN_7 \
+         GPAPIN[8]_CPU_pin_146_JTAG_TRSTN CONFIG_DS1820_PIN_8 \
+         GPAPIN[9]_CPU_pin_116_JTAG_TDO CONFIG_DS1820_PIN_9 \
+         GPAPIN[10]_CPU_pin_188_JTAG_EXTERNAL_RESET CONFIG_DS1820_PIN_10" CONFIG_DS1820_PIN_6
+   fi
+   if [ "$CONFIG_DECSTATION" != "y" ]; then
+       mainmenu_option next_comment	
+       comment 'Sound'
+	tristate 'Sound card support' CONFIG_SOUND
+    	    if [ "$CONFIG_SOUND" != "n" ]; then
+	      source drivers/sound/Config.in
+    	    fi
+	 endmenu
+    fi
+    mainmenu_option next_comment
+    comment 'CODEC support'
+        tristate 'A/V/S Codec support' CONFIG_CODEC
+        if [ "$CONFIG_CODEC" != "n" ]; then
+		tristate 'VWEB2010 support' CONFIG_VW2010
+        fi
+       bool 'Add frequency hooping' CONFIG_NGPL_FREQUENCY_HOPPING
+        if [ "$CONFIG_NGPL_FREQUENCY_HOPPING" = "y" ]; then
+         bool 'Soft tuning' CONFIG_NGPL_SOFT_TUNE
+        fi
+    mainmenu_option next_comment
+    comment 'ISDN subsystem'
+    if [ "$CONFIG_NET" != "n" ]; then
+	tristate 'ISDN support' CONFIG_ISDN
+	if [ "$CONFIG_ISDN" != "n" ]; then
+          source drivers/isdn/Config.in
+	fi
+    fi
+    endmenu
+    mainmenu_option next_comment
+    comment 'Old CD-ROM drivers (not SCSI, not IDE)'
+
+    bool 'Support non-SCSI/IDE/ATAPI CDROM drives' CONFIG_CD_NO_IDESCSI
+    if [ "$CONFIG_CD_NO_IDESCSI" != "n" ]; then
+        source drivers/cdrom/Config.in
+    fi
+    bool 'Support for hot-pluggable devices' CONFIG_HOTPLUG
+    if [ "$CONFIG_HOTPLUG" = "y" ] ; then
+       source drivers/pcmcia/Config.in
+       source drivers/hotplug/Config.in
+    else
+       define_bool CONFIG_PCMCIA n
+       define_bool CONFIG_HOTPLUG_PCI n
+    fi
+    if [ "$CONFIG_ISA" = "y" ]; then
+       source drivers/pnp/Config.in
+    fi
+    source net/ax25/Config.in
+    source net/irda/Config.in
+    source drivers/media/Config.in
+    source drivers/usb/Config.in
+    source drivers/input/Config.in
+    source drivers/telephony/Config.in
+    source drivers/video/Config.in
+fi
+endmenu
+
+mainmenu_option next_comment
+comment 'Kernel hacking'
+    bool 'Are you using a crosscompiler' CONFIG_CROSSCOMPILE
+	if [ "$CONFIG_SERIAL" = "y" -o "$CONFIG_AU1000_UART" = "y" ]; then
+	  bool 'Remote GDB kernel debugging' CONFIG_REMOTE_DEBUG
+	  dep_bool 'Console output to GDB' CONFIG_GDB_CONSOLE $CONFIG_REMOTE_DEBUG
+	fi
+    bool 'Enable run-time debugging' CONFIG_DEBUG
+    bool 'Magic SysRq key' CONFIG_MAGIC_SYSRQ
+	if [ "$CONFIG_SMP" != "y" ]; then
+	   bool 'Run uncached' CONFIG_MIPS_UNCACHED
+	fi
+endmenu
+

@@ -1,0 +1,57 @@
+#!/bin/sh
+
+#################################################
+# Script file to LAN crontrol for RTL8305	#
+# Format: lanctl [up|down|status|help port] 	#
+# Original in Zyxel P330W firmware.		#
+# Wive-NG by Evgeniy Manachkin			#
+#################################################
+
+set_mode() 
+{
+SHIPPING_MODEL=`dmesg | grep 8305 -c`
+if [ "$SHIPPING_MODEL" = '2' ];then
+    # GW Model (4 ports with 1 MII)
+    if [ $N_PORT = "1" ]; then
+	iwpriv wlan0 write_mem dw,bd30005c,1,8000$LCTL
+    fi
+    if [ $N_PORT = "2" ]; then
+	iwpriv wlan0 write_mem dw,bd30005c,1,8400$LCTL
+    fi
+    if [ $N_PORT = "3" ]; then
+	iwpriv wlan0 write_mem dw,bd30005c,1,8800$LCTL
+    fi
+    if [ $N_PORT = "4" ]; then
+	iwpriv wlan0 write_mem dw,bd30005c,1,8C00$LCTL
+    fi
+else
+    # AP Model (2 ports with 2 MII)
+    if [ $N_PORT = "1" ]; then
+	iwpriv wlan0 write_mem dw,bd30005c,1,8400$LCTL
+    fi
+    if [ $N_PORT = "2" ]; then
+	iwpriv wlan0 write_mem dw,bd20005c,1,8400$LCTL
+    fi
+fi
+}
+
+COMMAND=$1
+N_PORT=$2
+
+if [ $COMMAND = "help" ]; then
+echo "lanctl [up|down|autoneg|help] port"
+echo "up - power up port"
+echo "down - port power down"
+echo "autoneg - restart auto-negotiation process"
+echo "help - this help"
+exit 0
+    elif [ $COMMAND = "down" ]; then
+	LCTL=3900
+	set_mode
+    elif [ $COMMAND = "up" ]; then
+        LCTL=3100
+	set_mode
+    elif [ $COMMAND = "autoneg" ]; then
+        LCTL=3200
+	set_mode
+fi

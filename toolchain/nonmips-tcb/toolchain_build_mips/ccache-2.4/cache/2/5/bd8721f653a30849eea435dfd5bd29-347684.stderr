@@ -1,0 +1,10 @@
+traps.c: In function `show_stack':
+traps.c:198: warning: use of cast expressions as lvalues is deprecated
+traps.c: In function `show_trace':
+traps.c:237: warning: use of cast expressions as lvalues is deprecated
+traps.c: In function `show_code':
+traps.c:282: warning: use of cast expressions as lvalues is deprecated
+traps.c: In function `default_be_board_handler':
+traps.c:443: warning: concatenation of string literals with __FUNCTION__ is deprecated
+traps.c: In function `nmi_exception_handler':
+traps.c:896: warning: concatenation of string literals with __FUNCTION__ is deprecated

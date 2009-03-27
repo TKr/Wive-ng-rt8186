@@ -1,0 +1,10 @@
+Author: Harald Welte <laforge@gnumonks.org>,
+ 	Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Status: Included in linux kernel >= 2.4.18-pre9
+
+This patch fixes an important security issue present in all linux kernel
+versions from 2.4.14 to 2.4.18-pre8.  
+
+Details of this security issue can be found at
+http://www.netfilter.org/security/2002-02-25-irc-dcc-mask.html
+

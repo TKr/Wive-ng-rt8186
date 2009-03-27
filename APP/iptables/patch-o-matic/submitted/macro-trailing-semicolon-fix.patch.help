@@ -1,0 +1,6 @@
+Author: David Miller <davem@redhat.com>
+Status: Included in 2.4.19-pre3
+
+Some macros erroneously contained a trailing semicolon. This patch removes
+the trailing semicolons.
+

@@ -1,0 +1,60 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+
+FS_SAVE=no
+
+start() {
+#Generate host key for first start
+if [ -f /etc/dropbear/dropbear_dss_host_key ]; then
+    echo DSS file exist
+else    
+    echo "Generating ssh keys"
+    echo If no DSS key  and generate new key
+    dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key
+    FS_SAVE=yes
+fi
+
+#Generate mac adress for firs start
+if [ `grep -c "MACADDR" /etc/network/interfaces` = "0" ]; then
+    echo First start MAC generate
+    num=0
+    for i in `seq 1 3`; do
+        macinc=`cat /dev/urandom | hexdump | head -1 | cut -c9,10`
+        num=`expr $num + 1`
+        mac=$mac$macinc
+    done
+    echo ETH0_MACADDR=0002$mac'00' >> /etc/network/interfaces
+    echo ETH1_MACADDR=0002$mac'01' >> /etc/network/interfaces
+    echo WLAN_MACADDR=0002$mac'02' >> /etc/network/interfaces
+    FS_SAVE=yes
+fi
+
+if [ "$FS_SAVE" = "yes" ]; then
+    fs save
+    /etc/rc.d/S01syslog restart
+fi
+}
+            
+stop() {
+    Echo "OK"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

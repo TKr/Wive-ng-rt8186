@@ -1,0 +1,78 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+. /etc/network/wifi/general
+
+start() {
+#---------------------ROAMING DAEMON--------------------
+if [ "$ENABLE_ROAMING" == "yes" ]; then
+    echo Starting roaming daemon
+    if [ "$WLAN_IN_BR0" == "yes" ]; then
+        /bin/iapp br0
+	#add route to iapp roaming multicast daemon adress for br0
+        ip route replace dev br0 224.0.1.178
+        else
+        /bin/iapp wlan0
+	#add route to iapp roaming multicast daemon adress for wlan0
+        ip route replace dev wlan0 224.0.1.178
+    fi
+fi
+                                        
+#---------------------WPA starting of end----------------
+if [ "$WPA" = "yes" ] ; then
+    if [ "$RMODE" == "CLIENT" ] ; then
+	wpa_start_mode="client-infra"
+        else
+	wpa_start_mode="auth"
+    fi
+    echo Starting WPA daemon in $wpa_start_mode mode
+    if [ "$WLAN_IN_BR0" == "yes" ]; then
+        auth wlan0 br0 $wpa_start_mode /etc/wpa.conf
+        else
+        auth wlan0 wlan0 $wpa_start_mode /etc/wpa.conf
+    fi
+fi
+
+#---------------------WPS starting of end----------------
+if [ "$WPS" = "yes" ] ; then
+    echo Starting WPS daemon
+    if [ "$WLAN_IN_BR0" == "yes" ]; then
+	wscd -c /etc/wscd.conf -w wlan0 -br br0 -mode 3 -sig_start
+	else
+	wscd -c /etc/wscd.conf -w wlan0 -br eth0 -mode 3 -sig_start
+    fi
+fi
+
+#---------------------iwcontrol start----------------------
+if [ "$WDS" = "yes" ] || [ "$WPS" = "yes" ] || [ "$WPA" == "yes" ] || [ "$ENABLE_ROAMING" == "yes" ] || [ "$REPEATER" == "yes" ]; then
+    iwcontrol wlan0
+fi
+
+}
+
+stop() {
+killall -9 iapp
+killall -9 iwcontrol
+killall -9 auth
+#delete route to iapp roaming multicast daemon adress
+ip route del 224.0.1.178
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

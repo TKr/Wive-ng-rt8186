@@ -1,0 +1,15 @@
+CONFIG_IP_NF_TARGET_TOS
+DSCP target support
+CONFIG_IP_NF_TARGET_DSCP
+  This option adds a `DSCP' target, which allows you to create rules in
+  the iptables mangle table. The selected packet has the DSCP field set
+  to the hex value provided on the command line; unlike the TOS target
+  which will only set the legal values within ip.h.
+
+  The DSCP field can be set to any value between 0x0 and 0x4f. It does
+  take into account that bits 6 and 7 are used by ECN.
+
+  If you want to compile it as a module, say M here and read
+  Documentation/modules.txt.  If unsure, say `N'.
+
+ 

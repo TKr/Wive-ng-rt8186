@@ -1,0 +1,18 @@
+#!/bin/sh
+
+datefile=`date -I`
+
+cp /var/log/boot.log /var/log/boot$datefile.log
+cp /var/log/crond.log /var/log/crond$datefile.log
+cp /var/log/station.log /var/log/station$datefile.log 
+cp /var/log/messages /var/log/messages$datefile
+
+echo > /var/log/boot.log
+echo > /var/log/crond.log
+echo > /var/log/station.log
+echo > /var/log/messages
+
+gzip -9 /var/log/boot$datefile.log
+gzip -9 /var/log/crond$datefile.log
+gzip -9 /var/log/station$datefile.log 
+gzip -9 /var/log/messages$datefile

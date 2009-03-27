@@ -1,0 +1,4 @@
+In file included from igmpproxy.c:39:
+defs.h:129: warning: conflicting types for built-in function `log'
+igmpproxy.c: In function `main':
+igmpproxy.c:119: warning: assignment discards qualifiers from pointer target type

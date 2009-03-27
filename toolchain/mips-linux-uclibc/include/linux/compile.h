@@ -1,0 +1,6 @@
+#define UTS_VERSION "#2482 Sat, 31 Jan 2009 16:11:33 +0600"
+#define LINUX_COMPILE_TIME "16:11:33"
+#define LINUX_COMPILE_BY "wive-ng.sf.net"
+#define LINUX_COMPILE_HOST "sfstudio.sadnet.lo"
+#define LINUX_COMPILE_DOMAIN "sadnet.lo"
+#define LINUX_COMPILER "gcc version 3.3.3"

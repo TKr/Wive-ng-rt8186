@@ -1,0 +1,1 @@
+#define CONFIG_BOARD_SCACHE 1

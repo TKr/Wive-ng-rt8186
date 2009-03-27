@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Deep Green (Sergey G. Kononov) tri-system started";
+# Updated by N.Leiten (Gamov Vadim) version 3
+# Updated by Sfstudio (Evgeniy Manachkin) v.4
+
+# Test - if filesystem is ok (dGreen)
+rm -rf /mnt/rw_fs/*
+/bin/fs load
+
+if (cat /mnt/rw_fs/filesystem.ok > /dev/null 2>&1) then
+  #If FS is ok we just remake symlinks to our directories. Idea belongs to dGreen. TNX.
+  # I've just make it simple. (N.Leiten)
+  echo "RW File system is ok - preparing ..."
+  rm -rf /etc
+  ln -s /mnt/rw_fs/etc /etc
+  rm -rf /usr
+  ln -s /mnt/rw_fs/usr /usr
+  echo "ok"
+else
+  echo "File system is clear or poor."
+  dd if=/dev/urandom of=/dev/mtd2 bs=1k count=2
+  echo "   Restoring emergency..."
+  mkdir -p /mnt/rw_fs/etc
+  mkdir -p /mnt/rw_fs/usr
+  cp -r /nomnt/etc/* /mnt/rw_fs/etc
+  cp -r /nomnt/usr/* /mnt/rw_fs/usr
+  rm -rf /etc
+  rm -rf /usr
+  ln -s /mnt/rw_fs/etc /etc
+  ln -s /mnt/rw_fs/usr /usr
+  echo "Delete this file and reboot access point for default configuration restoring" > /mnt/rw_fs/filesystem.ok
+  ln -sf /proc/mounts /etc/mtab
+  /bin/fs save
+  echo "ok"
+fi
+
+#--- need from RTL SDK ---- 
+
+/etc/rc.d/rcS &

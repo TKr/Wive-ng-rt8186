@@ -1,0 +1,5 @@
+#!/bin/sh
+
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+

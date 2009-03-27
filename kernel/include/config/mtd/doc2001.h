@@ -1,0 +1,1 @@
+#define CONFIG_MTD_DOC2001 1

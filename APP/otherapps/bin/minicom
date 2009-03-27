@@ -1,0 +1,3 @@
+#!/bin/sh
+
+microcom -s 38400 /dev/ttyS0

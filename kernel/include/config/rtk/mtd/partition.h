@@ -1,0 +1,1 @@
+#define CONFIG_RTK_MTD_PARTITION 1

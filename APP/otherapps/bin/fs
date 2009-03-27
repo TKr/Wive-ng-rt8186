@@ -1,0 +1,92 @@
+#!/bin/sh
+
+# Modified by N.Leiten and adopted for Wive-firmware, renamed in "fs"
+# "flash" is a part of midge - mini distribuition for adm5120 based routers
+# Copyright (C) 2004-2005 by Vladislav Moskovets <midge at vlad.org.ua>
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU GPL v2 or later.
+
+TGZfs_size=131072
+
+get_size(){
+  ls -sk $1 |  sed -e "s/ \+/ /g" | cut -d" " -f2
+}
+
+usage(){
+  echo "Usage: $0 | save | load | restore |" >&2
+  exit 1
+}
+
+load(){
+  local dst=/ 
+  echo "Loading TGZfs"
+  zcat /dev/mtd2 | tar xf - -C $dst>>/dev/null
+}
+
+save(){
+  echo > /var/log/messages
+  echo > /var/log/boot.log
+  echo > /etc/ppp/connect-errors
+  echo "Compress config files"
+  tmp="/tmp/tgzfs"
+  tar cf - /mnt/rw_fs | gzip -9 > $tmp
+  if [ "$(get_size $tmp)" -lt $(($TGZfs_size/1024)) ]; then
+    echo "Write configs to flash"
+    dd if=$tmp of=/dev/mtd2 bs=64k >> /dev/null
+    echo "Config saved. OK."
+  else
+    echo "Error: File $tmp too big: $(get_size $tmp)k"
+  fi
+  rm $tmp
+}
+
+restore(){
+  dd if=/dev/urandom of=/dev/mtd2 bs=1k count=2
+  echo "   Restoring defaults..."
+  mkdir -p /mnt/rw_fs/etc
+  mkdir -p /mnt/rw_fs/usr
+  cp -r /nomnt/etc/* /mnt/rw_fs/etc
+  cp -r /nomnt/usr/* /mnt/rw_fs/usr
+  rm -rf /etc
+  rm -rf /usr
+  ln -s /mnt/rw_fs/etc /etc
+  ln -s /mnt/rw_fs/usr /usr
+  /bin/fs save
+  echo "Default restored..."
+}
+
+flashrestore(){
+    /bin/echo "123456789">/dev/mtd2 
+}
+crash(){
+    killall -9 crond
+    /bin/echo "123456789">/dev/mtd1
+    reboot
+}
+main(){
+  local cmd="$1"
+  [ -z "$cmd" ] && usage
+  shift
+  case "$cmd" in 
+    load) 
+      load $@ 
+      ;;
+    save) 
+      save $@ 
+      ;;
+    restore)
+      restore $@
+      ;;
+    flashrestore)
+      flashrestore $@
+      ;;
+    crash)
+      crash $@
+      ;;
+    *) 
+      usage $@ 
+      ;;
+  esac
+}
+
+main $@

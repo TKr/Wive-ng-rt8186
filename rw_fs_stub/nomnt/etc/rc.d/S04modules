@@ -1,0 +1,41 @@
+#!/bin/sh
+
+. /etc/network/interfaces
+
+modtest=`uname -r`
+moddir=/lib/modules/$modtest/kernel
+
+start() {
+echo "Starting modules.dep generate..."
+    ls -1R $moddir/drivers/block/*	| awk '{ print $1 ":" }' >  /etc/modules.dep
+    ls -1R $moddir/drivers/net/*	| awk '{ print $1 ":" }' >> /etc/modules.dep
+    ls -1R $moddir/fs/cifs/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+    ls -1R $moddir/net/8021q/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+    ls -1R $moddir/net/bridge/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+    ls -1R $moddir/net/ipv4/netfilter/*	| awk '{ print $1 ":" }' >> /etc/modules.dep
+    ls -1R $moddir/net/sched/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+}
+
+stop() {
+    echo "Stop modules.dep generate..."
+    Echo "OK"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

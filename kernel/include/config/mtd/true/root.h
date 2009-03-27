@@ -1,0 +1,1 @@
+#define CONFIG_MTD_TRUE_ROOT 1

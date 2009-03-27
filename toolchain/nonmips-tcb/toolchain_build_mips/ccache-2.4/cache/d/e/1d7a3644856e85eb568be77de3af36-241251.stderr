@@ -1,0 +1,4 @@
+modutils/modutils-24.c: In function `arch_apply_relocation':
+modutils/modutils-24.c:777: warning: unused parameter `sym'
+modutils/modutils-24.c: In function `arch_create_got':
+modutils/modutils-24.c:1737: warning: unused parameter `f'

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. /etc/boot
+
+if [ "$PERIODIC_TIME_SYNC" == "yes" ]; then
+    if (ping -c 1 $NTP_SERVER >/dev/null) then
+     if [ `ps | grep ntpclient -c` = "1" ]; then
+	/bin/ntpclient -s -h $NTP_SERVER
+      fi
+    fi
+fi  
+

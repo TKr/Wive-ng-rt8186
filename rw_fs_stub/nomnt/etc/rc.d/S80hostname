@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#With hostname we can only set or reset, so we can only start
+
+start() {
+ echo  "Setting Hostname: "
+  HN=`cat /etc/hostname`
+  /bin/hostname $HN
+ echo " $HN"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start}"
+            exit 1
+esac

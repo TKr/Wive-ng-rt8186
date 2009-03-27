@@ -1,0 +1,39 @@
+#only for pptp options
+# We don't need the tunnel server to authenticate itself
+noauth
+
+#For buggy peers recive all LCP packets and will not transmit 
+#LCP packets to initiate a connection until a valid LCP packet 
+#is received from the  peer
+#silent
+#receive-all
+
+#Options for redial
+idle 0
+maxfail 0
+holdoff 5
+
+# We won't do PAP, EAP, CHAP, or MSCHAP, but we will accept MSCHAP-V2
+# (you may need to remove these refusals if the server is not using MPPE)
+refuse-pap
+refuse-eap
+refuse-chap
+
+#Disable it to change kernel settings.
+noktune
+
+#Disable ARP proxy and IPX protocol
+noproxyarp
+noipx
+
+# Turn off compression protocols we know won't be used
+novj
+novjccomp
+nopcomp
+noaccomp
+nobsdcomp
+nodeflate
+
+# LCP Control
+lcp-echo-failure        5
+lcp-echo-interval       30

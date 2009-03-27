@@ -1,0 +1,1 @@
+#define CONFIG_DRIVER_SPEEDUP 1

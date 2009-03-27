@@ -1,0 +1,36 @@
+#!/bin/sh
+
+. /etc/boot
+
+start() {
+if [ "$START_DHCPSERVER" == "yes" ]; then
+ echo "Starting uDHCPD: "
+  /sbin/udhcpd
+ echo " Ok"
+fi
+}
+
+stop() {
+ echo "Stopping uDHCPD: "
+  killall udhcpd
+ echo " Ok"
+}
+
+case "$1" in
+        start)
+            start
+            ;;
+
+        stop)
+            stop
+            ;;
+
+        restart)
+            stop
+            start
+            ;;
+
+        *)
+            echo $"Usage: $0 {start|stop|restart}"
+            exit 1
+esac

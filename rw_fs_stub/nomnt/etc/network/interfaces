@@ -1,0 +1,87 @@
+#GENERAL NETWORK CONFIGURATION
+
+#Global options
+VLAN_START=no
+
+#--------------VPN config---------------------
+
+#Remove auto route in tunnel added from kernel 
+#after ppp up and block packets sends to NAT 
+#over toonels (need for Corbina/Beeline and 
+#for others buggy servers)
+BUGGY_NAS=no
+
+#--PPTP
+PPTP_CALL_START=no
+PPTP_SERVER=10.0.0.254
+PPTP_MPPE=yes
+PPTP_MTU=
+PPTP_MRU=
+PPTP_USER=pptp
+PPTP_PASSWORD=testppppass
+PPTP_DEFROUTE=no #(yes|no|replace)
+PPTP_PEERDNS=yes
+PPTP_AUTO_REDIAL=no
+
+#--PPPOE
+PPPOE_CALL_START=no
+PPPOE_ETH=eth0
+PPPOE_MTU=1000
+PPPOE_MRU=1000
+PPPOE_USER=pppoe
+PPPOE_PASSWORD=testppppass
+PPPOE_ACNAME=you_acname
+PPPOE_SERVICENAME=you_servicename
+PPPOE_PEERDNS=yes
+PPPOE_DEFAULTROUTE=no
+PPPOE_AUTO_REDIAL=no
+PPPOE_KERNEL_MODE=no
+
+#--L2TP
+#Edit /etc/ppp/l2tpd.conf fo configure
+L2TP_CALL_START=no
+
+#-----------Interfaces config-------------------
+#Bridge config
+BRIDGE_START=yes
+BR0_USE_DHCP=no
+BR0_IPADDR=10.200.200.249/8 #ipv4 adress is 10.200.200.249 netmask 255.0.0.0
+STP_ENABLE=no
+FD_TIMER=0
+GCINT_TIMER=0
+
+#Select port fo multicast filter
+PORT_FILT=eth0
+#Multicast bandwidth in kbps (decrase for speed down on selected interface for cpu offload)
+MCAST_BND_ETH0=80000
+MCAST_BND_ETH1=80000
+MCAST_BND_WLAN=40000
+#Macclone from to interface
+MACCLONE_IF="" #"eth0 wlan0" to clone MAC from eth0 to wlan0
+
+#WDS interfaces config
+WDS_IN_BR0=yes
+
+#Ethernet port1 config
+ETH0_ENABLED=yes
+ETH0_FORCEIP=no
+ETH0_IN_BR0=yes
+ETH0_USE_DHCP=no
+ETH0_IPADDR=
+
+#Ethernet port2 config
+ETH1_ENABLED=yes
+ETH1_FORCEIP=no
+ETH1_IN_BR0=yes
+ETH1_USE_DHCP=no
+ETH1_IPADDR=
+
+#Wireliss port config
+WLAN_ENABLED=yes
+WLAN_FORCEIP=no
+WLAN_IN_BR0=yes
+WLAN_USE_DHCP=no
+WLAN_IPADDR=
+
+#--------------------------MAC ADREESSES SETTINGS--------------------------------
+

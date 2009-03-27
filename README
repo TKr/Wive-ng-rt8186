@@ -1,0 +1,34 @@
+----------------------------------------------------------
+------------=This is GPL software=------------------------
+----------------------------------------------------------
+Project page: http://wive-ng.sf.net 
+Russian support page: http://sfstudio.livejournal.com/
+----------------------------------------------------------
+Fork developer: Manachkin Evgeniy Romanovich
+E-mail: sfstudio@mail.ru
+----------------------------------------------------------
+Prototype page http://rtl8186.sf.net
+__________________________________________________________
+Alternative firmware and software with open source for 
+platforms based on the SoC Realtek RTL8186 based wive 
+souses http://sourceforge.net/projects/rtl8186/. 
+Include new userlevel utility and more patch`s for kernel.
+Menu command for fast configure and diagnostic device.
+Realtime kernel mode, more security, more speed and other.
+__________________________________________________________
+
+
+-------------------=COMPILE=------------------------------
+Install lexra gcc-3.3.3 in you system and run ./compile
+-------------------=FLASHING=-----------------------------
+For flash firmware push reset and power on device. Wait 
+5 seconds. Start ./upload_a.sh or ./upload_a.sh.
+If firmware dont start repeat operation over ./clear_a.sh 
+or ./clear_b.sh and reflash ./upload_a.sh or ./upload_a.sh. 
+After flash please ssh 10.200.200.249 to connet device.
+Login: root
+Passw: rtl8186
+-------------------=CONFIG=-------------------------------
+
+In ssh session enter "menu" command.
+__________________________________________________________

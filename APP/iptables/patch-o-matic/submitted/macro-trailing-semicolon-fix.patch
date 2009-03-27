@@ -1,0 +1,48 @@
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linux-2.4.18-plain/net/ipv4/netfilter/ip_fw_compat_redir.c linux-2.4.19-pre3-plain/net/ipv4/netfilter/ip_fw_compat_redir.c
+--- linux-2.4.18-plain/net/ipv4/netfilter/ip_fw_compat_redir.c	Mon Feb 25 20:38:14 2002
++++ linux-2.4.19-pre3-plain/net/ipv4/netfilter/ip_fw_compat_redir.c	Thu Mar 14 17:12:00 2002
+@@ -43,7 +43,7 @@
+ 		   netplay... */					 \
+ 		printk("ASSERT: %s:%i(%s)\n",				 \
+ 		       __FILE__, __LINE__, __FUNCTION__);		 \
+-} while(0);
++} while(0)
+ #else
+ #define IP_NF_ASSERT(x)
+ #endif
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linux-2.4.18-plain/net/ipv4/netfilter/ip_queue.c linux-2.4.19-pre3-plain/net/ipv4/netfilter/ip_queue.c
+--- linux-2.4.18-plain/net/ipv4/netfilter/ip_queue.c	Mon Feb 25 20:38:14 2002
++++ linux-2.4.19-pre3-plain/net/ipv4/netfilter/ip_queue.c	Thu Mar 14 17:12:00 2002
+@@ -464,7 +464,7 @@
+ 	return netlink_unicast(nfnl, skb, nlq->peer.pid, MSG_DONTWAIT);
+ }
+ 
+-#define RCV_SKB_FAIL(err) do { netlink_ack(skb, nlh, (err)); return; } while (0);
++#define RCV_SKB_FAIL(err) do { netlink_ack(skb, nlh, (err)); return; } while (0)
+ 
+ static __inline__ void netlink_receive_user_skb(struct sk_buff *skb)
+ {
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linux-2.4.18-plain/net/ipv4/netfilter/ipt_ULOG.c linux-2.4.19-pre3-plain/net/ipv4/netfilter/ipt_ULOG.c
+--- linux-2.4.18-plain/net/ipv4/netfilter/ipt_ULOG.c	Mon Feb 25 20:38:14 2002
++++ linux-2.4.19-pre3-plain/net/ipv4/netfilter/ipt_ULOG.c	Thu Mar 14 17:12:00 2002
+@@ -61,7 +61,7 @@
+ #define DEBUGP(format, args...)
+ #endif
+ 
+-#define PRINTR(format, args...) do { if (net_ratelimit()) printk(format, ## args); } while (0);
++#define PRINTR(format, args...) do { if (net_ratelimit()) printk(format, ## args); } while (0)
+ 
+ MODULE_AUTHOR("Harald Welte <laforge@gnumonks.org>");
+ MODULE_DESCRIPTION("IP tables userspace logging module");
+diff -Nru --exclude .depend --exclude *.o --exclude *.ver --exclude .*.flags --exclude *.orig --exclude *.rej --exclude *~ linux-2.4.18-plain/net/ipv6/netfilter/ip6_queue.c linux-2.4.19-pre3-plain/net/ipv6/netfilter/ip6_queue.c
+--- linux-2.4.18-plain/net/ipv6/netfilter/ip6_queue.c	Mon Feb 25 20:38:14 2002
++++ linux-2.4.19-pre3-plain/net/ipv6/netfilter/ip6_queue.c	Thu Mar 14 17:12:00 2002
+@@ -518,7 +518,7 @@
+ 	return netlink_unicast(nfnl, skb, nlq6->peer.pid, MSG_DONTWAIT);
+ }
+ 
+-#define RCV_SKB_FAIL(err) do { netlink_ack(skb, nlh, (err)); return; } while (0);
++#define RCV_SKB_FAIL(err) do { netlink_ack(skb, nlh, (err)); return; } while (0)
+ 
+ static __inline__ void netlink_receive_user_skb(struct sk_buff *skb)
+ {

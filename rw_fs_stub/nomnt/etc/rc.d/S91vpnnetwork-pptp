@@ -1,0 +1,100 @@
+#!/bin/sh
+
+. /etc/boot
+. /etc/network/interfaces
+
+start() {
+
+NICE="nice --15"
+
+if [ "$PPTP_CALL_START" = "yes" ] ; then
+
+    if [ "$BR0_USE_DHCP" = "yes" ] || [ "$ETH0_USE_DHCP" = "yes" ] || [ "$ETH1_USE_DHCP" = "yes" ] || [ "$WLAN_USE_DHCP" = "yes" ] ; then
+	echo "Wait for recive network parametrs from dhcpclient. PPTP start delayed."
+	sleep 10
+    fi
+
+    echo "Starting VPN network pptp..."
+    echo > /etc/ppp/connect-errors
+    #Disable nat ipsec (SDK)
+    echo "0" > /proc/nat_ipsec
+        
+    if [ "$PPTP_PEERDNS" = "yes" ] ; then
+	PEERDNS="usepeerdns"
+	else
+	PEERDNS=""
+    fi
+    if [ "$PPTP_MPPE" = "yes" ] ; then
+        MPPE=require-mppe-128
+        #if mppe need load kernel module
+        modenable=`lsmod | grep ppp_mppe -c`
+    	    if [ "$modenable" = "0" ] ; then
+	        modprobe sha1
+	        modprobe arcfour
+	        modprobe ppp_mppe
+	    fi
+	else
+	MPPE=nomppe
+    fi
+    if [ "$PPTP_DEFROUTE" = "yes" ] || [ "$PPTP_DEFROUTE" = "replace" ] ; then
+	DEFAULTROUTE="defaultroute"
+         if [ "$PPTP_DEFROUTE" = "replace" ] ; then
+	    echo "Save default route to /var/tmp/dgw.ppp"
+	    old_dgw=`route -n -e | awk '{def=$1} def=="0.0.0.0" {print $2}'`
+	    if [ "$old_dgw" != "0.0.0.0" ] ; then
+	        echo $old_dgw > /var/tmp/dgw.ppp
+	    fi
+	    echo "Remove default route"
+    	    ip route del default 2> /dev/null
+	 fi
+	else
+	DEFAULTROUTE=""
+    fi
+    if [ "$PPTP_AUTO_REDIAL" = "yes" ] ; then
+	PERSIST="persist"
+	else
+	PERSIST=""
+    fi
+    if [ "$PPTP_MTU" = "" ] ; then
+	PPTP_MTU=""
+	else
+	PPTP_MTU="mtu $PPTP_MTU"
+    fi
+    if [ "$PPTP_MRU" = "" ] ; then
+	PPTP_MRU=""
+	else
+	PPTP_MRU="mru $PPTP_MRU"
+    fi
+
+OPTFILE="file /etc/ppp/options.pptp"
+	
+$NICE pppd $OPTFILE -detach $PPTP_MTU $PPTP_MRU plugin /lib/pptp.so $MPPE pptp_server $PPTP_SERVER \
+    call pptp $DEFAULTROUTE $PERSIST $PEERDNS user $PPTP_USER password $PPTP_PASSWORD &
+fi
+
+}
+
+
+stop() {
+echo "Stop VPN network..."
+    kill -9 `ps | grep pppd | grep pptp | awk {' print $1 '}`
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac

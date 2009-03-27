@@ -1,0 +1,91 @@
+#Forward packet between interface (need for router mode)
+IPV4_FORWARD_ENABLE=no 
+
+#Enable NAT(MASQUERADE) need for NAT in router mode
+MASQUERADE=no
+
+#network (as 192.168.1.0/24) for NAT connection or clear for all
+CLIENTSNET=
+
+#Enable conntrack UDP loose for fast NAT UDP protocol
+LOOSEUDP=yes
+
+#Netfilter(firewall) configuration start
+START_IPTABLES=no
+
+#Start tc qdisc shaper (pseudo-fair distribution of a strip)
+START_SHAPER=yes
+
+#Services to start at boot
+START_DHCPSERVER=no
+
+#Name resolution services
+START_DNSSERVER=no
+START_WINSSERVER=no #(do not production use, support only in SDK)
+
+#pppoe relay support (relay for pppoe in router mode)
+START_PPPOE_RELAY=no
+SERVER_IF=wlan0
+CLIENT_IF=eth0
+
+#IGMP forward/proxy
+START_IGMPPROXY=no
+MCASTNET=239.192.0.0/22
+MCASTDEV=eth1
+
+#Start syslog daemon (start if 16MB or more RAM, disable if RAM size <16MB )
+SYSLOG_ENABLE=yes
+
+#Disable echo reply at all interfaces
+ICMP_DISABLE=no
+#Enable proxy ARP for router mode
+PROXY_ARP=no
+
+#Sync time at boot
+TIME_SYNC_ON_START=no
+PERIODIC_TIME_SYNC=no
+NTP_SERVER=10.7.0.254
+
+#----------------Watchdog options---------------------------------
+#Pinger start - periodic ping host
+PINGER=no
+PINGER_HOST=10.0.0.233
+
+#Wifi watchdog (ping selected host and if ping error exec wifireset)
+WIFI_DOG=no
+WIFI_DOGHOST=10.0.0.233
+
+#If station not in arptable or brctl show macs - delete station from wlan list (only AP mode)
+ZOMBIE_DOG=yes
+
+#Workaround of kernel module bug :( (need 1.12 or later kernel module)
+HARD_DOG=yes
+
+#-----------------Security options-------------------------------
+#TUNING OPTIONS (tune network buffers for mem) yes/no
+#Optimize max auto window size memory usadge if RAM>8
+OPTIMIZE_TCP_MEM=yes
+#Optimize conntrack for slow CPU
+CONNTRACK_OPT=yes
+#Optimize keepalive for slow CPU and radio links
+KEEPALIVE_OPT=yes
+#Tell the gc when to become aggressive with arp table cleaning.
+ARP_FAST_CLEAN=yes
+#Anti spoof
+SPOOF_PROTECT=yes
+#Enable the stealth mode
+STEALTH=yes
+#Remove unused module after reboot (recomended on 8Mb mem devices)
+REMOVE_UNUSED=no
+
+#------------------Extended options------------------------------
+#Mount samba/windows share at boot time
+MOUNT_CIFS=no
+CIFS_SERVER=10.0.0.254
+SHARE_NAME=incoming
+CIFS_USER=guest
+CIFS_PASSWD=
+
+#MMC flash card support (please format mmc card to ext2fs)
+MMC_FLASH=no
+MMC_MOUNT_POINT=/mnt/mmc

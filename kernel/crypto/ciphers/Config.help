@@ -1,0 +1,20 @@
+# David Bryson <mutex@mac.com>  Wed, Mar 20, 2002
+# Config.help descriptions for CryptoAPI cipher functions
+
+AES (aka Rijndael) cipher
+CONFIG_CIPHER_AES
+  If you answer yes to this option, the Rijndael cipher will be
+  compiled into your kernel.  Rijndael was submitted to the AES(Advanced
+  Encryption Standard) cipher competition and won, becoming the AES sta-
+  ndard.  It supports key sizes of 128, 192, and 256 bits which executes
+  10, 12, and 14 rounds respectively.
+  This cipher is freely available for anyone to use.  And the CryptoAPI 
+  implementation is under a BSD-style license of unrestricted, free use.
+
+  See also <http://www.esat.kuleuven.ac.be/~rijmen/rijndael/>
+
+  This driver is also available as a module ( = code which can be
+  inserted in and removed from the running kernel whenever you want).
+  The module will be called cipher-aes.o. If you want to compile it as a
+  module, say M here and read <file:Documentation/modules.txt>.
+

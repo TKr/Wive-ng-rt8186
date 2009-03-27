@@ -1,0 +1,9 @@
+Author: Brad Chapman (kakadu_croc@yahoo.com)
+Status: pending for kernel inclusion
+
+This patch expands the number of registered hooks for
+both the IPv4 and IPv6 versions of the iptables mangle
+table.
+Also, like the filter table, the table will accept a module
+parameter to change the verdict of the FORWARD chain upon
+module load.

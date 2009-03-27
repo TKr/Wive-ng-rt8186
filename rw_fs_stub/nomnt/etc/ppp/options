@@ -1,0 +1,5 @@
+#for all pppd sessions options
+lock
+noauth
+noipdefault
+nolog

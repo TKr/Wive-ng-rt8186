@@ -1,0 +1,477 @@
+wive-ng-0.2.17 
+1) Added the "target" NOTRACK (iptables-t raw-L-v) 
+2) Added the LNA in wifinetworks responsible for the management of the external amplifier, in some devices 
+3) Processed management fixrate, when FIXRATE = yes bit mask is set to speed OPRATES 
+4) Now works correctly skipping mode pppoe client when the NAT2_5 
+5) Added option FIXCHANNEL. yes - use the channel specified in the CHANNEL scanning the ether 
+     and use in the client, no - to use the 1-14 channel scanning and connecting. 
+6) Update dnsmasq to version 2.47 
+7) The kernel patched to conduct a conflict with IP / MAC addresses 
+8) A bug in the assembly with a non-existent ramdisk.o and removed workaround
+9) Small changes in the conntrack table to prevent the overflow of compounds with high activity
+     
+wive-ng-0.2.16
+1) Revised the order of boot devices, such as the tunnels are now raised in the last 
+2) Added timeouts before the rise of tunnels if you are using DHCP 
+3) Routes through ppp + interfaces are now added to the metric 9 that prevents the "loop" package 
+4) Added a rule prohibiting the route packets destined to the tunnel server pptp 
+5) In if-up/down now produce processing options such as PEERDNS and DEFROUTE, ie remove the "extra" routes 
+    through ppp + if selected as dgw interface tunnel 
+6) Watchdog submitted in a separate process running with higher priority in order to avoid a reboot 
+    device when the CPU is fully loaded routing 
+7) Added the purpose of TTL in netfilter 
+8) The interfaces added value BUGGY_NAS is responsible for deleting the route to add the kernel 
+    Recovery after ppp connection. It also adds a rule to netfilter blocking transmission tunnel 
+    packets with destination address equal to address the physical interface of VPN server (useful 
+    on the NAS where the address VPN server matches the address of the gateway within the tunnel, such
+    as the Corbina / Beeline, the default is off) 
+9) Added support for loose UDP conntrack to skip UDP traffic over the masquerade 
+10) In the boot option is added CLIENTSNET lets you specify where to accept connections for NAT / MASQRADE or if 
+    option is not set to NAT will work for all the subnets that unsafe 
+11) Multiple changes in the netfilter / conntrack, now going to work all the conntrack modules and all the 
+    objectives
+
+wive-ng-0.2.15
+1) You do not load conntrack modules for use in the current VPN tunnel 
+    thus solved the problem with pptp and l2tp when the server supports Windows and some versions of IOS, 
+    relevant for users of telecom-Corbin (Beeline). 
+2) Altered loading iptables modules based on the assumption that the modules can now be downloaded selectively 
+3) The error in the pptp kernel module, default ttl for pptp driver must be less than 1 in userspace 
+     version of the client. 
+4) Fixed minor defect in the implementation of NAT 
+5) The number of conntrack module reduced to the minimum necessary 
+6) Updated the code and all netfilter conntrack modules until the last possible for the 2.4 Kernel 
+7) Updated busybox to the last stable version that reduced the memory consumption 
+8) Fixed bug in genkey sometimes caused by the regeneration of keys on every boot instead of the first launch 
+9) Minor edits to optimize the boot device
+
+wive-ng-0.2.14
+1) Instead of userlevel pptp now it is used nuclear realisation ACCEL-PPTP, thereby is solved a problem 
+    of low productivity pptp tunnels (many thanks for the help and a code to Andrey from http://www.ddixlab.ru) 
+2) Instead of userlevel l2tp are used now nuclear realisation openl2tp 
+3) Are added separate options for management MTU/MRU for PPPOE/PPTP, also in interfaces are transferred 
+    options of a login/password for concrete type of connection 
+4) The problem with the big packages Is solved at use pptp and l2tp without enciphering, for pppoe the 
+    problem is actual
+5) It is added a choice userspace/kernelspace an operating mode pppoe (last yet does not work) 
+6) The error in a script tracing working capacity eth interfaces leading to incorrect preservation of 
+    options at refusal of one of interfaces 
+7) The error in pptp conntrack leading to reboots at falling of the tunnel is corrected
+8) Support persist in accel-pptp guaranteeing Is added that connection will be reinstalled as soon as the 
+    server will be accessible again
+9) It is updated realisation sha1 thanks to what mppe now works with any pptp servers including mpd 
+10) the problem with some boots not reinit the controller of the tyre of memory is corrected 
+    at softreboot (almost all G700 and DAP1150/60 and other points with бутом to 1.4 and 16bit the memory 
+    organisation) 
+11) Disabled an excessive conclusion of debugging messages xl2tpd not to litter broad gulls 
+12) Toolchain rebuild with current heading files
+
+wive-ng-0.2.13
+1) pptp now starts after pppoe to enable organizations pptp over pppoe (thanks for the hint BoBa) 
+2) Fixed persist for pppoe connections (thanks BoBa) 
+3) Backport management responses to arp requests from 2.4.37 (see proc/sys/net/ipv4/conf/all/arp *) 
+4) Added additional checks before making fs save at stages of loading, and in cases freelance work such as the completion of failure of one of the eth interfaces 
+5) Added support for processing fraudulent transfers in accordance with RFC1337 
+6) Added ftpget/ftpput utility (useful for quick loading on the point of configuration files) 
+7) Added ip-up/down scripts to add / delete the DNS addresses in / etc / resolv.conf (BoBa) 
+8) Now the /etc/init.d/vpnnetwork-pptp stop stops only pptp tunnels 
+9) Now, /etc/init.d/vpnnetwork-pppoe stop stops only pppoe tunnels 
+10) Now /etc/init.d/vpnnetwork-l2tp stop stops only l2tp tunnels 
+11) Corrected the symlinks in /etc/init.d 
+12) The problem with multiples of 2 starting the S97boot 
+13) The nuclear process ksoftirq now uses realtime priority 
+14) Minor edits to pppd, pptp, pppoe on optimize
+              
+wive-ng-0.2.12 
+1) It is disconnected kswapd as superfluous (we will a little save memory and processor cycles). 
+2) Number RAM of disks is reduced to 1 since more and it is not necessary (still hardly hardly for 
+    economy of memory).
+3) Backport HDLC line driver and parts of functions tty_io from 2.4.37 kernels. 
+4) Regular RENO the mechanism of the control of saturation TCP Westwood + is replaced with more optimum 
+    for wireless networks.
+5) Regress brought in 0.2.11 Is corrected - not working wpa2 in mode AP 
+6) Add support Forward RTO-Recovery RFC 4138 - algorithm of detection timeouts false repeated transfers.
+7) Small editings in S50iptables and S30vpnnetwork-pppoe about routeing and the coordination of the size 
+    of packages
+
+wive-ng-0.2.11
+1) Mechanism of allocation and reservation of memory for internal buffers of a kernel that should increase 
+    productivity at routeing of a great number of sessions Is processed. 
+2) Optimisation options conntrack are reconsidered. 
+3) From SDK the rests of a code managing directors iptables helper are transferred at use VPN. 
+4) Code MPPE is taken out in separate loaded modules not to occupy RAM without need.
+5) The removal mechanism not used modules of a kernel after a device total load Is realised. 
+6) The bug leading crash is corrected at attempt to send a package in the size of more size MTU through VPN 
+    if is used mppe. Without enciphering MTU should be <=1000 (it is not corrected yet). 
+    As makeshift of problems with reboots is entered restriction into 1016 byte on packages through not 
+    ciphered tunnel.
+7) The Binary insertion is delivered now without support MESH (for use in networks OLSR it is necessary 
+    to collect the version from SDK having included the necessary options). 
+8) Rules iptables for the coordination of the size of packages are added now automatically if one of 
+    tunnels in interfaces is included. 
+9) MASQUERADE (NAT) now also joins from menu-> boot
+10) Size mru/mtu it is temporary for all tunnels by default is equal 1000 (see/etc/ppp/options) 
+11) In code FPU of the emulator the error leading to "freezing" under the big loading is corrected. 
+12) Checks from pinger, harddog, wifidog, wi_remove_zombie are transferred to one script 
+13) Is updated a code ppp_async.c, rawdevice, random, miscdevice, "recursive dependence" in conntrack helper
+     is eliminated
+
+wive-ng-0.2.10
+1) Plural editings in toolchain thanks to what managed to be reduced some the size of libraries to lower 
+    requirements to memory and to correct old errors.
+2) Are corrected 2 errors in boot всвязи with what were not mounted CIFS and MMCCARD (thanks Kuzmenko Denis) 
+3) In the script causing pppoe on a subject pid a file is corrected
+4) Are corrected mkimg, now it is not used/dev/ram instead it is used loop a mode 
+5) Strip now correctly for all modules and libraries
+6) Are cleaned headers used at assemblage toolchain
+7) Binari files  are processed now as well sstrip that has allowed to reduce still volume occupied on flash.
+8) l2tp the client is included now in an insertion on default, is required a writing of a starting script or
+     an adjustment example manually on a point, for the further inclusion in SDK. 
+9) It is updated busybox to v1.12.4 and changes are made to a configuration, new options called to reduce 
+    memory consumption are involved, and nice command is added.
+10) PPPOE now works in a kernel mode, it is required testing 
+11) Clients pppoe/pptp/l2tp are started now with the raised priority.
+
+wive-ng-0.2.9
+1) In the module ppp the error of wrong allocation of memory for the buffer is corrected at 
+    compression/compression use. 
+2) Support CIFS is taken out in the module (100KB economy of memory) 
+3) Small editings about initialization about time of loading 
+4) Work of purpose LOG in iptables corrected
+5) Now for mesh a demon at start the rule iptables is automatically added
+6) All tasks at crontab are carried in time not to load at once memory copies sh (is critical for 8Мб devices) 
+7) Others small optimisation and cosmetic editings of a kernel (see diff)
+
+wive-ng-0.2.8
+1) Possibility to translate a point программно in crash a mode for pouring firmware on tftpd Is added.
+     For this purpose it is enough to execute fs crash (sometimes demands short-term disconnect of a food). 
+2) It is removed old realisation mppe, is solved the problem with length of the buffer mppe compress leading 
+    to impossibility of sending of the big packages through the tunnel 
+3) From 2.4.37 is transferred realisation oom_kill that has allowed more adequately reaction on shortage 
+    of memory. 
+4) In configuration files examples for the decision of a problem with mtu through VPN are added
+5) The conclusion in a broad gull of messages on the lost packages (pptp) Is disconnected at loglevel <2
+
+wive-ng-0.2.7 
+1) Rewrite initialization of the processor 
+2) At disconnected option SERIAL CONSOLE now we do not try to initialize UART before start of a kernel 
+3) The error leading to impossibility of installation pptp connections is corrected, the client is in 
+    passing staticized pptp. In which following problems have been corrected:
+    Thu Jul 24 15:51:30 2008  Paul Howarth  <paul@city-fan.org>
+    * routing.c, pptp_compat.c: compilation fixes for old distributions.
+    Thu Jul 24 15:28:32 2008  Ilya Voronin  <ivoronin@gmail.com>
+    * routing.c, Makefile: fixe use of /bin/ip and all compiler warnings on Solaris.
+    Thu May 22 09:44:19 2008  James Cameron  <quozl@us.netrek.org>
+    * routing.c: add config.h and use IP_BINARY.
+    * Makefile (IP): add pointer to IP binary, store it in config.h, and add dependencies to support
+    parallel make and development.
+                                        
+wive-ng-0.2.6 
+1) It is added the utility lanctl allowing to disconnect certain port of the switchboard. 
+    Syntax lanctl up|down|autoneg|help port. 
+2) eth_flag and rx_pkt_thres are transferred 
+    to separate directories/proc/eth0 and/proc/eth1 If at you losses in a wire segment are 
+    observed, try to disconnect RX_DELAY and BR_SHORTCUT (echo 3/proc/ethX/eth_flag 
+    where X - interface number). Do not use these options without need it can lead to productivity 
+    falling, however can improve response time. 
+3) Management of light-emitting diodes is taken out in /proc/leds 
+4) The full documentation on rtl8305 switch is added
+5) Management of the bridge is taken out in/proc/bridge 
+6) Some are in passing corrected defines
+7) wl now deduces all list of stations. The conclusion of levels of a signal is added. (N.Leiten) 
+8) The utility arg (N.Leiten) arg get <парематр> Is added - to deduce value of parametre, 
+    arg set <parameter> <value> - to establish value of parametre. 
+9) The Small group of small corrections in a code about elimination of preventions of the compiler 
+10) In interfaces is added parametre PPTP_DEFROUTE is expanded. Now it can accept 3 values: 
+    yes, no, replace. No - not to touch, Yes - to add, Replace - to Replace. In the latter 
+    case the sluice by default will be stupidly removed from the routeing table. Remember 
+    that the route to pptp a server should exist differently connection will not be established.
+
+wive-ng-0.2.5 
+1) Cosmetic editings in a kernel 
+2) It is integrated FIXED BOGOMIPS PATCH:
+    Following a suggestion from Tim Bird, this patch removes the tick
+    synchronization from the second of the FIXED_BOGOMIPS verification
+    checks, instead just continuing timing from the first tick
+    synchronization.  This almost halves the time required for verification.
+3) Work WEP because of discrepancy of options of the documentation Is corrected (thanks lexx23) 
+4) The option of a configuration of kernel CONFIG_PPP_DEBUG including/disconnecting a conclusion 
+    of messages of debugging ppp and ppp_mppe kernel modules Is added 
+    (By default the debugging conclusion is disconnected. Critically important messages are deduced only.)
+5) The conclusion of debugging messages in pptp is partially disconnected. Crucial messages are deduced only. 
+6) it is added minimal WINS server - LWINS (Windows Name Server) While it is a deep alpha in process 
+    of working out will acquire functions (while the base layer is realised only)
+7) It is added olsr mesh a demon, a configuration example http://wiki.openwrt.org/OlsrMeshHowto. 
+    Testing and a manual writing Is required. 
+8) ifconfig vlanX down && ifconfig vlanX up now leads to working capacity VLAN
+
+wive-ng-0.2.4 
+1) Corrected problem connect on base in WPA2/WPA  (thanks Bushi for diagnostics)
+    
+wive-ng-0.2.3
+1) work with devices containing 16МБ the RAM one chip 16bit the organisations, 
+    for example Zyxel P330W v.2 Is corrected.
+
+wive-ng-0.2.2
+1) Errors of compilation APP with fresh UclibC Are corrected and some discrepancies in designs 
+    which could be obviously incorrectly distinguished 3.3.х the version gcc that potentially 
+    could cause memory leaks (unfortunately transition on new UclibC while it is postponed 
+    in connection with some not solved problems) 
+2) Optimisation options Are reconsidered at kernel compilation 
+    (are taken out in separate variable OPTIMIZEFLAGS) 
+3) Attempt Is undertaken to minimise memory consumption on 8Мб devices (is required testing) 
+4) squashfs tools and lzma now also gather from source codes (mksquashfs version 2.1/LZMA SDK v4.22) 
+5) Is made transition from closed sources Lexra toolchain to free non-mips 
+6) Now instead of gcc soft floats is used FPU the emulator in a kernel
+
+wive-ng-0.2.1
+1) Now ntpclient by a call from cron it will not be started if in memory already there is its copy 
+2) Too most for pinger and wifidog 
+3) Small optimisation bridge, allowing extraturn to process entering packages (port from OpenWRT) 
+4) Small corrective amendments of work HTB on purpose to lower loading on the processor 
+5) Plural corrections in a subsystem netfilter 
+6) The problem with ipt_state expansion iptables is solved
+7) transition on LZMA SDK 4.17 for the account of that Is carried out it was possible to reduce 
+    some time of loading 
+8) The algorithm of definition of an accessible memory size, now memory Is changed 
+    should be defined correctly without dependence from device/loader type (N.Leiten)
+
+wive-ng-0.2.0 
+1) A lot of corrections in the assembly 
+2) Minor edits the kernel, mainly related to system assembly 
+3) Fix a serious but not critical defect associated with the new bridge options 
+4) A bug in the script fs leading to the inability to reset to factory reset button 
+5) Now is identical totzhe cvimg in preparing the nucleus and training resulting code 
+6) temporarily disabled as the new planner conflicts with rtl_gpio, resulting in full 
+     cold reset on a device with 8Mb of memory and chaotic operation to 16Mb devices. 
+7) to high demand, added support issues PCBIOS (MSDOS) sections (to mount mmc card) 
+8) PPPOE now also starts in the background, thus excluding the possibility to stop the loading when it is not possible 
+   connect to the server pppoe 
+9) Increased queue length from 100 to 1000 for local interfaces and wds, from 100 to 200 for wlan0.
+
+wive-ng-0.1.12 
+1) Updated sheypera code in the kernel 
+2) The problem with random rebooting 
+3) completely removed the old code support NAT speedup module 
+4) Deleted code fastpath (due to extreme instability and a host of restrictions), will seek to write or
+   replacement. 
+5) The time between perepodemom pppd (pptp / pppoe) selected sessions of 100 seconds, that solves the
+     problem with Automatic after gap compounds 
+6) Imposed some patches for netfilter to increase productivity, as well as the problem with - dport 
+6) Back to 1.2.6a version of iptables well as the latest version of compatable with kernel 2.4.18, 
+7) Replace the CPU scheduler for more aggressive planner real-time 
+8) Updated code ppp_generic module to 2.4.2 (bekport from 2.4.36) 
+9) cvimg now going from source, wive_rev_a no longer supported in connection with physical 
+   inaccessibility of such devices 
+10) TX_TIMEOUT reduced to 500ms because there is no point in the network to wait for confirmation of the 
+    transfer so long (5sek), wishing to experiment look / kernel / include / linux / netdevice.h to TX_TIMEOUT
+11) Options MCAST_BND_ETH0, MCAST_BND_ETH1, MCAST_BND_WLAN though claimed as the upper threshold multicast filter 
+     but in the absence of fastpath module limit the overall throughput of the selected interface. 
+     If you build a bridge would highly recommend limiting the upper threshold for each interface based on real 
+     bandwidth link -5% to the point of not trying to process the data from the wired segment, which 
+     physically can not be transferred to a narrow radio channel, it would save CPU resources as well as minimize 
+     resubmit in the channel, in general a positive impact on the overall responsiveness of the system.
+
+wive-ng-0.1.11 
+1) A bug mount mmc card 
+2) By default ZOMBIE_DOG, because the module is 1.14 own removal of outdated records. 
+3) Continue porting RTL_FASTPATH and FAST_PPTP of the SDK, there are still some difficulties related 
+       Partially closed code and a fairly extensive mess in the sdk 
+4) Switch off the log messages pptp, it should solve the problem with the loss of packets through the tunnel,
+     because trite lack of productivity percent in the simultaneous entry in the log and work pptp 
+5) Fixed work dhcp client (requires testing) 
+6) Updated code bridge in the nucleus before v 1.9 from 2008 
+7) Updated pppd to the current stable version 2.4.5 
+8) fs restore now restores the default without rebooting 
+9) FAST NAT now included only if included iptables (in the works when the bridge could cause problems) 
+10) FAST VPN now includes only when the some one of the VPN connections (to be tested) 
+11) wl now uses the latest header files c latest list of mib 
+12) Added support for multicast filter in the bridge (filtering / speed limit) 
+13) added code cloning physical addresses at the Bridge 
+14) Several accelerated reboot, removed senseless code lowering network interfaces before rebooting
+
+﻿wive-ng-0.1.10 
+1) Drop table conntrack before downloading the new rules iptables. 
+2) Added option compatibility with old paddy to delete incorrect configuration of the kernel. 
+3) Fixed RC scripts for 8M RAM devices  to determine the available memory. 
+4) Additional tuning for devices with or less than 8 megabytes RAM. 
+5) Mount ramdisk rendered in a separate rc script and now works only if the memory> = 16MB, 
+     previously had problems. 
+6) Now insertion fully tested on the following devices: D-Link G700AP, Zyxel P330W, Acorp WR-G. 
+7) SSH keys DSS dropbear now generated in the background when you first boot 
+     device, it may slightly increase the first boot, but did not affect the 
+     time last start device. Thus assured the uniqueness of host key. 
+     Attention, the first loading may require some 3-4minut. 
+8) Temporarily removed because WPS nobody plainly does not support, and make it work korretno failed. 
+9) New futures switch withdrawal boot.log download from the console, for it is enough to create. 
+     empty file / etc / debug and write changes (fs save). 
+10) / dev / random now refers to / dev / urandom. 
+11) / dev / tty now created correctly, respectively works job control in dropbear. 
+12) At first boot after the firmware will be generated unique MAC addresses for all interfaces 
+      and recorded in the / etc / network / interfaces. 
+13) Updated busybox to 1.12.1 stable. Imposed last bug fix patches to busybox 1.12.1. 
+14) added script pppoe and options in config (requires detailed testing). 
+      Thank you for LMS preliminary tests and sample script. 
+15) Updated CIFS code in the kernel to version 1.20. 
+16) Logrotate now added to the crontab only if included syslog, but only if there is not yet 
+     records containing logrotate.weekly and logrotate.daily. 
+17) Added to the DNS server (dnsmasq), without the support tftp 
+18) Is now checking the availability of physical interfaces (every 5 minutes). If found defective interface 
+     will be processed on the flag (/ etc / devices / bad.imya_interfeysa), and point to be rebooted without activation of the 
+     interface. Up to date for Single ustroysv, they will be automatically disconnected neraspayanny 
+     interface. 
+19) Fixed bug with init serial interface after loading the module. Previously, the interface automatically switches 
+     The speed 115200, resulting in inability to continue to monitor the boot process. Now interface 
+     remains at a speed of 38400 until an application does not ask other options. 
+20) option added kernel CONFIG_NO_CONSOLE_OPEN prohibiting the kernel built to hold UART (ttyS0) to output 
+     debugging information can be used for example if you want to organize an analog Extension 
+     serial port, or want to start using the serial port to exchange 
+     Data from the outside world. Attention. In this mode, the withdrawal of debugging information is made only in 
+     log files. To activate this feature, you'll need to assemble their own version of the firmware source, 
+     Change made in the kernel config file and replacing before the assembly line "ttyS0:: respawn: -/bin/sh" at 
+     "ttyS0:: off: -/bin/sh", or contact me (accept WMZ / WMR;).
+
+wive-ng-0.1.9
+1) Update WPA daemon (auth) to fix Radius authentication fail if WPA/WPA2 have been set. (sync from v1.4d sdk)
+2) Update WPA daemon to fix WPA-PSK fail of client mode with some AP. (sync from v1.4d sdk)
+3) Update WPA daemon to reject illegal STA in PSK mode that doesn’t take RSN IE in association. (sync from v1.4d sdk)
+4) Update iwcontrol to support repeater mode. (sync from v1.4d sdk)
+5) Update IAPP daemon (v1.7) to change routing entry adding. (sync from v1.4d sdk)
+6) Update wlan driver to fix protection mode checking on wrong channel. (sync from v1.4d sdk)
+7) Update wlan driver to fix auto channel function when used with channel limitation. (sync from v1.4d sdk)
+8) Support multicast to unicast transformation in wireless LAN interface for video streaming. (sync from v1.4d sdk)
+9) Using Fast Path to instead of old Fast-NAT module (sync from v1.4d sdk)
+10) Update IAPP daemon to fix the issue that when repeater mode and WPA were enabled,
+    sometimes it may cause wireless connection to be disconnected for a while because TKIP MIC error. (sync from v1.4d sdk)
+11) Update WPA daemon (auth) to fix the issue that it may show the replay counter error in AP system (sync from v1.4d sdk)
+    log when 8186 client is associated. (sync from v1.4d sdk)
+12) Update WPA daemon to fix the issue that an virtual AP may fail with a WPA client association
+    when MAC clone is enabled in root interface. (sync from v1.4d sdk)
+13) Update WPA daemon to fix the issue that when AP client associated with Allied Telesyn WA7400
+    AP in WPA mixed mode, it will fail in obtaining WPA group key. (sync from v1.4d sdk)
+14) Update WPA daemon to fix an issue that 8186 AP may fail with the association by an Athereos
+    client in WPA/WPA2 PSK mode. (sync from v1.4d sdk)
+15) Update wlan driver to fix the issue that 8186 AP may not be associated by any client in
+    WPA/WPA2 mode after running for several days. (sync from v1.4d sdk)
+16) Wlan0 driver add WPS, LLTD, WMM (sync from v1.4d sdk)
+17) New management regimes authentication
+18) documented mib meaningless in unchecked
+19) added a regime prioritize WDS (WDS_PRIO in general)
+20) The option DENYLEGACY preventing the compound only 11B clients in mixed mode (bg)
+21) added option AUTOGAIN and DRSA for advanced management of sensitive receiver
+22) now works fast path from rialteka, ie NAT performance is not huhe than the official firmware.
+23) Due to the lack of free support from NFS (use CIFS)
+24) The driver wired interface upgraded to 0.1.0 and patched on POLLING
+25) ZombiDOG now works only in AP
+26) added value DSSID, allows selectively deny Association CL / AP with a given SSID
+27) When the TURBO mode is automatically enabled Tx/Rx/Nat2.5/Bridge shortcut,
+      TURBO not switch off and do not use FIXRATE unnecessarily.
+28) A list of MAC addresses for the ACL now sets directly in GENERAL, variable ALLOWMACS
+29) Since at one time can be used only 1N WEP key, all the WEP settings rendered in general
+30) WDS is also now fully customizable from the general (including WEP encryption WDS, WPA still in progress)
+
+wive-ng-0.1.8 
+1) Work has begun on backport 22 versions of wireless extension in the 2.4.18 kernel 
+2) Correction removal br0 device wifireset 
+3) Fix autoup wds in bridge mode 
+4) Now is not trying to assign an IP address of the interface wlan0 if he is to bridge 
+5) Loopback interface is initialized at the beginning of rcS 
+6) Fixed message when you start (useful when debugging) 
+7) Minor adjustments to the script. 
+8) In general added to the basic setup WDS, REPEATER (required testing) 
+9) After moving to WX v22 stopped bug in  1.12 kernel module, while test. 
+10) Fixed opportunity to restore the settings by pressing the button reset (thanks N.leiten) 
+11) Now addresses the interfaces are always appointed by correctly 
+12) Add /var/log/boot.log which is written the whole process instead of downloading to the console 
+13) The emergence of boot.log corrected some inaccuracies in the launch scripts 
+14) Events cond is now written in a separate log (/var/log/crond.log) so as not to log syslog 
+15) Added simple logrotate script, every day, renames, compresses and cleans the logs. 
+16) Deleted rudiment AUTOBRIDGE and implements its code 
+17) The routes are now always be added after the full recovery of the network, but before lifting VPN 
+18) Was deleted almost all vorkeraundy, even more detalizachiya rc.d scripts
+
+wive-ng-0.1.7
+1) The Various configuration files of a kernel for BS/CL 
+2) The system of assemblage is changed
+3) In a kernel support CIFS is added
+4) Are resulted in a relative order config.in files. The most part never not used options is
+     transferred in Experimental not to disturb at configuration. 
+5) In BS versions are returned back CIFS and NFS clients. (cifs it is configurated from boot menu) 
+6) In BS versions are disconnected pptp pppd  units 
+7) In BS the number of units for shaper  is expanded 
+8) The algorithm компресси for root.bin with gz on lzma (thanks N.leiten for the done operation) 
+    Is changed. Now it is possible to place pptp the client in BS 
+9) We are temporarily rolled away on the version "all in one", BS includes all extensions. 
+    Further if to be necessary still a place it is necessary to divide versions again. 
+10) PPOE client is added 
+11) Support mmc flash cards through Jtag (thanks FlyRouter Is added and to authors of the unit) 
+12) Choice support bauld rate on the serial interface Is added
+
+wive-ng-0.1.6
+1) Ethernet speedup now works and with the open driver rtl8186. 
+2) Productivity LAN <=> WAN for the account of correct work SpeedUP with the open module 
+3) Ipsec now uses built in the chip "cryptoprocessor" (the closed module) 
+4) Is added IP_NMAP_FREAK_PATCH allowing to complicate scanning on a subject vulnerabilities.
+5) It is slightly corrected dropbear for сяёт that some more kilobyte of a place on flash
+    was possible to win a config and to raise safety a little. 
+6) Now syslogd and klogd are started correctly. 
+7) Further optimisation of a code
+
+
+wive-ng-0.1.5 
+1) It is added soft reset in the menu. Quickly disconnects a food of interfaces with 
+    their subsequent change-over. 
+2) Are a little optimised latancy timers  memories (start. S) 
+3) Recoil on rtl8185 driver v1.9 всвязи with lag 1.12 Is made. 
+    If you find 1.10/1.11 or 1.14 версю, please send me it on sfstudio@mail.ru.
+
+wive-ng-0.1.4
+1) Plural editings of a code about compatibility with gcc v3 and v4 branches. 
+2) It is added stealth a mode prohibiting to dispatch RST in reply to connection attempt to the closed port 
+3) The dog watching a bug of the driver of the wireless interface (HARD_DOG in boot) Is added. 
+    We wait for the fresh unit from realtek. 
+4) The script delete records of inactive clients from the list wifi the interface is added
+5) Similar it was possible to eliminate radio interface lags
+
+wive-ng-0.1.3 
+1) Are updated хидеры in тулките 
+2) Incorrect calls in a kernel 3 are corrected some
+3) The tc now too gathers from source codes instead of binary assemblage of an unknown origin
+4) The daemon 802.1x for support WPA/WPA2 of enciphering is added
+5) The Insertion is divided into 2 versions CL/BS. 
+    CL the client version with support pptp but without шейпера,
+    BS - on the contrary. Further each of versions will be optimised under the problem. 
+    (BS has a priority before CL) 6) Small changes in init scripts, the config files and menu 
+7) Is corrected a small defect in scripts with definition of the size RAM 
+    (it is not critical for devices 8MB memories)
+
+wive-ng-0.1.2 
+1) Now IGMP the proxy works as it was expected 
+2) Some optimisation of mechanisms keep alive and arp cache 
+3) Сode cleaning, and optimisation of a kernel for operation on slow systems 
+4) Proceeds In menu-> boot new options are added
+5) The file modules.dep is automatically generated works modprobe 
+6) the error with loading of iptables units leading to incorrect call modprobe 
+7) Small corrections not affecting stability Is corrected
+8) We Read a memory size from ` free `, instead of from/proc. 
+9) Syslog again works, include only for the period of debugging or on devices with RAM> 8MB
+
+wive-ng-0.1.1
+1) It is disconnected DEBUG where only probably that will allow to spend more economically 
+some memory and resource CPU 
+2) Is remote rtl8181.h, all includes are copied on rtl8186 (differently there was a tangle)
+4) code cleaning Proceeds, is eliminated more than 150 warnings. 
+5) Boot choice for a configuration of start of tools, and also specific options wive-ng is added
+6) Fix old error which Is corrected could to lead to instability of connection in mixed-mode.
+
+wive-ng-0.1.0-stable
+1) Small bugfixes
+2) Are corrected make files, now all gathers one command./compile 
+3) Timers TX_TIMEOUT are corrected at work in p2mp a mode
+4) MAX/MIN MTU are exposed according to recommendations RFC2625
+
+wive-ng-0.0.5 
+1) It is undertaken are removed "dup`s" in a code of network subsystem 
+2) More mib`s are transferred in/etc/rc.d/S25wifinetwork from unchecked 
+3) Automatic control of the size TCP "windows" is added
+4) Are slightly specified comments in a config file

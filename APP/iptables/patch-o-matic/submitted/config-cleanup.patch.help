@@ -1,0 +1,5 @@
+Author: Harald Welte <laforge@gnumonks.org>
+Status: Submitted to the kernel at 2.4.18-
+
+This patch is a cleanup to some header files and Config.in 
+

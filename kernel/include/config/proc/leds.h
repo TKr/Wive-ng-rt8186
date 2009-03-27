@@ -1,0 +1,1 @@
+#define CONFIG_PROC_LEDS 1

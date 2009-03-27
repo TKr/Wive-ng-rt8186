@@ -1,0 +1,2 @@
+ip_nat_helper.c: In function `ip_nat_helper_unregister':
+ip_nat_helper.c:553: warning: passing arg 1 of `ip_ct_selective_cleanup' from incompatible pointer type

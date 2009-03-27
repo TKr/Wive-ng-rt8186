@@ -1,0 +1,2 @@
+dp_flong.c: In function `ieee754dp_flong':
+dp_flong.c:32: warning: unused variable `xc'

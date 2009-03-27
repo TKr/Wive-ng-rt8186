@@ -1,0 +1,2 @@
+pci-dma.c: In function `pci_alloc_consistent':
+pci-dma.c:33: warning: assignment makes pointer from integer without a cast

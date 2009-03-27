@@ -1,0 +1,23 @@
+Author: Various Artists 
+Status: Included in final 2.4.18 kernel
+
+- fixes a memory leak inside the ipchains backwards compatibility layer,
+  which mostly occurs in combination with the ipchains redirect support.
+- increases the module usage count of the ipchains backwards compatibility
+  module as soon as you start adding rules.  
+- increases the module usage count of the ipfwadm backwards compatibility
+  module as soon as you start adding rules.  
+- increases the module usage count of an ip table as soon as you start
+  adding rules.  
+- fixes the LOG target when attempting to print the inner ip packet in
+  icmp error messages.
+- fixes nf_sockopt unregister race condition
+- fixes a bug in the debugging code for ip_fw_compat.
+- fixes the printout to an error message inside ip_conntrack_standalone.c
+- fixes the printout of an error message the ip6 MARK target
+- fixes a bug in the REDIRECT code when the incoming interface doesn't have an
+  IP address assigned.
+- fixes bug when NAT used in OUTPUT leads to a change in the output device,
+  and the new output device has a smaller hardware header length 
+- ip_conntrack header changes so certain information is accessible to
+  userspace

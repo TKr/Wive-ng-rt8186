@@ -1,0 +1,17 @@
+Author: Marc Boucher <marc+nf@mbsi.ca>
+Status: Works For Me.
+
+This patch adds support for local process name matching
+to the owner match (--cmd-owner option).
+
+You can use this feature to filter connections forwarded by
+your ssh daemon with rules like:
+
+iptables -N CheckSSHSyns
+# allow forwarded connections to rsync port on 192.168.1.1
+iptables -A CheckSSHSyns -p tcp -d 192.168.1.1 --dport 873 -j RETURN
+# refuse everything else
+iptables -A CheckSSHSyns -j REJECT --reject-with tcp-reset
+
+iptables -I OUTPUT -p tcp --syn -m owner --cmd-owner sshd -j CheckSSHSyns
+

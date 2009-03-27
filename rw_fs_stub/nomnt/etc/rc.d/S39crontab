@@ -1,0 +1,32 @@
+#!/bin/sh
+
+start() {
+ echo "Starting crontab: "
+ /sbin/crond -l 0 -L /var/log/cron.log
+ echo " Ok"
+}
+
+stop() {
+ echo "Stopping crontab: "
+ killall crond
+ echo " Ok"
+}
+
+case "$1" in
+	start)
+	    start
+	    ;;
+
+	stop)
+	    stop
+	    ;;
+
+	restart)
+	    stop
+	    start
+	    ;;
+
+	*)
+	    echo $"Usage: $0 {start|stop|restart}"
+	    exit 1
+esac
