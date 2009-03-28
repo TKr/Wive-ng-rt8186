@@ -1,4 +1,6 @@
-ROOTDIR=/opt/Wive/APP/rp-pppoe
+#!/bin/bash
+
+ROOTDIR=`pwd`
 CONFOPTS="--host=mips --prefix=$ROOTDIR/filesystem \
 --disable-debugging --enable-plugin=plugin \
 --includedir=$ROOTDIR/include"

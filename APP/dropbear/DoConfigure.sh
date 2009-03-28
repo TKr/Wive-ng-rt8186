@@ -1,4 +1,6 @@
-ROOTDIR=/opt/Wive/APP/dropbear
+#!/bin/bash
+
+ROOTDIR=`pwd`
 CONFOPTS="--host=mips --disable-zlib --disable-openpty"
 CONFOPTS="$CONFOPTS --disable-shadow --disable-pam"
 CONFOPTS="$CONFOPTS --disable-lastlog --disable-utmp --disable-utmpx"
