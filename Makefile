@@ -41,3 +41,6 @@ split:
 
 tools:
 	make -C tools
+
+dirs:
+	mkdir -p `cat dirs_struct`

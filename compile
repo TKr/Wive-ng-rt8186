@@ -45,6 +45,7 @@ if [ "$FULLREBUILD" = "YES" ] ; then
 	echo Build only kernel
 fi
 
+make dirs
 
 echo "========================BUILD-TOOLS===================="
 make all -C tools
