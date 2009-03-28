@@ -274,6 +274,9 @@ EXTRA_DIST = \
 
 all: $(PROG)
 
+libpcap/libpcap.a:
+	make -C libpcap
+
 $(PROG): $(OBJ) ./libpcap/libpcap.a
 	@rm -f $@
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
