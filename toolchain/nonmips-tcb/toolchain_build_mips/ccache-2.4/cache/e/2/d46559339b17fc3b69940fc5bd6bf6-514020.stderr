@@ -1,2 +1,0 @@
-sock.c: In function `sock_getsockopt':
-sock.c:430: warning: use of cast expressions as lvalues is deprecated

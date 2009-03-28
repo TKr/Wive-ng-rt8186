@@ -1,2 +1,0 @@
-ip_nat_core.c: In function `ip_nat_cleanup':
-ip_nat_core.c:1045: warning: passing arg 1 of `ip_ct_selective_cleanup' from incompatible pointer type

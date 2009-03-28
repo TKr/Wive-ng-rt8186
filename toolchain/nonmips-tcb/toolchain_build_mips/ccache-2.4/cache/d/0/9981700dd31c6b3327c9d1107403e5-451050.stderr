@@ -1,1 +1,0 @@
-cifsfs.c:364: warning: `cifs_remount' defined but not used

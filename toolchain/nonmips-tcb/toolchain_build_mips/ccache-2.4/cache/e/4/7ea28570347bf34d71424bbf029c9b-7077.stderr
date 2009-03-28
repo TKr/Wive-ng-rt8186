@@ -1,2 +1,0 @@
-read_memory.c: In function `init_read':
-read_memory.c:112: warning: assignment makes pointer from integer without a cast

@@ -1,4 +1,0 @@
-tty_ioctl.c: In function `set_termios':
-tty_ioctl.c:151: warning: use of cast expressions as lvalues is deprecated
-tty_ioctl.c: In function `n_tty_ioctl':
-tty_ioctl.c:502: warning: use of cast expressions as lvalues is deprecated

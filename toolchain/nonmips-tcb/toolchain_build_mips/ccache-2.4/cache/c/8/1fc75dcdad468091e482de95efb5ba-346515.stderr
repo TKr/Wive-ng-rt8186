@@ -1,2 +1,0 @@
-n_tty.c: In function `write_chan':
-n_tty.c:1190: warning: use of cast expressions as lvalues is deprecated

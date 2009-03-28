@@ -1,2 +1,0 @@
-server.c: In function `lwins_get_interface_addresses':
-server.c:246: warning: cast increases required alignment of target type

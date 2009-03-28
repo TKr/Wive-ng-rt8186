@@ -1,2 +1,0 @@
-sp_sub.c: In function `ieee754sp_sub':
-sp_sub.c:170: warning: suggest explicit braces to avoid ambiguous `else'

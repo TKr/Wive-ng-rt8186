@@ -1,2 +1,0 @@
-sp_sqrt.c: In function `ieee754sp_sqrt':
-sp_sqrt.c:32: warning: unused variable `sign'

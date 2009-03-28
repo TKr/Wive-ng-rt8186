@@ -1,2 +1,0 @@
-auth.c: In function `auth_peer_success':
-auth.c:940: warning: unused variable `prot'

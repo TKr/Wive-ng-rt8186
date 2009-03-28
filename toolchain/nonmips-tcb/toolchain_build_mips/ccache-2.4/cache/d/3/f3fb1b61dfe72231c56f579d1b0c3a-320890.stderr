@@ -1,6 +1,0 @@
-rtl_gpio.c: In function `reset_flash_default':
-rtl_gpio.c:112: warning: implicit declaration of function `call_usermodehelper'
-rtl_gpio.c: In function `rtl_gpio_timer':
-rtl_gpio.c:264: warning: passing arg 2 of `kernel_thread' makes pointer from integer without a cast
-rtl_gpio.c: In function `rtl_gpio_init':
-rtl_gpio.c:289: warning: assignment makes integer from pointer without a cast

@@ -1,2 +1,0 @@
-fault.c: In function `do_page_fault':
-fault.c:206: warning: concatenation of string literals with __FUNCTION__ is deprecated

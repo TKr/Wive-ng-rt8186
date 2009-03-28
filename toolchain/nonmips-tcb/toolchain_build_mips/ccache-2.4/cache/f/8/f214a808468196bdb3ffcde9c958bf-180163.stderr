@@ -1,3 +1,0 @@
-netlink.c: In function `iface_enumerate':
-netlink.c:126: warning: label `again' defined but not used
-netlink.c:108: warning: unused parameter `ipv6_callback'

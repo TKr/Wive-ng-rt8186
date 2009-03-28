@@ -1,4 +1,0 @@
-In file included from /opt/Wive/kernel/include/linux/unistd.h:9,
-                 from kmod.c:28:
-/opt/Wive/kernel/include/asm/unistd.h: In function `_exit':
-/opt/Wive/kernel/include/asm/unistd.h:1027: warning: `return' with a value, in function returning void
