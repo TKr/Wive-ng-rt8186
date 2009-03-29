@@ -30,7 +30,7 @@ CLIENT_IF=eth0
 
 #IGMP forward/proxy
 START_IGMPPROXY=no
-MCASTNET=239.192.0.0/22
+MCASTNET=224.0.0.0/4
 MCASTDEV=eth1
 
 #Start syslog daemon (start if 16MB or more RAM, disable if RAM size <16MB )
