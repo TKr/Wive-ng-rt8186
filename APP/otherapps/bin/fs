@@ -63,6 +63,12 @@ crash(){
     /bin/echo "123456789">/dev/mtd1
     reboot
 }
+fullcrash(){
+    killall -9 crond
+    /bin/echo "123456789">/dev/mtd1
+    /bin/echo "123456789">/dev/mtd2
+    reboot
+}
 main(){
   local cmd="$1"
   [ -z "$cmd" ] && usage

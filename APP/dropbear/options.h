@@ -72,11 +72,11 @@ etc) slower (perhaps by 50%). Recommended for most small systems. */
 
 /* Allow using -J <proxycommand> to run the connection through a 
    pipe to a program, rather the normal TCP connection */
-#define ENABLE_CLI_PROXYCMD
+#undef ENABLE_CLI_PROXYCMD
 
 /* Enable "Netcat mode" option. This will forward standard input/output
  * to a remote TCP-forwarded connection */
-#define ENABLE_CLI_NETCAT
+#undef ENABLE_CLI_NETCAT
 
 /* Encryption - at least one required.
  * Protocol RFC requires 3DES and recommends AES128 for interoperability.
