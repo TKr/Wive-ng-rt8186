@@ -31,6 +31,7 @@ endif
 
 ifeq ($(CONFIG_RTL8186),y)
     subdir-$(CONFIG_RTL8186) += rtl8186
+    obj-y += mii.o
 endif
 
 ifeq ($(CONFIG_RE8306_API),y)

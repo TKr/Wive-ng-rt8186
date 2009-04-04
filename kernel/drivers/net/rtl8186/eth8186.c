@@ -18,8 +18,8 @@
 #include <linux/proc_fs.h>
 
 #define DRV_NAME		"8186NIC"
-#define DRV_VERSION		"0.1.0-NG"
-#define DRV_RELDATE		"15.10.2008"
+#define DRV_VERSION		"0.1.1-NG"
+#define DRV_RELDATE		"4.04.2009"
 
 #define RTL8186_CHECKSUM_OFFLOAD
 #define DYNAMIC_ADJUST_TASKLET
@@ -431,14 +431,8 @@ struct ctrl_led {
 	unsigned int		link_status;
 } led_cb[5];
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
-unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth);
-void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth);
-#else
 static unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth);
 static void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth);
-#endif
-
 static int32 rtl8306_getAsicMibCounter(uint32 port, uint32 counter, uint32 *value) ;
 
 static void rtl8306_page_select(unsigned int pagenumber)
@@ -707,7 +701,6 @@ static int write_proc_rxthres(struct file *file, const char *buffer,
 
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-#if 0
 static int page, phy, reg;
 static int write_proc_mii(struct file *file, const char *buffer,
 		      unsigned long count, void *data)
@@ -752,8 +745,7 @@ static int read_proc_mib(char *pa, char **start, off_t off,
 		     int count, int *eof, void *data)
 {
 		int len=0;
-		uint32 port, unit, runit;
-		uint32 value;
+		uint32 port, unit, value;
 	
 		for (port = 0; port <5; port ++) {
 			len += sprintf(pa+len, "Port%d:\n", port);
@@ -779,7 +771,6 @@ static int read_proc_mib(char *pa, char **start, off_t off,
 		if (len<0) len = 0;
 		return len;
 }
-#endif
 #endif // PATCH_8306_CTRL_LED_BY_CPU
 
 static inline void rtl8186_set_rxbufsize(struct re_private *cp)
@@ -1805,11 +1796,9 @@ static int rtl8186_close(struct net_device *dev)
 	if (timer_pending(&cp->expire_timer))
 		del_timer_sync(&cp->expire_timer);
 #endif
-
 	return 0;
 }
 
-#if 0
 static int rtl8186_change_mtu(struct net_device *dev, int new_mtu)
 {
 	struct re_private *cp = dev->priv;
@@ -1841,6 +1830,7 @@ static int rtl8186_change_mtu(struct net_device *dev, int new_mtu)
 	return rc;
 }
 
+#if 0
 static char mii_2_8139_map[8] = {
 	BasicModeCtrl,
 	BasicModeStatus,
@@ -1872,6 +1862,7 @@ static void mdio_write(struct net_device *dev, int phy_id, int location,
 	} else if (location < 8 && mii_2_8139_map[location])
 		cpw16(mii_2_8139_map[location], value);
 }
+#endif
 
 static int rtl8186_ethtool_ioctl (struct re_private *cp, void *useraddr)
 {
@@ -1889,7 +1880,7 @@ static int rtl8186_ethtool_ioctl (struct re_private *cp, void *useraddr)
 		struct ethtool_drvinfo info = { ETHTOOL_GDRVINFO };
 		strcpy (info.driver, DRV_NAME);
 		strcpy (info.version, DRV_VERSION);
-		strcpy (info.bus_info, cp->pdev->slot_name);
+		strcpy (info.bus_info, "0");
 		if (copy_to_user (useraddr, &info, sizeof (info)))
 			return -EFAULT;
 		return 0;
@@ -1952,11 +1943,10 @@ static int rtl8186_ethtool_ioctl (struct re_private *cp, void *useraddr)
 
 	return -EOPNOTSUPP;
 }
-#endif
 
 static int rtl8186_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 {
-//	struct re_private *cp = dev->priv;
+	struct re_private *cp = dev->priv;
 	int rc = 0;
 
 	if (!netif_running(dev))
@@ -1964,12 +1954,9 @@ static int rtl8186_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 
 	switch (cmd) {
 	case SIOCETHTOOL:
-#if 0
 		return rtl8186_ethtool_ioctl(cp, (void *) rq->ifr_data);
-#endif
-		return 1;
 
-	default:
+    	default:
 		rc = -EOPNOTSUPP;
 		break;
 	}
@@ -2040,7 +2027,6 @@ static int rtl8186_probe(int ethno)
 #ifdef MODULE
 	printk("%s", version);
 #endif
-
 	struct net_device *dev;
 	struct re_private *cp;
 	int rc;
@@ -2097,14 +2083,16 @@ static int rtl8186_probe(int ethno)
 	dev->get_stats		= rtl8186_get_stats;
 	dev->do_ioctl		= rtl8186_ioctl;
 	dev->set_mac_address	= rtl8186_set_hwaddr;
-	/*dev->change_mtu		= rtl8186_change_mtu;*/
+	dev->change_mtu		= rtl8186_change_mtu;
 #if 1
 	dev->tx_timeout			= rtl8186_tx_timeout;
 	dev->watchdog_timeo		= TX_TIMEOUT;
 #endif
+
 #ifdef CP_TX_CHECKSUM
 	dev->features			|= NETIF_F_SG | NETIF_F_IP_CSUM;
 #endif
+
 #if CP_VLAN_TAG_USED
 	dev->features 			|= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
 	dev->vlan_rx_register	= cp_vlan_rx_register;
@@ -2141,7 +2129,6 @@ static int rtl8186_probe(int ethno)
 #endif		
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-#if 0
 	{  
 		struct proc_dir_entry *res2;
 		res2 = create_proc_entry("mii", 0, root_ethX_dir);
@@ -2154,7 +2141,6 @@ static int rtl8186_probe(int ethno)
 		if (res3) 
 			res3->read_proc = read_proc_mib;	
 	}
-#endif
 #endif // PATCH_8306_CTRL_LED_BY_CPU
 
 #if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
@@ -2205,7 +2191,7 @@ typedef struct asicVersionPara_s
 } asicVersionPara_t;
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
+static void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
 #else
 void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
 #endif
@@ -2237,8 +2223,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 }
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-//sfstudio
-unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
+static unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
 #else
 unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
 #endif
@@ -2311,8 +2296,6 @@ int __init rtl8306_getAsicVersionInfo(asicVersionPara_t *pAsicVer)
       temp = temp & ~0x800;
        MII_write(0, 16, temp, 0);       
     mdelay(40);                                           //Ella add
-   
-
     return 0;
 }
 

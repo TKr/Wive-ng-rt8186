@@ -434,7 +434,6 @@ int32 rtl8306_getAsicAclEntry(uint32 entryadd, uint32 *phyport, uint32 *action, 
 int32 rtl8306_getAsicMibCounter(uint32 port, uint32 counter, uint32 *value);
 int32 rtl8306_setAsicMibCounterReset(uint32 port, uint32 operation);
 int32 rtl8306_setAsicMibCounterUnit(uint32 port, uint32 counter, uint32 unit) ;
-int32 rtl8306_getAsicMibCounterUnit(uint32 port, uint32 counter, uint32 *unit);
 int32 rtl8306_setAsicMirrorPort(uint32 mirport, uint32 rxport, uint32 txport, uint32 enFilter) ;
 int32 rtl8306_getAsicMirrorPort(uint32 *mirport, uint32 *rxport, uint32 *txport, uint32 *enFilter) ;
 int32 rtl8306_setAsicMirrorMacAddress(uint8 *macAddr, uint32 enabled);

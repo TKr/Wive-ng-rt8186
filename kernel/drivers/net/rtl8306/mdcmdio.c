@@ -46,7 +46,7 @@ by this function.
 int32 smiRead(uint32 phyad, uint32 regad, uint32 * data) 
 {
 	uint16 mydata;
-	MII_read(phyad, regad, &mydata);
+//	MII_read(phyad, regad, &mydata); fix me
 	*data = (uint32)mydata;
 	return	SUCCESS;
 }
@@ -71,7 +71,7 @@ by this function.
 
 int32 smiWrite(uint32 phyad, uint32 regad, uint32 data)
 {
-	MII_write(phyad, regad, data);
+//	MII_write(phyad, regad, data); fix me
 	return 	SUCCESS;	
 }
 
