@@ -324,19 +324,6 @@ static inline int ip_rcv_finish(struct sk_buff *skb)
 
 	}
 	
-#ifdef CONFIG_RTL8186_KB
-	#include <linux/udp.h>	
-	if (skb->dst->input == &ip_local_deliver) {					
-		if (skb->__unused == 0xe5 && iph->protocol== IPPROTO_UDP) {
-			struct udphdr *hdr = (struct udphdr *)((u_int32_t *)iph + iph->ihl);
-			if (hdr->dest == 53) // DNS Domain
-				skb->__unused = 0;
-		}
-		if (skb->__unused == 0xe5) 
-			goto drop;
-	}
-#endif
-
 #ifdef CONFIG_NET_CLS_ROUTE
 	if (skb->dst->tclassid) {
 		struct ip_rt_acct *st = ip_rt_acct + 256*smp_processor_id();

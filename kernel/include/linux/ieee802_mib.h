@@ -14,11 +14,7 @@
 #define MACADDRLEN				6
 #define NUM_ACL					128
 #define	NUM_GBWC				64
-#ifdef CONFIG_RTL8186_KB
-#define NUM_WDS					4
-#else
 #define NUM_WDS					8
-#endif
 #define DEFAULT_OLBC_EXPIRE			60
 
 // Endian of 8186 board

@@ -341,7 +341,7 @@ struct re_private {
 	unsigned		rx_buf_sz;
 	dma_addr_t		ring_dma;
 
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 	struct vlan_group	*vlgrp;
 #endif
 
@@ -361,18 +361,15 @@ struct re_private {
 	unsigned char	qosnode_index[8];
 #endif
 
-#if defined(DYNAMIC_ADJUST_TASKLET) || (defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC))
+#ifdef DYNAMIC_ADJUST_TASKLET
 	struct timer_list expire_timer; 
 #endif
-
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 	unsigned int	tx_avarage;
 	unsigned int	tx_peak;
 	unsigned int	rx_avarage;
 	unsigned int	rx_peak;
 	unsigned int	tx_byte_cnt;
 	unsigned int	rx_byte_cnt;	
-#endif
 
 };
 struct re_private *reDev[2]={NULL, NULL};
@@ -797,9 +794,7 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 	cp->net_stats.rx_packets++;
 	cp->net_stats.rx_bytes += skb->len;
 	cp->dev->last_rx = jiffies;
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 	cp->rx_byte_cnt += skb->len;
-#endif
 	
 #ifdef VLAN_QOS
 	if (desc->opts2 & RxVlanTagged) {
@@ -811,14 +806,14 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 	}
 #endif
 
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 	if (cp->vlgrp && (desc->opts2 & RxVlanTagged)) {
 		vlan_hwaccel_rx(skb, cp->vlgrp, desc->opts2 & 0xffff);
 	}
 	else
 #endif
 	{
-#if defined(BR_SHORTCUT)
+#ifdef BR_SHORTCUT
 		if (!(skb->mac.ethernet->h_dest[0] & 0x01) &&
 			!(eth_flag & 2) &&
 			(cp->dev->br_port) &&
@@ -830,9 +825,6 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 		else
 #endif
 		{
-#ifdef CONFIG_RTL8186_KB
-			skb->__unused = 0;
-#endif
 
 #ifdef DYNAMIC_ADJUST_TASKLET
 			if (rx_pkt_thres > 0 && cp->dev->name[3] == '0') // eth0
@@ -1111,9 +1103,8 @@ static inline void rtl8186_tx(struct re_private *cp)
 
 		cp->net_stats.tx_packets++;
 		cp->net_stats.tx_bytes += skb->len;
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 		cp->tx_byte_cnt += skb->len;
-#endif		
+
 		if (netif_msg_tx_done(cp))
 			printk(KERN_DEBUG "%s: tx done, slot %d\n", cp->dev->name, tx_tail);
 		dev_kfree_skb_irq(skb);
@@ -1133,7 +1124,7 @@ static int rtl8186_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned entry;
 
 	u32 eor;
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 	u32 vlan_tag = 0;
 #endif
 
@@ -1186,7 +1177,7 @@ dequeue_label:
 		return 0;
 	}
 
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 	if (cp->vlgrp && vlan_tx_tag_present(skb))
 		vlan_tag = TxVlanTag | vlan_tx_tag_get(skb);
 #endif
@@ -1542,9 +1533,8 @@ static void rtl8186_tx_timeout(struct net_device *dev)
 			BUG();
 		cp->net_stats.tx_packets++;
 		cp->net_stats.tx_bytes += skb->len;		
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 		cp->tx_byte_cnt += skb->len;
-#endif	
+
 		dev_kfree_skb(skb);
 		cp->tx_skb[tx_tail].skb = NULL;
 		tx_tail = NEXT_TX(tx_tail);
@@ -1633,7 +1623,7 @@ static void rtl8186_free_rings(struct re_private *cp)
 	cp->tx_hqring = NULL;
 }
 
-#if defined(DYNAMIC_ADJUST_TASKLET) || (defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC))
+#ifdef DYNAMIC_ADJUST_TASKLET
 static void rtk8186_1sec_timer(unsigned long task_priv)
 {
 	struct re_private *cp = ((struct net_device *)task_priv)->priv;
@@ -1656,7 +1646,6 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 	}	
 #endif
 
-#ifdef DYNAMIC_ADJUST_TASKLET
 	if (((struct net_device *)task_priv)->name[3] == '0' && rx_pkt_thres > 0) {	
 		if (rx_cnt > rx_pkt_thres) {
 			if (eth_flag & 1)  // tasklet disabled
@@ -1668,9 +1657,7 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 		}		
 		rx_cnt = 0;		
 	}	
-#endif
 
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 	cp->tx_avarage = (cp->tx_avarage/10)*7 + (cp->tx_byte_cnt/10)*3;
 	if (cp->tx_avarage > cp->tx_peak)
 		cp->tx_peak = cp->tx_avarage;
@@ -1684,7 +1671,6 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 
 	mod_timer(&cp->expire_timer, jiffies + 100);
 }
-#endif
 
 static int rtl8186_open(struct net_device *dev)
 {
@@ -1716,17 +1702,14 @@ static int rtl8186_open(struct net_device *dev)
 
 	netif_start_queue(dev);
 
-#if defined(DYNAMIC_ADJUST_TASKLET) || (defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC))
+#ifdef DYNAMIC_ADJUST_TASKLET
 	init_timer(&cp->expire_timer);
 	cp->expire_timer.expires = jiffies + 100;
 	cp->expire_timer.data = (unsigned long)dev;
 	cp->expire_timer.function = rtk8186_1sec_timer;
 	mod_timer(&cp->expire_timer, jiffies + 100);
-#ifdef DYNAMIC_ADJUST_TASKLET		
 	rx_cnt = 0;
-#endif	
 #endif
-
 	// power down and up port
 	if((RTL_R32(MIIAR)&0x0000ffff) != 0x8201) { // if PHY == 8305
 		if(dev->base_addr == 0xbd200000){ // LAN interface
@@ -1792,7 +1775,7 @@ static int rtl8186_close(struct net_device *dev)
 	free_irq(dev->irq, dev);
 	rtl8186_free_rings(cp);
 
-#if defined(DYNAMIC_ADJUST_TASKLET) || (defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC))
+#ifdef DYNAMIC_ADJUST_TASKLET
 	if (timer_pending(&cp->expire_timer))
 		del_timer_sync(&cp->expire_timer);
 #endif
@@ -1964,7 +1947,7 @@ static int rtl8186_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 	return rc;
 }
 
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 static void cp_vlan_rx_register(struct net_device *dev, struct vlan_group *grp)
 {
 	struct re_private *cp = dev->priv;
@@ -1989,9 +1972,7 @@ static void cp_vlan_rx_kill_vid(struct net_device *dev, unsigned short vid)
 }
 #endif
 
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
-static int read_proc_stats(char *page, char **start, off_t off,
-		int count, int *eof, void *data)
+static int read_proc_stats(char *page, char **start, off_t off, int count, int *eof, void *data)
 {
 	struct net_device *dev = (struct net_device *)data;
 	struct re_private *cp = dev->priv;
@@ -2009,8 +1990,7 @@ static int read_proc_stats(char *page, char **start, off_t off,
     return len;	
 }
 
-static int write_proc_stats(struct file *file, const char *buffer,
-		      unsigned long count, void *data)
+static int write_proc_stats(struct file *file, const char *buffer, unsigned long count, void *data)
 {
 	struct net_device *dev = (struct net_device *)data;
 	struct re_private *cp = dev->priv;
@@ -2020,7 +2000,6 @@ static int write_proc_stats(struct file *file, const char *buffer,
 
 	return count;
 }
-#endif // defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 
 static int rtl8186_probe(int ethno)
 {
@@ -2038,11 +2017,8 @@ static int rtl8186_probe(int ethno)
 	struct proc_dir_entry *res1;
 #endif	
 
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
 	struct proc_dir_entry *res_stats_root;
 	struct proc_dir_entry *res_stats;
-#endif
-
 	regs = (void *)((ethno)?0xbd300000:0xbd200000);
 
 #ifndef MODULE
@@ -2093,7 +2069,7 @@ static int rtl8186_probe(int ethno)
 	dev->features			|= NETIF_F_SG | NETIF_F_IP_CSUM;
 #endif
 
-#if CP_VLAN_TAG_USED
+#ifdef CP_VLAN_TAG_USED
 	dev->features 			|= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
 	dev->vlan_rx_register	= cp_vlan_rx_register;
 	dev->vlan_rx_kill_vid	= cp_vlan_rx_kill_vid;
@@ -2143,19 +2119,12 @@ static int rtl8186_probe(int ethno)
 	}
 #endif // PATCH_8306_CTRL_LED_BY_CPU
 
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)
-	res_stats_root = proc_mkdir(dev->name, NULL);
-	if (res_stats_root == NULL) {
-		printk("proc_mkdir failed!\n");
-		goto err_out_iomap;
-	}
-	if ((res_stats = create_proc_read_entry("stats", 0644, res_stats_root,
+	if ((res_stats = create_proc_read_entry("stats", 0644, root_ethX_dir,
 				read_proc_stats, (void *)dev)) == NULL) {
 		printk("create_proc_read_entry failed!\n");
 		goto err_out_iomap;
 	}
 	res_stats->write_proc = write_proc_stats;
-#endif
 
 	/*
 	 * Looks like this is necessary to deal with on all architectures,

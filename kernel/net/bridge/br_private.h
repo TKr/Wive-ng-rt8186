@@ -31,12 +31,9 @@
 #define MLCST_FLTR_ENTRY	16
 #define MLCST_MAC_ENTRY		64
 #ifdef IGMP_SNOOPING
-#if defined(CONFIG_RTL8186_TR) || defined(CONFIG_RTL8186_EC)    
-#define MAX_BR_PORT_NUM		2
-#else
 #define MAX_BR_PORT_NUM		12
 #endif
-#endif
+
 // interface to set multicast bandwidth control
 //#define MULTICAST_BWCTRL
 
