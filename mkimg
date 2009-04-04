@@ -254,12 +254,6 @@ if [ "$INCLUDE_ETHTOOL" = "YES" ] ; then
   cp -R $APP_PATH/ethtool/filesystem/sbin/ethtool $RO_ROOT/sbin/ethtool
 fi
 
-#ETHTOOL
-if [ "$INCLUDE_ETH830xTOOL" = "YES" ] ; then
-  echo -n " TOOL_FOR RTL8305(06) "
-  cp -R $APP_PATH/rtl830x-ethctl/filesystem/bin/ethctl $RO_ROOT/bin/ethctl
-fi
-
 #menu
 if [ "$INCLUDE_MENU" = "YES" ] ; then
   echo -n "menu "

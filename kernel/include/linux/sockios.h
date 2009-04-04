@@ -119,6 +119,20 @@
 #define SIOCBONDINFOQUERY      0x8994	/* rtn info about bond state    */
 #define SIOCBONDCHANGEACTIVE   0x8995   /* update to a new active slave */
 			
+// Kaohj
+#define SIOCS8305VLAN	0x89a0		/* Set RTL-8305 VLAN		*/
+#define SIOCETHTEST	0x89a1
+#define SIOCBRIDGENF	0x89a2          /* Set Bridge Netfilter. Added by Mason Yu for brnf enable/disable buttom   */
+#define SIOCDIRECTBR	0x89a3		/* ioctl for direct bridge mode, jiunming */
+#define SIOCGMEDIALS	0x89a4		/* Jenny, ioctl for media link status */
+#define SIOCSIPQOS	0x89a5		/* Mason Yu. Set IPQos		*/   
+
+//eason porting for 2.4
+#define SIOCSITFGROUP	0x89a6		/* set itfgroup, jiunming	*/ //add from 2.6 by eason
+#define SIOCRESETSTAT	0x89a7		/* cathy, reset stat of every net device */
+//
+
+
 /* Device private ioctl calls */
 
 /*

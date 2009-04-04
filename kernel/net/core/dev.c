@@ -81,6 +81,7 @@
 #include <linux/errno.h>
 #include <linux/interrupt.h>
 #include <linux/if_ether.h>
+#include <linux/if_vlan.h>
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/notifier.h>
@@ -1018,7 +1019,7 @@ int dev_queue_xmit(struct sk_buff *skb)
 		qdisc_run(dev);
 		netif_schedule(dev);
 		spin_unlock_bh(&dev->queue_lock);
-		return ret = NET_XMIT_BYPASS ? NET_XMIT_SUCCESS : ret ;
+		return ret == NET_XMIT_BYPASS ? NET_XMIT_SUCCESS : ret ;
 	}
 
 	/* The device has no queue. Common case for software devices:
@@ -2293,9 +2294,14 @@ static int dev_ifsioc(struct ifreq *ifr, unsigned int cmd)
 			    cmd == SIOCETHTOOL ||
 			    cmd == SIOCGMIIPHY ||
 			    cmd == SIOCGMIIREG ||
-			    cmd == SIOCSMIIREG) {
+			    cmd == SIOCSMIIREG ||
+                            cmd == SIOCS8305VLAN||
+                            cmd == SIOCDIRECTBR ||
+                            cmd == SIOCGMEDIALS ||
+                            cmd == SIOCETHTEST  ||
+                            cmd == SIOCSIPQOS) {
 				if (dev->do_ioctl) {
-					if (!netif_device_present(dev))
+					if (!netif_device_present(dev) && cmd!=SIOCETHTEST)
 						return -ENODEV;
 					return dev->do_ioctl(dev, ifr, cmd);
 				}
@@ -2447,6 +2453,11 @@ int dev_ioctl(unsigned int cmd, void *arg)
 		case SIOCBONDSLAVEINFOQUERY:
 		case SIOCBONDINFOQUERY:
 		case SIOCBONDCHANGEACTIVE:
+                case SIOCS8305VLAN:
+                case SIOCDIRECTBR:
+                case SIOCGMEDIALS:
+                case SIOCETHTEST:
+                case SIOCSIPQOS:
 			if (!capable(CAP_NET_ADMIN))
 				return -EPERM;
 			dev_load(ifr.ifr_name);
