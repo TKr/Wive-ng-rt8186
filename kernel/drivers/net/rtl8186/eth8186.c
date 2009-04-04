@@ -431,8 +431,14 @@ struct ctrl_led {
 	unsigned int		link_status;
 } led_cb[5];
 
+#ifdef PATCH_8306_CTRL_LED_BY_CPU
+unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth);
+void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth);
+#else
 static unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth);
 static void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth);
+#endif
+
 static int32 rtl8306_getAsicMibCounter(uint32 port, uint32 counter, uint32 *value) ;
 
 static void rtl8306_page_select(unsigned int pagenumber)
@@ -2199,7 +2205,7 @@ typedef struct asicVersionPara_s
 } asicVersionPara_t;
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-static void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
+void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
 #else
 void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
 #endif
@@ -2231,7 +2237,8 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 }
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
-static unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
+//sfstudio
+unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
 #else
 unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
 #endif

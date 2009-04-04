@@ -32,6 +32,12 @@ endif
 ifeq ($(CONFIG_RTL8186),y)
     subdir-$(CONFIG_RTL8186) += rtl8186
 endif
+
+ifeq ($(CONFIG_RE8306_API),y)
+  obj-y += rtl8306/re8306.o
+endif
+  
+subdir-$(CONFIG_RE8306_API) += rtl8306
   
 subdir-$(CONFIG_NET_PCMCIA) += pcmcia
 subdir-$(CONFIG_TULIP) += tulip
