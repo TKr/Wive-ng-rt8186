@@ -47,7 +47,7 @@
         nop
         and     t0,t2           # isolate allowed ones
         andi    t2,t0, 0xfc00
-       #if 0 
+#if 0 
 	la      t0, (GISR + RTL8181_REG_BASE)
         la      t1, (GIMR0 + RTL8181_REG_BASE)
         lw      a0, 0(t0)
@@ -55,7 +55,7 @@
         nop
         and     a0,a1
         andi    a0, 0xff
-	#endif
+#endif
         bne     t2,zero,handle_it
         nop
         la      t0,( UART_THR + RTL8181_REG_BASE)

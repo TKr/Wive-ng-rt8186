@@ -954,6 +954,7 @@ static void __init do_basic_setup(void)
 	 */
 	child_reaper = current;
 
+
 #if defined(CONFIG_MTRR)	/* Do this after SMP initialization */
 /*
  * We should probably create some architecture-dependent "fixup after
@@ -966,6 +967,7 @@ static void __init do_basic_setup(void)
 #ifdef CONFIG_SYSCTL
 	sysctl_init();
 #endif
+	setup_proc_sysmem();
 #ifdef CONFIG_PROC_BOGOMIPS
         setup_bogomips();
 #endif
@@ -978,7 +980,6 @@ static void __init do_basic_setup(void)
 #ifdef CONFIG_PROC_COOLER
         setup_proc_cooler();
 #endif
-	setup_proc_sysmem();
 #ifdef CONFIG_NGPL_FREQUENCY_HOPPING
 	setup_proc_frequency();
 #endif	
@@ -1105,7 +1106,6 @@ static int init(void * unused)
 
 	lock_kernel();
 	do_basic_setup();
-
 	prepare_namespace();
 
 	/*
@@ -1142,7 +1142,7 @@ extern asmlinkage long sys_mount(char * dev_name, char * dir_name, char * type,
     else
         printk("mount /proc file system ok!\n");
 #ifdef CONFIG_RTK_MTD_ROOT
-    if ((err=sys_mount("tmpfs","/var","tmpfs",flags,"size=700k")))
+    if ((err=sys_mount("tmpfs","/var","tmpfs",flags,"size=512k")))
         printk("mount /var file system fail! error code=%d\n",err);
     else
         printk("mount /var  file system ok!\n");

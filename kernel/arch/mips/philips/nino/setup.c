@@ -49,6 +49,11 @@ static void nino_machine_restart(char *command)
 	mdelay(100);
 	printk("Enable G700 and over bad AP workaround CPU<=>HZ registr. \n");
 	outl(0x35B60, TC0DATA);
+	outl(0x0, TCCNR);
+        outl(0, TC0DATA); // what does this counter mean? 
+        outl(0, TC1DATA); // what does this counter mean?
+        outl(0, TC2DATA); // what does this counter mean?
+        outl(0, TC3DATA); // what does this counter mean?
 	printk("Enable Watch Dog to Reset whole system. \n");
 	*(volatile unsigned long *)(0xBD010058)=0x10; // this is to enable watch dog reset
 	*(volatile unsigned long *)(0xBD01005c)=0x00; // this is to enable watch dog reset
