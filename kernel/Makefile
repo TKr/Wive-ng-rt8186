@@ -12,7 +12,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 TOPDIR	:= $(shell /bin/pwd)
 
-OPTIMIZEFLAGS	= -Os -fPIC -nostdinc -g -gstabs+ -fomit-frame-pointer -mno-memcpy
+OPTIMIZEFLAGS	= -Os -fPIC -nostdinc -g -gstabs+ -fomit-frame-pointer 
+#-mno-memcpy
 
  
 HPATH   	= $(TOPDIR)/include
@@ -191,7 +192,6 @@ CLEAN_FILES = \
 	drivers/char/drm/*-mod.c \
 	drivers/pci/devlist.h drivers/pci/classlist.h drivers/pci/gen-devlist \
 	drivers/zorro/devlist.h drivers/zorro/gen-devlist \
-	drivers/sound/bin2hex drivers/sound/hex2hex \
 	drivers/atm/fore200e_mkfirm drivers/atm/{pca,sba}*{.bin,.bin1,.bin2} \
 	drivers/scsi/aic7xxx/aicasm/aicasm_gram.c \
 	drivers/scsi/aic7xxx/aicasm/aicasm_scan.c \
@@ -217,15 +217,6 @@ CLEAN_DIRS = \
 # files removed with 'make mrproper'
 MRPROPER_FILES = \
 	include/linux/autoconf.h include/linux/version.h \
-	drivers/net/hamradio/soundmodem/sm_tbl_{afsk1200,afsk2666,fsk9600}.h \
-	drivers/net/hamradio/soundmodem/sm_tbl_{hapn4800,psk4800}.h \
-	drivers/net/hamradio/soundmodem/sm_tbl_{afsk2400_7,afsk2400_8}.h \
-	drivers/net/hamradio/soundmodem/gentbl \
-	drivers/sound/*_boot.h drivers/sound/.*.boot \
-	drivers/sound/msndinit.c \
-	drivers/sound/msndperm.c \
-	drivers/sound/pndsperm.c \
-	drivers/sound/pndspini.c \
 	drivers/atm/fore200e_*_fw.c drivers/atm/.fore200e_*.fw \
 	.version .config* config.in config.old \
 	scripts/tkparse scripts/kconfig.tk scripts/kconfig.tmp \

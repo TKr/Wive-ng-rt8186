@@ -577,11 +577,6 @@
 #define CONFIG_NET_RANDOM 1
 
 /*
- * Debug rtl8186 SOC network 
- */
-#undef  CONFIG_RTL8186_ETH_DEBUG
-
-/*
  * Select switch mode
  */
 #define CONFIG_EXT_SWITCH 1
@@ -590,6 +585,12 @@
 #define CONFIG_RE8306 1
 #define CONFIG_RE8306_API 1
 #define PATCH_8306_CTRL_LED_BY_CPU 1
+#define CONFIG_BICOLOR_LED 1
+
+/*
+ * Select SoC debug mode
+ */
+#undef  CONFIG_RTL8186_ETH_DEBUG
 #undef  CONFIG_SWITCH_DEBUG_MODE
 #undef  CONFIG_RTL8186_QOS_DEBUG
 

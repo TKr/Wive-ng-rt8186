@@ -16,21 +16,10 @@ if [ "$CONFIG_HAMRADIO" != "n" ]; then
       tristate '  Amateur Radio AX.25 Level 2 protocol' CONFIG_AX25
       if [ "$CONFIG_AX25" != "n" ]; then
 	 bool '    AX.25 DAMA Slave support' CONFIG_AX25_DAMA_SLAVE
-#	 bool '    AX.25 DAMA Master support' CONFIG_AX25_DAMA_MASTER
 	 dep_tristate '    Amateur Radio NET/ROM protocol' CONFIG_NETROM $CONFIG_AX25
 	 dep_tristate '    Amateur Radio X.25 PLP (Rose)' CONFIG_ROSE $CONFIG_AX25
       fi
-
-      if [ "$CONFIG_AX25" != "n" ]; then
-	 mainmenu_option next_comment
-	 comment 'AX.25 network device drivers'
-
-	 source drivers/net/hamradio/Config.in
-
-	 endmenu
-      fi
    fi
-
 fi
 
 endmenu

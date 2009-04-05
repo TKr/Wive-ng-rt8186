@@ -2017,7 +2017,6 @@ static int rtl8186_probe(int ethno)
 	struct proc_dir_entry *res1;
 #endif	
 
-	struct proc_dir_entry *res_stats_root;
 	struct proc_dir_entry *res_stats;
 	regs = (void *)((ethno)?0xbd300000:0xbd200000);
 
@@ -2397,7 +2396,7 @@ static int __init rtl8186_init(void)
 	rtl8186_probe(0);
 	rtl8186_probe(1);
 
-#ifdef BICOLOR_LED
+#ifdef CONFIG_BICOLOR_LED
 	{
 		unsigned int val = (19<<16);
 		writel(val, NIC1BASE|MIIAR);
@@ -2406,7 +2405,7 @@ static int __init rtl8186_init(void)
 		val |= 0x800023ff;
 		writel(val, NIC1BASE|MIIAR);
 	}
-#endif /* BICOLOR_LED */
+#endif
 
 #ifdef PATCH_8306_SW
 	 rtl8306_getAsicVersionInfo(&AsicVer); //brad
@@ -2414,16 +2413,11 @@ static int __init rtl8186_init(void)
         (AsicVer.vernum == RTL8306_VERNUM) && 
         (AsicVer.revision == 0x0)  )
     {
-       // rtl8306_setAsicPhyReg(2, 26, 0, 0x0056);
 #ifdef CONFIG_RTL8186_ETH_DEBUG
        printk("Will Set phy 2, reg 26 ==0x56\n");
 #endif
         MII_write(2, 26, 0x0056,0);
     }
-	//MII_write(0, 16, MII_read(0,16,0)|0x4800, 0);//Brad modify 2007-08-31
-	//MII_write(2, 31, (MII_read(2,31,0)|0x00c0), 0);//Brad modify 2007-08-31
-	//MII_write(0, 16, MII_read(0,16,0)&0xb7ff, 0); //Brad modify 2007-08-31
-
 	mdelay(40);                                  //brad add 
  	temp   = MII_read(0,16,0);
     	temp = temp | 0x800;  
@@ -2441,7 +2435,7 @@ static int __init rtl8186_init(void)
 	temp = MII_read(0,16,0);
       	temp = temp & ~0x800;
        MII_write(0, 16, temp, 0);  
-#endif     
+#endif /* PATCH_8306_SW */
 
 #ifdef PATCH_8306_CTRL_LED_BY_CPU
 	{

@@ -40,24 +40,26 @@ comment 'Select either RTL8186'
 	if [ "$CONFIG_RTL8186" == "y" ]; then
 	    dep_bool 'RTL8186 VLAN QOS support' VLAN_QOS $CONFIG_RTL8186
 	    bool 'Allow Net Devices to contribute to /dev/random' CONFIG_NET_RANDOM
-	    #debug mode
-	    comment 'Debug rtl8186 SOC network '
-	    dep_bool 'RTL8186 ETH interface debug' CONFIG_RTL8186_ETH_DEBUG $CONFIG_RTL8186
     	fi
 comment 'Select switch mode'
-	bool '     External Ethernet Switch support' CONFIG_EXT_SWITCH
+	bool 'External Ethernet Switch support' CONFIG_EXT_SWITCH
         if [ "$CONFIG_EXT_SWITCH" = "y" ]; then
 	    dep_bool "RTL8186 with RTL8305SB/RTL8306 support" PATCH_8306_SW $CONFIG_RTL8186
             choice 'Device Type' \
     	    "RTL8305  CONFIG_RE8305 \
              RTL8306  CONFIG_RE8306" RTL8305
              if [ "$CONFIG_RE8306" = "y" ]; then
-                 bool '          RTL8306 Advanced API' CONFIG_RE8306_API
+                 bool 'RTL8306 Advanced API' CONFIG_RE8306_API
              fi
 	    dep_bool "RTL8305SB/RTL8306 LED control support" PATCH_8306_CTRL_LED_BY_CPU $PATCH_8306_SW
+             if [ "$PATCH_8306_CTRL_LED_BY_CPU" = "y" ]; then
+                 bool 'BI color led indicator support' CONFIG_BICOLOR_LED
+             fi
+        fi
+comment 'Select SoC debug mode'
+	    dep_bool 'RTL8186 ETH interface debug' CONFIG_RTL8186_ETH_DEBUG $CONFIG_RTL8186
     	    dep_bool 'RTL8186 SWITCH (8305 or 8306) debug' CONFIG_SWITCH_DEBUG_MODE $PATCH_8306_SW
 	    dep_bool 'RTL8186 VLAN QOS debug' CONFIG_RTL8186_QOS_DEBUG $VLAN_QOS
-        fi
                                                                                       
 #-----------------------------------------------------------------------------------------------
 comment 'Other devices'
