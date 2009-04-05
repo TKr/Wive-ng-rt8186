@@ -13,7 +13,7 @@ get_size(){
 }
 
 usage(){
-  echo "Usage: $0 | save | load | restore | crash | fullcrash" >&2
+  echo "Usage: $0 | save | load | restore | crash | fullcrash |" >&2
   exit 1
 }
 
