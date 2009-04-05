@@ -1449,7 +1449,7 @@ static void rtl8186_init_hw(struct re_private *cp)
 	mdelay(200);
 	RTL_W32(MIIAR, BIT(26)|0x30000);				// read PHY type
 	mdelay(200);
-	if ((RTL_R32(MIIAR)&0x0000ffff) == 0x8201) {	// if PHY == 8201
+	if ((RTL_R32(MIIAR)&0x0000ffff) == 0x8201) {		// if PHY == 8201
 		printk("%s:phy is 8201\n", dev->name);
 		RTL_W32(MIIAR, BIT(31)|BIT(26)|0x3300);		// Reset/re-auto-nego
 	}
