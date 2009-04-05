@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # rtl8186 wive-ng patch from revB to revA
-# qwerty 04.04.2009
+# qwerty 05.04.2009 v1.1
 
 # setup
 my $fread= "wive.bin";
@@ -41,8 +41,10 @@ if ($a == "1") {
 	or die "write to $fwrite failed : $!";	
 	seek(FR, 16, 0);			# seek to 16 byte
 	read(FR, $x, $fs-16);			# read to end
-	print FW $x				# write ti file
+	print FW $x				# write to file
 	or die "write to $fwrite failed : $!";
+	close FR or die "error closing $fread : $!";
+	close FW or die "error closing $fwrite : $!";
 	print "all done.\n";
 	exit(0);				# nothing to do, exit
 }
