@@ -1,3 +1,17 @@
+wive-ng-0.2.18 
+1) igmpproxy now works. 
+2) Backport support igmpv3 of the 2.6 kernel branch. 
+3) Updated dropbear (ssh server) to the latest stable version. 
+4) Added basic support for managing switches for 8305/8306 chips. 
+5) The first working version of the display status of the switch ports 8305 and 8306 through the 
+    /proc/ethX/eth_mib. For rtl8306 must also show statistics for each of the ports. 
+6) Added basic ethtool support in the kernel, while correctly only display information about the driver. 
+7) In the tools added rev_B-A_converter.pl - Convert images of revB in revA (thanks qwerty). 
+8) Added option for the team fs fullcrash similar on the Effects of embedment black_fw.bin, while after 
+    restart point will be immediately ready to receive the new firmware on the tftp. 
+9) Another attempt to circumvent the old glitches in the loader 8Mb devices. 
+10) Multi-cleansing kernel code.
+
 wive-ng-0.2.17 
 1) Added the "target" NOTRACK (iptables-t raw-L-v) 
 2) Added the LNA in wifinetworks responsible for the management of the external amplifier, in some devices 
