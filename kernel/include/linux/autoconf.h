@@ -574,6 +574,7 @@
  */
 #define CONFIG_RTL8186 1
 #define VLAN_QOS 1
+#define RTL8186_CHECKSUM_OFFLOAD 1
 #define CONFIG_NET_RANDOM 1
 
 /*

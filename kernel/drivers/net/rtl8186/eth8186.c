@@ -21,8 +21,9 @@
 #define DRV_VERSION		"0.1.1-NG"
 #define DRV_RELDATE		"4.04.2009"
 
-#define RTL8186_CHECKSUM_OFFLOAD
 #define DYNAMIC_ADJUST_TASKLET
+
+#undef MII_EXTENTION //for future
 
 #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
 #define CP_VLAN_TAG_USED 1
@@ -51,7 +52,7 @@ MODULE_AUTHOR("Arthur Yang <ysy@realtek.com.tw>");
 MODULE_DESCRIPTION("RealTek RTL8186 series 10/100 Ethernet driver");
 MODULE_LICENSE("GPL");
 
-#if 0
+#ifdef CONFIG_RTL8186_ETH_DEBUG
 static int debug = -1;
 MODULE_PARM (debug, "i");
 MODULE_PARM_DESC (debug, "RTL8186NIC bitmapped message enable number");
@@ -838,7 +839,7 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 static void rtl8186_rx_err_acct(struct re_private *cp, unsigned rx_tail,
 			    u32 status, u32 len)
 {
-#if 0
+#ifdef CONFIG_RTL8186_ETH_DEBUG
 	if (netif_msg_rx_err (cp))
 		printk (KERN_DEBUG
 			"%s: rx err, slot %d status 0x%x len %d\n",
@@ -1051,7 +1052,7 @@ static inline void rtl8186_interrupt(int irq, void *dev_instance, struct pt_regs
 
 	if (status & (RX_OK | RX_ERR | RX_EMPTY | RX_FIFOOVR))
 	{
-#if 0
+#ifdef CONFIG_RTL8186_ETH_DEBUG
 		if(!(status & RX_OK))
 			printk("%s rx error =%x\n",dev->name,status);
 		if(status & RX_EMPTY)
@@ -1182,7 +1183,7 @@ dequeue_label:
 		vlan_tag = TxVlanTag | vlan_tx_tag_get(skb);
 #endif
 
-#if 0   //sc_yang
+#ifdef CONFIG_RTL8186_ETH_DEBUG
 	if ( (skb->len>ETH_FRAME_LEN) )
 		for(;;)
 		{
@@ -1320,16 +1321,6 @@ static void __rtl8186_set_rx_mode(struct net_device *dev)
 			mc_filter[i] = 0;
 		for (i = 0, mclist = dev->mc_list; mclist && i < dev->mc_count;
 			i++, mclist = mclist->next) {
-#if 0
-			int bit_nr = ether_crc(ETH_ALEN, mclist->dmi_addr) >> 26;
-#endif
-
-#if 0 // arthur
-			int bit_nr = 0;
-
-			mc_filter[bit_nr >> 5] |= 1 << (bit_nr & 31);
-			rx_mode |= AcceptMulticast;
-#endif
 		}
 	}
 }
@@ -1813,7 +1804,7 @@ static int rtl8186_change_mtu(struct net_device *dev, int new_mtu)
 	return rc;
 }
 
-#if 0
+#ifdef MII_EXTENTION
 static char mii_2_8139_map[8] = {
 	BasicModeCtrl,
 	BasicModeStatus,
@@ -2035,7 +2026,7 @@ static int rtl8186_probe(int ethno)
 	cp->dev = dev;
 	spin_lock_init(&cp->lock);
 
-#if 0
+#ifdef MII_EXTENTION
 	cp->mii_if.dev = dev;
 	cp->mii_if.mdio_read = mdio_read;
 	cp->mii_if.mdio_write = mdio_write;
@@ -2059,17 +2050,15 @@ static int rtl8186_probe(int ethno)
 	dev->do_ioctl		= rtl8186_ioctl;
 	dev->set_mac_address	= rtl8186_set_hwaddr;
 	dev->change_mtu		= rtl8186_change_mtu;
-#if 1
-	dev->tx_timeout			= rtl8186_tx_timeout;
-	dev->watchdog_timeo		= TX_TIMEOUT;
-#endif
+	dev->tx_timeout		= rtl8186_tx_timeout;
+	dev->watchdog_timeo	= TX_TIMEOUT;
 
-#ifdef CP_TX_CHECKSUM
-	dev->features			|= NETIF_F_SG | NETIF_F_IP_CSUM;
+#ifdef RTL8186_CHECKSUM_OFFLOAD
+	dev->features	|= NETIF_F_SG | NETIF_F_IP_CSUM;
 #endif
 
 #ifdef CP_VLAN_TAG_USED
-	dev->features 			|= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
+	dev->features 	|= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
 	dev->vlan_rx_register	= cp_vlan_rx_register;
 	dev->vlan_rx_kill_vid	= cp_vlan_rx_kill_vid;
 #endif

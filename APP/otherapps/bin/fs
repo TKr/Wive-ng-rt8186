@@ -89,6 +89,9 @@ main(){
     crash)
       crash $@
       ;;
+    fullcrash)
+      fullcrash $@
+      ;;
     *) 
       usage $@ 
       ;;
