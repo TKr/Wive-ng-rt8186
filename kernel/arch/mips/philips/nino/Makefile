@@ -15,7 +15,6 @@ O_TARGET	:= nino.o
 
 all: nino.o
 
-#obj-y		:= int-handler.o irq.o setup.o prom.o power.o
 obj-y		:= int-handler.o irq.o setup.o prom.o pci.o
 obj-$(CONFIG_REMOTE_DEBUG)	+= gdb_hook.o
 

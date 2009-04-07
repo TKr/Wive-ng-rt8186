@@ -3,6 +3,10 @@
 # Makefile for the Linux network (ethercard) device drivers.
 #
 
+CFLAGS := $(CPPFLAGS) -O3 -fPIC -nostdinc -g -gstabs+ \
+        -fomit-frame-pointer -Wall -Wstrict-prototypes \
+        -Wno-trigraphs -fno-strict-aliasing
+
 obj-y           :=
 obj-m           :=
 obj-n           :=

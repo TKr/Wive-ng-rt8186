@@ -35,7 +35,7 @@ endif
 # machines may also.  Since BFD is incredibly buggy with respect to
 # crossformat linking we rely on the elf2ecoff tool for format conversion.
 #
-GCCFLAGS	:= -G 0 -mno-abicalls -fno-pic
+GCCFLAGS	:= -O3 -G 0 -mno-abicalls -fno-pic
 LINKFLAGS	+= -static
 MODFLAGS	+= -mlong-calls
 LD		:= $(LD) -G 0

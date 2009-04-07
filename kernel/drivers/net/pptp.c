@@ -46,12 +46,13 @@
 #include <net/route.h>
 #include <asm/uaccess.h>
 
-#define PPTP_DRIVER_VERSION "0.2"
+#define PPTP_DRIVER_VERSION "0.2.1"
 
 MODULE_DESCRIPTION("PPTP_DRIVER");
 MODULE_AUTHOR("Kozlov D. (xeb@mail.ru)");
 MODULE_LICENSE("GPL");
 MODULE_PARM(log_level, "i");
+MODULE_PARM(mtu, "i");
 MODULE_PARM_DESC(log_level, "Logging level (default=0)");
 
 static int pptp_xmit(struct ppp_channel *chan, struct sk_buff *skb);
@@ -108,7 +109,7 @@ static struct ppp_channel_ops pptp_chan_ops= {
 
 struct pptp_gre_header {
     u_int8_t flags;		/* bitfield */
-    u_int8_t ver;		/* should be PPTP_GRE_VER (enhanced GRE) */
+    u_int8_t ver;			/* should be PPTP_GRE_VER (enhanced GRE) */
     u_int16_t protocol;		/* should be PPTP_GRE_PROTO (ppp-encaps) */
     u_int16_t payload_len;	/* size of ppp payload, not inc. gre header */
     u_int16_t call_id;		/* peer's call_id for this session */
@@ -142,6 +143,7 @@ struct pptp_gre_header {
 
 int gIsFirewallEnabled = 1;
 static int log_level = 0;
+static int mtu = PPP_MTU - PPTP_HEADER_OVERHEAD;
 static rwlock_t chan_lock = RW_LOCK_UNLOCKED;
 static PCALLID_LIST call_listhead = NULL, call_listtail = NULL;
 
@@ -261,7 +263,7 @@ static int pptp_xmit(struct ppp_channel *chan, struct sk_buff *skb) {
     }
 
     tdev = rt->u.dst.dev;
-    max_headroom = ((tdev->hard_header_len + 15) & ~15) + sizeof(*iph) + sizeof(*hdr) + 2;
+    max_headroom = tdev->hard_header_len + 16 + sizeof(*iph) + sizeof(*hdr) + 2;
     
     if( skb_headroom(skb) < max_headroom || skb_cloned(skb) || skb_shared(skb) ) {
 	struct sk_buff *new_skb;
@@ -306,20 +308,17 @@ static int pptp_xmit(struct ppp_channel *chan, struct sk_buff *skb) {
     }
 
     hdr->payload_len = htons(len);
-    
-    skb->h.raw = skb->nh.raw;
-    skb->nh.raw = skb_push(skb, sizeof(*iph));
 
-    memset(&(IPCB(skb)->opt), 0, sizeof(IPCB(skb)->opt));
-    iph 		= skb->nh.iph;
+    iph = (struct iphdr *)skb_push(skb, sizeof(*iph));
     iph->version	= 4;
     iph->ihl		= sizeof(struct iphdr) >> 2;
-    iph->frag_off	= 0;
+    if (ip_dont_fragment(sk, &rt->u.dst)) iph->frag_off = htons(IP_DF);
+    else 				  iph->frag_off	= 0;
     iph->protocol	= IPPROTO_GRE;
-    iph->tos		= 0;
+    iph->tos		= sk->protinfo.af_inet.tos;
     iph->daddr		= rt->rt_dst;
     iph->saddr		= rt->rt_src;
-    iph->ttl 		= sysctl_ip_default_ttl - 1;
+    iph->ttl 		= sk->protinfo.af_inet.ttl;
     iph->tot_len 	= htons(skb->len);
 
     dst_release(skb->dst);
@@ -332,13 +331,13 @@ static int pptp_xmit(struct ppp_channel *chan, struct sk_buff *skb) {
     skb->nf_debug = 0;
 #endif
 #endif /* CONFIG_NETFILTER */
-
+    
     skb->ip_summed = CHECKSUM_NONE;
-    ip_select_ident(iph, &rt->u.dst, NULL);
+    ip_select_ident(iph, &rt->u.dst, sk);
+    skb->nh.iph   = iph;
     ip_send_check(iph);
 	
-    //NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, skb, NULL, rt->u.dst.dev, ip_send);
-    ip_send(skb);
+    NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, skb, NULL, rt->u.dst.dev, ip_send);
 
 tx_error:
     return 1;
@@ -377,7 +376,7 @@ static int pptp_rcv_core(struct sock *sk,struct sk_buff *skb) {
     if( !PPTP_GRE_IS_A(header->ver) ) headersize -= sizeof(header->ack);
 
     if( skb->len - headersize < payload_len )  goto drop;
-    if( seq - opt->seq_recv > MISSING_WINDOW ) goto drop;
+    if( !opt->first_seq && seq > opt->seq_recv && seq - opt->seq_recv > MISSING_WINDOW ) goto drop;
 	
     payload = skb->data + headersize;
     if( !opt->first_seq && (seq < opt->seq_recv + 1 || WRAPPED(opt->seq_recv, seq)) ) {
@@ -434,15 +433,7 @@ static int pptp_rcv(struct sk_buff *skb) {
     if( (po = find_call(htons(header->call_id), iph->saddr, (__u32)-1)) ) {
 	dst_release(skb->dst);
 	skb->dst = NULL;
-
-#ifdef CONFIG_NETFILTER
-        nf_conntrack_put(skb->nfct);
-	skb->nfct = NULL;
-#ifdef CONFIG_NETFILTER_DEBUG
-	skb->nf_debug = 0;
-#endif
-#endif /* CONFIG_NETFILTER */
-
+	
 	sk = SK_PPPOX(po);
     	    
     	bh_lock_sock(sk);
@@ -481,7 +472,6 @@ static int pptp_connect(struct socket *sock, struct sockaddr *uservaddr, int soc
     struct sockaddr_pppox *sp 	= (struct sockaddr_pppox*)uservaddr;
     struct pppox_opt *po 	= PPPOX_SK(sk);
     struct pptp_opt *opt 	= PPTP_SK(sk);
-    struct rtable *rt;     			
     int error;
 
     if( sp->sa_protocol != PX_PROTO_PPTP ) return -EINVAL;
@@ -500,21 +490,7 @@ static int pptp_connect(struct socket *sock, struct sockaddr *uservaddr, int soc
 
     po->chan.private 	= sk;
     po->chan.ops	= &pptp_chan_ops;
-
-    { 	struct rt_key key = {
-	    .dst=opt->dst_addr.sin_addr.s_addr,
-	    .src=opt->src_addr.sin_addr.s_addr,
-	    .tos=RT_TOS(0),
-	};
-	
-	if( ip_route_output_key(&rt, &key) ) {
-    	    error = -EHOSTUNREACH;
-	    goto end;
-	}
-    }
-
-    if( !(po->chan.mtu = rt->u.dst.pmtu) ) po->chan.mtu = PPP_MTU;
-    po->chan.mtu -= PPTP_HEADER_OVERHEAD;
+    po->chan.mtu 	= mtu;
 
     po->chan.hdrlen = 2 + sizeof(struct pptp_gre_header);
     if( (error = ppp_register_channel(&po->chan)) ) {
