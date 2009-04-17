@@ -12,9 +12,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 TOPDIR	:= $(shell /bin/pwd)
 
-OPTIMIZEFLAGS	= -Os -fPIC -nostdinc -g -gstabs+ -fomit-frame-pointer 
-#-mno-memcpy
-
+OPTIMIZEFLAGS	= -Os -fPIC -nostdinc -g -gstabs+ -fomit-frame-pointer -fexpensive-optimizations
  
 HPATH   	= $(TOPDIR)/include
 FINDHPATH	= $(HPATH)/asm $(HPATH)/linux $(HPATH)/scsi $(HPATH)/net

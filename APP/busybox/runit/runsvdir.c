@@ -60,14 +60,14 @@ struct globals {
 #endif
 };
 #define G (*(struct globals*)&bb_common_bufsiz1)
-#define sv        (G.sv        )
-#define svdir     (G.svdir     )
-#define svnum     (G.svnum     )
+#define sv          (G.sv          )
+#define svdir       (G.svdir       )
+#define svnum       (G.svnum       )
 #define rplog       (G.rplog       )
-#define rploglen  (G.rploglen  )
-#define logpipe   (G.logpipe   )
-#define pfd       (G.pfd       )
-#define stamplog  (G.stamplog  )
+#define rploglen    (G.rploglen    )
+#define logpipe     (G.logpipe     )
+#define pfd         (G.pfd         )
+#define stamplog    (G.stamplog    )
 #define INIT_G() do { \
 } while (0)
 
@@ -119,7 +119,7 @@ static NOINLINE pid_t runsv(const char *name)
 			| (1 << SIGTERM)
 			, SIG_DFL);
 #endif
-		execlp("runsv", "runsv", name, NULL);
+		execlp("runsv", "runsv", name, (char *) NULL);
 		fatal2_cannot("start runsv ", name);
 	}
 	return pid;
@@ -188,7 +188,7 @@ static NOINLINE int do_rescan(void)
  next_dentry: ;
 	}
 	i = errno;
-		closedir(dir);
+	closedir(dir);
 	if (i) { /* readdir failed */
 		warn2_cannot("read directory ", svdir);
 		return 1; /* need to rescan again soon */
@@ -321,11 +321,11 @@ int runsvdir_main(int argc UNUSED_PARAM, char **argv)
 						}
 					} else {
 						warn2_cannot("change directory to ", svdir);
-				}
+					}
 				}
 			} else {
 				warn2_cannot("stat ", svdir);
-		}
+			}
 		}
 
 #if ENABLE_FEATURE_RUNSVDIR_LOG
@@ -353,11 +353,11 @@ int runsvdir_main(int argc UNUSED_PARAM, char **argv)
 			while (read(logpipe.rd, &ch, 1) > 0) {
 				if (ch < ' ')
 					ch = ' ';
-					for (i = 6; i < rploglen; i++)
-						rplog[i-1] = rplog[i];
-					rplog[rploglen-1] = ch;
-				}
+				for (i = 6; i < rploglen; i++)
+					rplog[i-1] = rplog[i];
+				rplog[rploglen-1] = ch;
 			}
+		}
 #endif
 		if (!bb_got_signal)
 			continue;
@@ -370,26 +370,24 @@ int runsvdir_main(int argc UNUSED_PARAM, char **argv)
 			opt_s_argv[1] = utoa(bb_got_signal);
 			pid = spawn(opt_s_argv);
 			if (pid > 0) {
-				/* Remebering to wait for _any_ children,
+				/* Remembering to wait for _any_ children,
 				 * not just pid */
 				while (wait(NULL) != pid)
 					continue;
 			}
 		}
 
-		switch (bb_got_signal) {
-		case SIGHUP:
+		if (bb_got_signal == SIGHUP) {
 			for (i = 0; i < svnum; i++)
 				if (sv[i].pid)
 					kill(sv[i].pid, SIGTERM);
-			/* Fall through */
-		default: /* SIGTERM (or SIGUSRn if we are init) */
-			/* Exit unless we are init */
-			if (getpid() == 1)
-				break;
+		}
+		/* SIGHUP or SIGTERM (or SIGUSRn if we are init) */
+		/* Exit unless we are init */
+		if (getpid() != 1)
 			return (SIGHUP == bb_got_signal) ? 111 : EXIT_SUCCESS;
-	}
 
+		/* init continues to monitor services forever */
 		bb_got_signal = 0;
 	} /* for (;;) */
 }

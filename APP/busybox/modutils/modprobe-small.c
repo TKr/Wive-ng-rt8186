@@ -602,18 +602,18 @@ static void process_module(char *name, const char *cmdline_options)
 	/* modprobe -> load it */
 	if (!is_rmmod) {
 		if (!options || strstr(options, "blacklist") == NULL) {
-		errno = 0;
-		if (load_module(info->pathname, options) != 0) {
-			if (EEXIST != errno) {
-				bb_error_msg("'%s': %s",
+			errno = 0;
+			if (load_module(info->pathname, options) != 0) {
+				if (EEXIST != errno) {
+					bb_error_msg("'%s': %s",
 						info->pathname,
 						moderror(errno));
-			} else {
-				dbg1_error_msg("'%s': %s",
+				} else {
+					dbg1_error_msg("'%s': %s",
 						info->pathname,
 						moderror(errno));
+				}
 			}
-		}
 		} else {
 			dbg1_error_msg("'%s': blacklisted", info->pathname);
 		}
@@ -693,8 +693,8 @@ int modprobe_main(int argc UNUSED_PARAM, char **argv)
 	modinfo = xzalloc(sizeof(modinfo[0]));
 
 	if ('i' != applet0) { /* not insmod */
-	/* Goto modules directory */
-	xchdir(CONFIG_DEFAULT_MODULES_DIR);
+		/* Goto modules directory */
+		xchdir(CONFIG_DEFAULT_MODULES_DIR);
 	}
 	uname(&uts); /* never fails */
 
@@ -743,8 +743,8 @@ int modprobe_main(int argc UNUSED_PARAM, char **argv)
 	}
 
 	if ('i' != applet0) { /* not insmod */
-	/* Goto $VERSION directory */
-	xchdir(uts.release);
+		/* Goto $VERSION directory */
+		xchdir(uts.release);
 	}
 
 #if ENABLE_FEATURE_MODPROBE_SMALL_OPTIONS_ON_CMDLINE
@@ -776,7 +776,7 @@ int modprobe_main(int argc UNUSED_PARAM, char **argv)
 			USE_FEATURE_MODPROBE_SMALL_OPTIONS_ON_CMDLINE(options ? options : "")
 			SKIP_FEATURE_MODPROBE_SMALL_OPTIONS_ON_CMDLINE("")
 				) != 0)
-			bb_error_msg_and_die("cannot insert '%s': %s",
+			bb_error_msg_and_die("can't insert '%s': %s",
 					*argv, moderror(errno));
 		return 0;
 	}

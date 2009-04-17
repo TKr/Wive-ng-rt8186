@@ -632,12 +632,12 @@ static servtab_t *parse_one_line(void)
 		sep->se_local_hostname = xstrdup(arg);
 		arg = hostdelim + 1;
 		if (*arg == '\0' && argc == 1) {
-				/* Line has just "host:", change the
-				 * default host for the following lines. */
-				free(default_local_hostname);
-				default_local_hostname = sep->se_local_hostname;
-				goto more;
-			}
+			/* Line has just "host:", change the
+			 * default host for the following lines. */
+			free(default_local_hostname);
+			default_local_hostname = sep->se_local_hostname;
+			goto more;
+		}
 	} else
 		sep->se_local_hostname = xstrdup(default_local_hostname);
 
@@ -1119,7 +1119,7 @@ int inetd_main(int argc UNUSED_PARAM, char **argv)
 	else
 		bb_sanitize_stdio();
 	if (!(opt & 4)) {
-		openlog(applet_name, LOG_PID | LOG_NOWAIT, LOG_DAEMON);
+		openlog(applet_name, LOG_PID, LOG_DAEMON);
 		logmode = LOGMODE_SYSLOG;
 	}
 
@@ -1299,7 +1299,7 @@ int inetd_main(int argc UNUSED_PARAM, char **argv)
 			if (sep->se_builtin) {
 				if (pid) { /* "pid" is -1: we did vfork */
 					close(sep->se_fd); /* listening socket */
-					logmode = 0; /* make xwrite etc silent */
+					logmode = LOGMODE_NONE; /* make xwrite etc silent */
 				}
 				restore_sigmask(&omask);
 				if (sep->se_socktype == SOCK_STREAM)

@@ -110,9 +110,9 @@
 #endif
 
 typedef uint64_t u64; /* hack, so we may include kernel's ethtool.h */
-typedef uint32_t u32;           /* ditto */
-typedef uint16_t u16;           /* ditto */
-typedef uint8_t u8;             /* ditto */
+typedef uint32_t u32; /* ditto */
+typedef uint16_t u16; /* ditto */
+typedef uint8_t u8;   /* ditto */
 #include <linux/ethtool.h>
 
 
@@ -139,11 +139,6 @@ struct globals {
 
 
 /* NOINLINEs are placed where it results in smaller code (gcc 4.3.1) */
-
-static void strncpy_IFNAMSIZ(char *dst, const char *src)
-{
-	strncpy(dst, src, IFNAMSIZ);
-}
 
 static int ioctl_on_skfd(unsigned request, struct ifreq *ifr)
 {

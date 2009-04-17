@@ -22,12 +22,12 @@
 
 #define LUKS_MAGIC_L             6
 #define UUID_STRING_L           40
-#define LUKS_CIPHERNAME_L		32
-#define LUKS_CIPHERMODE_L		32
-#define LUKS_HASHSPEC_L			32
-#define LUKS_DIGESTSIZE			20
-#define LUKS_SALTSIZE			32
-#define LUKS_NUMKEYS			8
+#define LUKS_CIPHERNAME_L       32
+#define LUKS_CIPHERMODE_L       32
+#define LUKS_HASHSPEC_L         32
+#define LUKS_DIGESTSIZE         20
+#define LUKS_SALTSIZE           32
+#define LUKS_NUMKEYS             8
 
 static const uint8_t LUKS_MAGIC[] = { 'L','U','K','S', 0xba, 0xbe };
 
@@ -80,8 +80,9 @@ struct BUG_bad_size_luks_phdr {
 		1 : -1];
 };
 
-int volume_id_probe_luks(struct volume_id *id, uint64_t off)
+int volume_id_probe_luks(struct volume_id *id /*,uint64_t off*/)
 {
+#define off ((uint64_t)0)
 	struct luks_phdr *header;
 
 	header = volume_id_get_buffer(id, off, sizeof(*header));

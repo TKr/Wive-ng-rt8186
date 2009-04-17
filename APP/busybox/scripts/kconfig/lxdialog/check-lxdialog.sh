@@ -7,10 +7,10 @@ ldflags()
 	for ext in so a dylib ; do
 		for lib in ncursesw ncurses curses ; do
 			$cc -print-file-name=lib${lib}.${ext} | grep -q /
-	if [ $? -eq 0 ]; then
+			if [ $? -eq 0 ]; then
 				echo "-l${lib}"
-		exit
-	fi
+				exit
+			fi
 		done
 	done
 	exit 1
@@ -44,10 +44,10 @@ EOF
 	    echo " *** Unable to find the ncurses libraries or the"       1>&2
 	    echo " *** required header files."                            1>&2
 	    echo " *** 'make menuconfig' requires the ncurses libraries." 1>&2
-		echo " *** "                                               1>&2
+	    echo " *** "                                                  1>&2
 	    echo " *** Install ncurses (ncurses-devel) and try again."    1>&2
-		echo " *** "                                               1>&2
-		exit 1
+	    echo " *** "                                                  1>&2
+	    exit 1
 	fi
 }
 

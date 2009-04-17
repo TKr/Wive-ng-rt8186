@@ -6,6 +6,8 @@
  *
  * Loads the console font, and possibly the corresponding screen map(s).
  * (Adapted for busybox by Matej Vela.)
+ *
+ * Licensed under GPLv2, see file LICENSE in this tarball for details.
  */
 #include "libbb.h"
 #include <sys/kd.h>
@@ -93,7 +95,7 @@ static void do_loadfont(int fd, unsigned char *inbuf, int unit, int fontsize)
 		cfd.chardata = buf;
 
 		if (!ioctl_or_perror(fd, PIO_FONTX, &cfd, "PIO_FONTX ioctl failed (will try PIO_FONT)"))
-			goto ret;			/* success */
+			goto ret;  /* success */
 	}
 #endif
 	xioctl(fd, PIO_FONT, buf);

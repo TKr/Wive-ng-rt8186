@@ -20,10 +20,7 @@
  * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
  *      2001, 2002, 2003, 2004, 2005 by  Theodore Ts'o.
  *
- * %Begin-Header%
- * This file may be redistributed under the terms of the GNU Public
- * License.
- * %End-Header%
+ * Licensed under GPLv2, see file LICENSE in this tarball for details.
  */
 
 #include <sys/types.h>
@@ -533,21 +530,21 @@ static struct fs_info *lookup(char *filesys)
 /* Find fsck program for a given fs type. */
 static char *find_fsck(char *type)
 {
-  char *s;
-  const char *tpl;
-  char *p = string_copy(fsck_path);
-  struct stat st;
+	char *s;
+	const char *tpl;
+	char *p = string_copy(fsck_path);
+	struct stat st;
 
-  /* Are we looking for a program or just a type? */
-  tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
+	/* Are we looking for a program or just a type? */
+	tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
 
 	for (s = strtok(p, ":"); s; s = strtok(NULL, ":")) {
-	s = xasprintf(tpl, s, type);
-	if (stat(s, &st) == 0) break;
-	free(s);
-  }
-  free(p);
-  return s;
+		s = xasprintf(tpl, s, type);
+		if (stat(s, &st) == 0) break;
+		free(s);
+	}
+	free(p);
+	return s;
 }
 
 static int progress_active(void)

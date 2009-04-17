@@ -36,7 +36,8 @@ enum {
 	ARG_b = (1<<2), /* base directory when modules are in staging area */
 	ARG_e = (1<<3), /* with -F, print unresolved symbols */
 	ARG_F = (1<<4), /* System.map that contains the symbols */
-	ARG_n = (1<<5)  /* dry-run, print to stdout only */
+	ARG_n = (1<<5), /* dry-run, print to stdout only */
+	ARG_r = (1<<6)  /* Compat dummy. Linux Makefile uses it */
 };
 
 static int FAST_FUNC parse_module(const char *fname, struct stat *sb,
@@ -94,7 +95,7 @@ static module_info *find_module(module_info *modules, const char *modname)
 	for (m = modules; m != NULL; m = m->next)
 		if (strcmp(m->modname, modname) == 0)
 			return m;
-			return NULL;
+	return NULL;
 }
 
 static void order_dep_list(module_info *modules, module_info *start,
@@ -138,7 +139,7 @@ int depmod_main(int argc UNUSED_PARAM, char **argv)
 	struct utsname uts;
 	int tmp;
 
-	getopt32(argv, "aAb:eF:n", &moddir_base, NULL);
+	getopt32(argv, "aAb:eF:nr", &moddir_base, NULL);
 	argv += optind;
 
 	/* goto modules location */
@@ -172,7 +173,7 @@ int depmod_main(int argc UNUSED_PARAM, char **argv)
 
 	/* Prepare for writing out the dep files */
 	xchdir(moddir);
-		if (ENABLE_FEATURE_CLEAN_UP)
+	if (ENABLE_FEATURE_CLEAN_UP)
 		free(moddir);
 
 	/* Generate dependency and alias files */
@@ -202,7 +203,7 @@ int depmod_main(int argc UNUSED_PARAM, char **argv)
 			printf("alias %s %s\n",
 				(char*)llist_pop(&m->aliases),
 				m->modname);
-			}
+		}
 	}
 #endif
 #if ENABLE_FEATURE_MODUTILS_SYMBOLS
@@ -213,7 +214,7 @@ int depmod_main(int argc UNUSED_PARAM, char **argv)
 			printf("alias symbol:%s %s\n",
 				(char*)llist_pop(&m->symbols),
 				m->modname);
-	}
+		}
 	}
 #endif
 

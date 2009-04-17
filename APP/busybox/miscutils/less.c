@@ -401,8 +401,8 @@ static void read_lines(void)
 
 		flines[max_fline] = (char*)xrealloc(MEMPTR(current_line), strlen(current_line) + 1 + 4) + 4;
 		LINENO(flines[max_fline]) = max_lineno;
-			if (terminated)
-				max_lineno++;
+		if (terminated)
+			max_lineno++;
 
 		if (max_fline >= MAXLINES) {
 			eof_error = 0; /* Pretend we saw EOF */
@@ -774,9 +774,7 @@ static void buffer_line(int linenum)
 static void open_file_and_read_lines(void)
 {
 	if (filename) {
-		int fd = xopen(filename, O_RDONLY);
-		dup2(fd, 0);
-		if (fd) close(fd);
+		xmove_fd(xopen(filename, O_RDONLY), STDIN_FILENO);
 	} else {
 		/* "less" with no arguments in argv[] */
 		/* For status line only */
@@ -852,7 +850,7 @@ static ssize_t getch_nowait(void)
 			if (r) break;
 		}
 #else
-	safe_poll(pfd + rd, 2 - rd, -1);
+		safe_poll(pfd + rd, 2 - rd, -1);
 #endif
 	}
 
@@ -863,10 +861,10 @@ static ssize_t getch_nowait(void)
 		if (errno == EAGAIN) {
 			/* No keyboard input available. Since poll() did return,
 			 * we should have input on stdin */
-		read_lines();
-		buffer_fill_and_print();
-		goto again;
-	}
+			read_lines();
+			buffer_fill_and_print();
+			goto again;
+		}
 		/* EOF/error (ssh session got killed etc) */
 		less_exit(0);
 	}

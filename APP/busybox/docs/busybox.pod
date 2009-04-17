@@ -81,56 +81,80 @@ been enabled, more detailed usage information will also be available.
 
 Currently available applets include:
 
-	[, [[, addgroup, adduser, adjtimex, ar, arp, arping, ash, awk, 
-	basename, bbconfig, bbsh, blkid, brctl, bunzip2, busybox, bzcat, 
-	bzip2, cal, cat, catv, chat, chattr, chcon, chgrp, chmod, chown, 
-	chpasswd, chpst, chroot, chrt, chvt, cksum, clear, cmp, comm, cp, 
-	cpio, crond, crontab, cryptpw, cttyhack, cut, date, dc, dd, 
-	deallocvt, delgroup, deluser, depmod, devfsd, devmem, df, 
+	[, [[, acpid, addgroup, adduser, adjtimex, ar, arp, arping, ash, 
+	awk, basename, bbconfig, bbsh, blkid, brctl, bunzip2, busybox, 
+	bzcat, bzip2, cal, cat, catv, chat, chattr, chcon, chgrp, chmod, 
+	chown, chpasswd, chpst, chroot, chrt, chvt, cksum, clear, cmp, 
+	comm, cp, cpio, crond, crontab, cryptpw, cttyhack, cut, date, dc, 
+	dd, deallocvt, delgroup, deluser, depmod, devfsd, devmem, df, 
 	dhcprelay, diff, dirname, dmesg, dnsd, dos2unix, dpkg, dpkg_deb, 
 	du, dumpkmap, dumpleases, e2fsck, echo, ed, egrep, eject, env, 
 	envdir, envuidgid, ether_wake, expand, expr, fakeidentd, false, 
 	fbset, fbsplash, fdflush, fdformat, fdisk, fgrep, find, findfs, 
-	fold, free, freeramdisk, fsck, fsck_minix, ftpget, ftpput, fuser, 
-	getenforce, getopt, getsebool, getty, grep, gunzip, gzip, halt, 
-	hd, hdparm, head, hexdump, hostid, hostname, httpd, hush, 
-	hwclock, id, ifconfig, ifdown, ifenslave, ifup, inetd, init, 
-	inotifyd, insmod, install, ip, ipaddr, ipcalc, ipcrm, ipcs, 
-	iplink, iproute, iprule, iptunnel, kbd_mode, kill, killall, 
-	killall5, klogd, lash, last, length, less, linux32, linux64, 
-	linuxrc, ln, load_policy, loadfont, loadkmap, logger, login, 
-	logname, logread, losetup, lpd, lpq, lpr, ls, lsattr, lsmod, 
-	lzmacat, makedevs, makemime, man, matchpathcon, md5sum, mdev, 
-	mesg, microcom, mkdir, mke2fs, mkfifo, mkfs_minix, mknod, mkswap, 
-	mktemp, modprobe, more, mount, mountpoint, msh, mt, mv, nameif, 
-	nc, netstat, nice, nmeter, nohup, nslookup, od, openvt, parse, 
-	passwd, patch, pgrep, pidof, ping, ping6, pipe_progress, 
-	pivot_root, pkill, popmaildir, poweroff, printenv, printf, ps, 
-	pscan, pwd, raidautorun, rdate, rdev, readahead, readlink, 
-	readprofile, realpath, reboot, reformime, renice, reset, resize, 
-	restorecon, rm, rmdir, rmmod, route, rpm, rpm2cpio, rtcwake, 
-	run_parts, runcon, runlevel, runsv, runsvdir, rx, script, sed, 
-	selinuxenabled, sendmail, seq, sestatus, setarch, setconsole, 
-	setenforce, setfiles, setfont, setkeycodes, setlogcons, 
-	setsebool, setsid, setuidgid, sh, sha1sum, showkey, slattach, 
-	sleep, softlimit, sort, split, start_stop_daemon, stat, strings, 
-	stty, su, sulogin, sum, sv, svlogd, swapoff, swapon, switch_root, 
-	sync, sysctl, syslogd, tac, tail, tar, taskset, tc, tcpsvd, tee, 
-	telnet, telnetd, test, tftp, tftpd, time, top, touch, tr, 
-	traceroute, true, tty, ttysize, tune2fs, udhcpc, udhcpd, udpsvd, 
-	umount, uname, uncompress, unexpand, uniq, unix2dos, unlzma, 
-	unzip, uptime, usleep, uudecode, uuencode, vconfig, vi, vlock, 
-	watch, watchdog, wc, wget, which, who, whoami, xargs, yes, zcat, zcip
+	flash_eraseall, fold, free, freeramdisk, fsck, fsck_minix, ftpd, 
+	ftpget, ftpput, fuser, getenforce, getopt, getsebool, getty, 
+	grep, gunzip, gzip, halt, hd, hdparm, head, hexdump, hostid, 
+	hostname, httpd, hush, hwclock, id, ifconfig, ifdown, ifenslave, 
+	ifup, inetd, init, inotifyd, insmod, install, ionice, ip, ipaddr, 
+	ipcalc, ipcrm, ipcs, iplink, iproute, iprule, iptunnel, kbd_mode, 
+	kill, killall, killall5, klogd, lash, last, length, less, 
+	linux32, linux64, linuxrc, ln, load_policy, loadfont, loadkmap, 
+	logger, login, logname, logread, losetup, lpd, lpq, lpr, ls, 
+	lsattr, lsmod, lzmacat, makedevs, makemime, man, matchpathcon, 
+	md5sum, mdev, mesg, microcom, mkdir, mke2fs, mkfifo, mkfs_minix, 
+	mkfs_vfat, mknod, mkpasswd, mkswap, mktemp, modprobe, more, 
+	mount, mountpoint, msh, mt, mv, nameif, nc, netstat, nice, 
+	nmeter, nohup, nslookup, od, openvt, parse, passwd, patch, pgrep, 
+	pidof, ping, ping6, pipe_progress, pivot_root, pkill, popmaildir, 
+	poweroff, printenv, printf, ps, pscan, pwd, raidautorun, rdate, 
+	rdev, readahead, readlink, readprofile, realpath, reboot, 
+	reformime, renice, reset, resize, restorecon, rm, rmdir, rmmod, 
+	route, rpm, rpm2cpio, rtcwake, run_parts, runcon, runlevel, 
+	runsv, runsvdir, rx, script, sed, selinuxenabled, sendmail, seq, 
+	sestatus, setarch, setconsole, setenforce, setfiles, setfont, 
+	setkeycodes, setlogcons, setsebool, setsid, setuidgid, sh, 
+	sha1sum, sha256sum, sha512sum, showkey, slattach, sleep, 
+	softlimit, sort, split, start_stop_daemon, stat, strings, stty, 
+	su, sulogin, sum, sv, svlogd, swapoff, swapon, switch_root, sync, 
+	sysctl, syslogd, tac, tail, tar, taskset, tc, tcpsvd, tee, 
+	telnet, telnetd, test, tftp, tftpd, time, timeout, top, touch, 
+	tr, traceroute, true, tty, ttysize, tunctl, tune2fs, udhcpc, 
+	udhcpd, udpsvd, umount, uname, uncompress, unexpand, uniq, 
+	unix2dos, unlzma, unzip, uptime, usleep, uudecode, uuencode, 
+	vconfig, vi, vlock, watch, watchdog, wc, wget, which, who, 
+	whoami, xargs, yes, zcat, zcip
 
 =head1 COMMAND DESCRIPTIONS
 
 =over 4
 
+=item B<acpid     >
+
+acpid      [B<-d>] [B<-c> CONFDIR] [B<-l> LOGFILE] [B<-e> PROC_EVENT_FILE] [EVDEV_EVENT_FILE...]
+
+Listen to ACPI events and spawn specific helpers on event arrival
+
+Options:
+
+	-d	Do not daemonize and log to stderr
+	-c DIR	Config directory [/etc/acpi]
+	-e FILE	/proc event file [/proc/acpi/event]
+	-l FILE	Log file [/var/log/acpid]
+
+Accept and ignore compatibility options B<-g> B<-m> B<-s> B<-S> B<-v>
+
+Example:
+
+	# acpid -l /var/log/my-acpi-log
+	# acpid -d /dev/input/event*
+
+
+
 =item B<addgroup  >
 
 addgroup   [B<-g> GID] [user_name] group_name
 
-Add a group or add an user to a group
+Add a group or add a user to a group
 
 Options:
 
@@ -142,7 +166,7 @@ Options:
 
 adduser    [OPTIONS] user_name
 
-Add an user
+Add a user
 
 Options:
 
@@ -197,7 +221,6 @@ arp
 [B<-v>]	[B<-H> type] [B<-i> if] B<-s> hostname hw_addr [temp]
 [B<-v>]	[B<-H> type] [B<-i> if] B<-s> hostname hw_addr [netmask nm] pub
 [B<-v>]	[B<-H> type] [B<-i> if] B<-Ds> hostname ifa [netmask nm] pub
-
 
 Manipulate ARP cache
 
@@ -719,20 +742,23 @@ Options:
 
 =item B<cpio      >
 
-cpio       -[dimotuv][F cpiofile][H newc]
+cpio       -[tiopdmvu] [B<-F> FILE] [B<-H> newc]
 
 Extract or list files from a cpio archive, or create a cpio archive
 Main operation mode:
 
-	d	Make leading directories
-	i	Extract
-	m	Preserve mtime
-	o	Create
-	H newc	Define format
-	t	List
-	v	Verbose
-	u	Unconditional overwrite
-	F	Input from file
+	-t	List
+	-i	Extract
+	-o	Create
+	-p	Passthrough
+Options:
+
+	-d	Make leading directories
+	-m	Preserve mtime
+	-v	Verbose
+	-u	Overwrite
+	-F	Input file
+	-H	Define format
 
 
 
@@ -765,14 +791,16 @@ crontab    [B<-c> DIR] [B<-u> USER] [B<-ler>]|[FILE]
 
 =item B<cryptpw   >
 
-cryptpw    [B<-a> des|md5] [string]
+cryptpw    [OPTIONS] [PASSWORD] [SALT]
 
-Output crypted string.
-If string isn't supplied on cmdline, read it from stdin.
+Crypt the PASSWORD using crypt(3)
 
 Options:
 
-	-a	Algorithm to use (default: md5)
+	-P,--password-fd=NUM	Read password from fd NUM/*   "
+	-s,--stdin		Use stdin; like -P0" */ 
+	-m,--method=TYPE	Encryption method TYPE
+	-S,--salt=SALT	 
 
 
 
@@ -998,10 +1026,9 @@ Example:
 
 =item B<dhcprelay >
 
-dhcprelay  [client1,client2,...] [server_device]
+dhcprelay  CLIENT_IFACE[,CLIENT_IFACE2...] SERVER_IFACE [SERVER_IP]
 
-Relay dhcp requests from client devices to server device.
-Pass clients as CSV
+Relay DHCP requests between clients and server
 
 
 
@@ -1493,6 +1520,7 @@ EXPRESSION may consist of:
 	-xdev		Don't descend directories on other filesystems
 	-maxdepth N	Descend at most N levels. -maxdepth 0 applies
 			tests/actions to command line arguments only
+	-mindepth N	Do not act on first N levels
 	-name PATTERN	File name (w/o directory name) matches PATTERN
 	-iname PATTERN	Case insensitive -name
 	-path PATTERN	Path matches PATTERN
@@ -1537,6 +1565,19 @@ Find a filesystem device based on a label or UUID.
 Example:
 
 	$ findfs LABEL=MyDevice
+
+
+
+=item B<flash_eraseall>
+
+flash_eraseall [B<-jq>] MTD_DEVICE
+
+Erase an MTD device
+
+Options:
+
+	-j	format the device for jffs2
+	-q	don't display progress messages
 
 
 
@@ -1617,6 +1658,30 @@ Options:
 	-s	Output superblock information
 	-m	Show "mode not cleared" warnings
 	-f	Force file system check
+
+
+
+=item B<ftpd      >
+
+ftpd       [B<-wvS>] [B<-t> N] [B<-T> N] [DIR]
+
+FTP server
+
+ftpd should be used as an inetd service.
+ftpd's line for inetd.conf:
+
+	21 stream tcp nowait root ftpd ftpd /files/to/serve
+It also can be ran from tcpsvd:
+
+	tcpsvd -vE 0.0.0.0 21 ftpd /files/to/serve
+
+Options:
+
+	-w	Allow upload
+	-v	Log to stderr
+	-S	Log to syslog
+	-t,-T	Idle and absolute timeouts
+	DIR	Change root to this directory
 
 
 
@@ -1748,7 +1813,7 @@ Options:
 
 =item B<grep      >
 
-grep       [B<-HhrilLnqvsoweFEABC>] PATTERN [FILEs...]
+grep       [B<-HhrilLnqvsoweFEABCz>] PATTERN [FILEs...]
 
 Search for PATTERN in each FILE or standard input
 
@@ -1775,6 +1840,7 @@ Options:
 	-A	Print NUM lines of trailing context
 	-B	Print NUM lines of leading context
 	-C	Print NUM lines of output context
+	-z	Input is NUL terminated
 
 Example:
 
@@ -2286,15 +2352,12 @@ Example /etc/inittab file:
 
 =item B<inotifyd  >
 
-inotifyd   /user/space/agent dir/or/file/being/watched[:mask] ...
+inotifyd   PROG FILE1[:MASK] ...
 
-Spawn userspace agent on filesystem changes.
-When a filesystem event matching the mask occurs
-on specified file/directory an userspace agent is spawned
-with the parameters:
-1. actual event(s)
-2. file/directory name
-3. name of subfile (if any), in case of watching a directory
+Run PROG on filesystem changes.
+When a filesystem event matching MASK occurs on FILEn,
+PROG <actual_event(s)> <FILEn> [<subfile_name>] is run.
+Events:
 
 	a	File is accessed
 	c	File is modified
@@ -2302,12 +2365,20 @@ with the parameters:
 	w	Writtable file is closed
 	0	Unwrittable file is closed
 	r	File is opened
-	m	File is moved from X
-	y	File is moved to Y
+	D	File is deleted
+	M	File is moved
+	u	Backing fs is unmounted
+	o	Event queue overflowed
+	x	File can't be watched anymore
+If watching a directory:
+
+	m	Subfile is moved into dir
+	y	Subfile is moved out of dir
 	n	Subfile is created
 	d	Subfile is deleted
-	D	Self is deleted
-	M	Self is moved
+
+inotifyd waits for PROG to exit.
+When x event happens for all FILEs, inotifyd exits
 
 
 
@@ -2347,6 +2418,19 @@ Options:
 	-g GRP	Set group ownership
 	-m MODE	Set permissions
 	-Z	Set security context
+
+
+
+=item B<ionice    >
+
+ionice     [B<-c> 1-3] [B<-n> 0-7] [B<-p> PID] [PROG]
+
+Change I/O scheduling class and priority
+
+Options:
+
+	-c	Class. 1:realtime 2:best-effort 3:idle
+	-n	Priority
 
 
 
@@ -2547,13 +2631,14 @@ Example:
 
 =item B<killall5  >
 
-killall5   [B<-l>] [B<-SIG>]
+killall5   [B<-l>] [B<-SIG>] [B<-o> PID]...
 
 Send a signal (default is TERM) to all processes outside current session
 
 Options:
 
-	-l	List all signal names and numbers/*   "
+	-l	List all signal names and numbers
+	-o PID	Do not signal this PID/*   "
 	-s SIG	Yet another way of specifying SIG" */ 
 
 
@@ -2951,7 +3036,7 @@ Create MIME-encoded message
 Options:
 
 	-C      Charset
-	-e	Tranfer encoding. Ignored. base64 is assumed
+	-e	Transfer encoding. Ignored. base64 is assumed
 
 Other options are silently ignored.
 
@@ -2991,9 +3076,9 @@ Print or check MD5 checksums
 
 Options:
 
-	-c	Check MD5 sums against given list
+	-c	Check sums against given list
 	-s	Don't output anything, status code shows success
-	-w	Warn about improperly formatted MD5 checksum lines
+	-w	Warn about improperly formatted checksum lines
 
 Example:
 
@@ -3014,8 +3099,11 @@ mdev       [B<-s>]
 
 	-s	Scan /sys and populate /dev during system boot
 
-Called with no options (via hotplug) it uses environment variables
-to determine which device to add/remove.
+It can be run by kernel as a hotplug helper. To activate it:
+
+ echo /bin/mdev >/proc/sys/kernel/hotplug
+It uses /etc/mdev.conf with lines
+[-]DEVNAME UID:GID PERM [>|=PATH] [@|$|*COMMAND]
 
 	 The mdev config file contains lines that look like:
   hd[a-z][0-9]* 0:3 660
@@ -3149,6 +3237,21 @@ Options:
 
 
 
+=item B<mkfs_vfat >
+
+mkfs_vfat  [B<-v>] [B<-n> LABEL] FILE_OR_DEVICE [SIZE_IN_KB]
+
+Make a FAT32 filesystem
+
+Options:/*   "
+
+	-c	Check device for bad blocks" */ 
+	-v	Verbose/*   "
+	-I	Allow to use entire disk device (e.g. /dev/hda)" */ 
+	-n LBL	Volume label
+
+
+
 =item B<mknod     >
 
 mknod      [OPTIONS] NAME TYPE MAJOR MINOR
@@ -3169,6 +3272,21 @@ Example:
 
 	$ mknod /dev/fd0 b 2 0
 	$ mknod -m 644 /tmp/pipe p
+
+
+
+=item B<mkpasswd  >
+
+mkpasswd   [OPTIONS] [PASSWORD] [SALT]
+
+Crypt the PASSWORD using crypt(3)
+
+Options:
+
+	-P,--password-fd=NUM	Read password from fd NUM/*   "
+	-s,--stdin		Use stdin; like -P0" */ 
+	-m,--method=TYPE	Encryption method TYPE
+	-S,--salt=SALT	 
 
 
 
@@ -3224,7 +3342,7 @@ modprobe can (un)load a stack of modules, passing each module options (when
 loading). modprobe uses a configuration file to determine what option(s) to
 pass each module it loads.
 
-The configuration file is searched (in order) amongst:
+The configuration file is searched (in this order):
 
     /etc/modprobe.conf (2.6 only)
     /etc/modules.conf
@@ -3305,7 +3423,7 @@ Example:
 
 =item B<mount     >
 
-mount      [flags] DEVICE NODE [B<-o> options,more-options]
+mount      [flags] DEVICE NODE [B<-o> OPT,OPT]
 
 Mount a filesystem. Filesystem autodetection requires /proc be mounted.
 
@@ -3315,18 +3433,19 @@ Options:
 	-f		Update /etc/mtab, but don't mount
 	-n		Don't update /etc/mtab
 	-r		Read-only mount
-	-t fs-type	Filesystem type
 	-w		Read-write mount (default)
-B<-o> option:
+	-t FSTYPE	Filesystem type
+	-O OPT		Mount only filesystems with option OPT (-a only)
+B<-o> OPT:
 
 	loop		Ignored (loop devices are autodetected)
-	[a]sync		Writes are asynchronous / synchronous
-	[no]atime	Disable / enable updates to inode access times
-	[no]diratime	Disable / enable atime updates to directories
-	[no]relatime	Disable / enable atime updates relative to modification time
-	[no]dev		Allow use of special device files / disallow them
-	[no]exec	Allow use of executable files / disallow them
-	[no]suid	Allow set-user-id-root programs / disallow them
+	[a]sync		Writes are [a]synchronous
+	[no]atime	Disable/enable updates to inode access times
+	[no]diratime	Disable/enable atime updates to directories
+	[no]relatime	Disable/enable atime updates relative to modification time
+	[no]dev		(Dis)allow use of special device files
+	[no]exec	(Dis)allow use of executable files
+	[no]suid	(Dis)allow set-user-id-root programs
 	[r]shared	Convert [recursively] to a shared subtree
 	[r]slave	Convert [recursively] to a slave subtree
 	[r]private	Convert [recursively] to a private subtree
@@ -3334,7 +3453,7 @@ B<-o> option:
 	bind		Bind a directory to an additional location
 	move		Relocate an existing mount point
 	remount		Remount a mounted filesystem, changing its flags
-	ro/rw		Mount for read-only / read-write
+	ro/rw		Read-only/read-write mount
 
 There are EVEN MORE flags that are specific to each filesystem
 You'll have to see the written documentation for those filesystems
@@ -3355,14 +3474,15 @@ Example:
 
 =item B<mountpoint>
 
-mountpoint [B<-q>] <[B<-d>] DIR | B<-x> DEVICE>
+mountpoint [B<-q>] <[B<-dn>] DIR | B<-x> DEVICE>
 
-mountpoint checks if the directory is a mountpoint
+Check if the directory is a mountpoint
 
 Options:
 
 	-q	Quiet
 	-d	Print major/minor device number of the filesystem
+	-n	Print device name of the filesystem
 	-x	Print major/minor device number of the blockdevice
 
 Example:
@@ -4152,17 +4272,17 @@ Output a cpio archive of the rpm file
 
 =item B<rtcwake   >
 
-rtcwake    [B<-a> | B<-l> | B<-u>] [B<-d> DEV] [B<-m> MODE] [B<-s> SECS | B<-t> TIME]
+rtcwake    [B<-a> | B<-l> | B<-u>] [B<-d> DEV] [B<-m> MODE] [B<-s> SEC | B<-t> TIME]
 
 Enter a system sleep state until specified wakeup time
 
-	-a,--auto	 Read clock mode from adjtime
-	-l,--local	 Clock is set to local time
-	-u,--utc	 Clock is set to UTC time
-	-d,--device=DEV	 Specify the RTC device
-	-m,--mode=MODE	 Set the sleep state (default: standby)
+	-a,--auto	Read clock mode from adjtime
+	-l,--local	Clock is set to local time
+	-u,--utc	Clock is set to UTC time
+	-d,--device=DEV	Specify the RTC device
+	-m,--mode=MODE	Set the sleep state (default: standby)
 	-s,--seconds=SEC Set the timeout in SEC seconds from now
-	-t,--time=TIME	 Set the timeout to TIME seconds from epoch	
+	-t,--time=TIME	Set the timeout to TIME seconds from epoch	
 
 
 
@@ -4311,36 +4431,43 @@ sendmail   [OPTIONS] [rcpt]...
 
 Send an email
 
-Options:
+Standard options:
 
-	-w timeout	Network timeout
-	-H [user:pass@]server[:port] Server
-	-S		Use openssl connection helper for secure servers
-	-N type		Request delivery notification. Type is ignored
-	-f sender	Sender
-	-F fullname	Sender full name. Overrides $NAME
-	-s subject	Subject
-	-j charset	Assume charset for body and subject (" CONFIG_FEATURE_MIME_CHARSET  
-	-a file		File to attach. May be multiple
-	-H "prog args..." Use external connection helper. E.g. openssl for secure servers
-	-S server[:port] Server     	) 	 
-	-c rcpt		Cc: recipient. May be multiple
-	-e rcpt		Errors-To: recipient
+	-t		Read recipients from message body, add them to those on cmdline
+	-f sender	Sender. REQUIRED!
+	-o options	various options. -oi IMPLIED! others are IGNORED!
+
+Busybox specific options:
+
+	-w seconds	Network timeout
+	-H 'prog args'	Run connection helper
+			Examples:
+			-H 'exec openssl s_client -quiet -tls1 -starttls smtp
+				-connect smtp.gmail.com:25' <email.txt
+				[4<username_and_passwd.txt | -au<username> -ap<password>]
+			-H 'exec openssl s_client -quiet -tls1
+				-connect smtp.gmail.com:465' <email.txt
+				[4<username_and_passwd.txt | -au<username> -ap<password>]
+	-S server[:port] Server
+	-au<username>	Username for AUTH LOGIN
+	-ap<password>	Password for AUTH LOGIN
+	-am<method>	Authentication method. Ignored. login is implied.
+
+Other options are silently ignored; B<-oi> B<-t> is implied
 
 
 
 =item B<seq       >
 
-seq        [first [increment]] last
+seq        [B<-w>] [B<-s> SEP] [FIRST [INC]] LAST
 
-Print numbers from FIRST to LAST, in steps of INCREMENT.
-FIRST, INCREMENT default to 1
+Print numbers from FIRST to LAST, in steps of INC.
+FIRST, INC default to 1
 
-Arguments:
+Options:
 
-	LAST
-	FIRST LAST
-	FIRST INCREMENT LAST
+	-w	Pad to last with leading zeros
+	-s SEP	String separator
 
 
 
@@ -4491,9 +4618,39 @@ Print or check SHA1 checksums.
 
 Options:
 
-	-c	Check SHA1 sums against given list
+	-c	Check sums against given list
 	-s	Don't output anything, status code shows success
-	-w	Warn about improperly formatted SHA1 checksum lines
+	-w	Warn about improperly formatted checksum lines
+
+
+
+=item B<sha256sum >
+
+sha256sum  [OPTION] [FILEs...]
+   or: sha256sum [OPTION] B<-c> [FILE]
+
+Print or check SHA1 checksums.
+
+Options:
+
+	-c	Check sums against given list
+	-s	Don't output anything, status code shows success
+	-w	Warn about improperly formatted checksum lines
+
+
+
+=item B<sha512sum >
+
+sha512sum  [OPTION] [FILEs...]
+   or: sha512sum [OPTION] B<-c> [FILE]
+
+Print or check SHA1 checksums.
+
+Options:
+
+	-c	Check sums against given list
+	-s	Don't output anything, status code shows success
+	-w	Warn about improperly formatted checksum lines
 
 
 
@@ -5206,6 +5363,15 @@ Options:
 
 
 
+=item B<timeout   >
+
+timeout    [B<-t> SECS] [B<-s> SIG] PROG [ARGS]
+
+Runs PROG. Sends SIG to it if it is not gone in SECS seconds.
+Defaults: SECS: 10, SIG: TERM.
+
+
+
 =item B<top       >
 
 top        [B<-b>] [B<-nCOUNT>] [B<-dSECONDS>]
@@ -5321,6 +5487,27 @@ Example:
 ttysize    [w] [h]
 
 Print dimension(s) of standard input's terminal, on error return 80x25
+
+
+
+=item B<tunctl    >
+
+tunctl     [B<-f> device] ([B<-t> name] | B<-d> name) [B<-u> owner] [B<-g> group] [B<-b>]
+
+Create or delete tun interfaces
+Options:
+
+	-f name		tun device (/dev/net/tun)
+	-t name		Create iface 'name'
+	-d name		Delete iface 'name'
+	-u owner	Set iface owner
+	-g group	Set iface group
+	-b		Brief output
+
+Example:
+
+	# tunctl
+	# tunctl -d tun0
 
 
 

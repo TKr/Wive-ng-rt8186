@@ -6,9 +6,9 @@ test -x ash || {
     echo "No ./ash - creating a link to ../../busybox"
     ln -s ../../busybox ash
 }
-test -x printenv || gcc -Os -o printenv printenv.c || exit $?
-test -x recho    || gcc -Os -o recho    recho.c    || exit $?
-test -x zecho    || gcc -Os -o zecho    zecho.c    || exit $?
+test -x printenv || gcc -O2 -o printenv printenv.c || exit $?
+test -x recho    || gcc -O2 -o recho    recho.c    || exit $?
+test -x zecho    || gcc -O2 -o zecho    zecho.c    || exit $?
 
 PATH="$PWD:$PATH" # for ash and recho/zecho/printenv
 export PATH

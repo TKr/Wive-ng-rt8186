@@ -76,52 +76,74 @@ COMMON OPTIONS
 COMMANDS
     Currently available applets include:
 
-            [, [[, addgroup, adduser, adjtimex, ar, arp, arping, ash, awk, 
-            basename, bbconfig, bbsh, blkid, brctl, bunzip2, busybox, bzcat, 
-            bzip2, cal, cat, catv, chat, chattr, chcon, chgrp, chmod, chown, 
-            chpasswd, chpst, chroot, chrt, chvt, cksum, clear, cmp, comm, cp, 
-            cpio, crond, crontab, cryptpw, cttyhack, cut, date, dc, dd, 
-            deallocvt, delgroup, deluser, depmod, devfsd, devmem, df, 
+            [, [[, acpid, addgroup, adduser, adjtimex, ar, arp, arping, ash, 
+            awk, basename, bbconfig, bbsh, blkid, brctl, bunzip2, busybox, 
+            bzcat, bzip2, cal, cat, catv, chat, chattr, chcon, chgrp, chmod, 
+            chown, chpasswd, chpst, chroot, chrt, chvt, cksum, clear, cmp, 
+            comm, cp, cpio, crond, crontab, cryptpw, cttyhack, cut, date, dc, 
+            dd, deallocvt, delgroup, deluser, depmod, devfsd, devmem, df, 
             dhcprelay, diff, dirname, dmesg, dnsd, dos2unix, dpkg, dpkg_deb, 
             du, dumpkmap, dumpleases, e2fsck, echo, ed, egrep, eject, env, 
             envdir, envuidgid, ether_wake, expand, expr, fakeidentd, false, 
             fbset, fbsplash, fdflush, fdformat, fdisk, fgrep, find, findfs, 
-            fold, free, freeramdisk, fsck, fsck_minix, ftpget, ftpput, fuser, 
-            getenforce, getopt, getsebool, getty, grep, gunzip, gzip, halt, 
-            hd, hdparm, head, hexdump, hostid, hostname, httpd, hush, 
-            hwclock, id, ifconfig, ifdown, ifenslave, ifup, inetd, init, 
-            inotifyd, insmod, install, ip, ipaddr, ipcalc, ipcrm, ipcs, 
-            iplink, iproute, iprule, iptunnel, kbd_mode, kill, killall, 
-            killall5, klogd, lash, last, length, less, linux32, linux64, 
-            linuxrc, ln, load_policy, loadfont, loadkmap, logger, login, 
-            logname, logread, losetup, lpd, lpq, lpr, ls, lsattr, lsmod, 
-            lzmacat, makedevs, makemime, man, matchpathcon, md5sum, mdev, 
-            mesg, microcom, mkdir, mke2fs, mkfifo, mkfs_minix, mknod, mkswap, 
-            mktemp, modprobe, more, mount, mountpoint, msh, mt, mv, nameif, 
-            nc, netstat, nice, nmeter, nohup, nslookup, od, openvt, parse, 
-            passwd, patch, pgrep, pidof, ping, ping6, pipe_progress, 
-            pivot_root, pkill, popmaildir, poweroff, printenv, printf, ps, 
-            pscan, pwd, raidautorun, rdate, rdev, readahead, readlink, 
-            readprofile, realpath, reboot, reformime, renice, reset, resize, 
-            restorecon, rm, rmdir, rmmod, route, rpm, rpm2cpio, rtcwake, 
-            run_parts, runcon, runlevel, runsv, runsvdir, rx, script, sed, 
-            selinuxenabled, sendmail, seq, sestatus, setarch, setconsole, 
-            setenforce, setfiles, setfont, setkeycodes, setlogcons, 
-            setsebool, setsid, setuidgid, sh, sha1sum, showkey, slattach, 
-            sleep, softlimit, sort, split, start_stop_daemon, stat, strings, 
-            stty, su, sulogin, sum, sv, svlogd, swapoff, swapon, switch_root, 
-            sync, sysctl, syslogd, tac, tail, tar, taskset, tc, tcpsvd, tee, 
-            telnet, telnetd, test, tftp, tftpd, time, top, touch, tr, 
-            traceroute, true, tty, ttysize, tune2fs, udhcpc, udhcpd, udpsvd, 
-            umount, uname, uncompress, unexpand, uniq, unix2dos, unlzma, 
-            unzip, uptime, usleep, uudecode, uuencode, vconfig, vi, vlock, 
-            watch, watchdog, wc, wget, which, who, whoami, xargs, yes, zcat, zcip
+            flash_eraseall, fold, free, freeramdisk, fsck, fsck_minix, ftpd, 
+            ftpget, ftpput, fuser, getenforce, getopt, getsebool, getty, 
+            grep, gunzip, gzip, halt, hd, hdparm, head, hexdump, hostid, 
+            hostname, httpd, hush, hwclock, id, ifconfig, ifdown, ifenslave, 
+            ifup, inetd, init, inotifyd, insmod, install, ionice, ip, ipaddr, 
+            ipcalc, ipcrm, ipcs, iplink, iproute, iprule, iptunnel, kbd_mode, 
+            kill, killall, killall5, klogd, lash, last, length, less, 
+            linux32, linux64, linuxrc, ln, load_policy, loadfont, loadkmap, 
+            logger, login, logname, logread, losetup, lpd, lpq, lpr, ls, 
+            lsattr, lsmod, lzmacat, makedevs, makemime, man, matchpathcon, 
+            md5sum, mdev, mesg, microcom, mkdir, mke2fs, mkfifo, mkfs_minix, 
+            mkfs_vfat, mknod, mkpasswd, mkswap, mktemp, modprobe, more, 
+            mount, mountpoint, msh, mt, mv, nameif, nc, netstat, nice, 
+            nmeter, nohup, nslookup, od, openvt, parse, passwd, patch, pgrep, 
+            pidof, ping, ping6, pipe_progress, pivot_root, pkill, popmaildir, 
+            poweroff, printenv, printf, ps, pscan, pwd, raidautorun, rdate, 
+            rdev, readahead, readlink, readprofile, realpath, reboot, 
+            reformime, renice, reset, resize, restorecon, rm, rmdir, rmmod, 
+            route, rpm, rpm2cpio, rtcwake, run_parts, runcon, runlevel, 
+            runsv, runsvdir, rx, script, sed, selinuxenabled, sendmail, seq, 
+            sestatus, setarch, setconsole, setenforce, setfiles, setfont, 
+            setkeycodes, setlogcons, setsebool, setsid, setuidgid, sh, 
+            sha1sum, sha256sum, sha512sum, showkey, slattach, sleep, 
+            softlimit, sort, split, start_stop_daemon, stat, strings, stty, 
+            su, sulogin, sum, sv, svlogd, swapoff, swapon, switch_root, sync, 
+            sysctl, syslogd, tac, tail, tar, taskset, tc, tcpsvd, tee, 
+            telnet, telnetd, test, tftp, tftpd, time, timeout, top, touch, 
+            tr, traceroute, true, tty, ttysize, tunctl, tune2fs, udhcpc, 
+            udhcpd, udpsvd, umount, uname, uncompress, unexpand, uniq, 
+            unix2dos, unlzma, unzip, uptime, usleep, uudecode, uuencode, 
+            vconfig, vi, vlock, watch, watchdog, wc, wget, which, who, 
+            whoami, xargs, yes, zcat, zcip
 
 COMMAND DESCRIPTIONS
+    acpid
+        acpid [-d] [-c CONFDIR] [-l LOGFILE] [-e PROC_EVENT_FILE]
+        [EVDEV_EVENT_FILE...]
+
+        Listen to ACPI events and spawn specific helpers on event arrival
+
+        Options:
+
+                -d      Do not daemonize and log to stderr
+                -c DIR  Config directory [/etc/acpi]
+                -e FILE /proc event file [/proc/acpi/event]
+                -l FILE Log file [/var/log/acpid]
+
+        Accept and ignore compatibility options -g -m -s -S -v
+
+        Example:
+
+                # acpid -l /var/log/my-acpi-log
+                # acpid -d /dev/input/event*
+
     addgroup
         addgroup [-g GID] [user_name] group_name
 
-        Add a group or add an user to a group
+        Add a group or add a user to a group
 
         Options:
 
@@ -130,7 +152,7 @@ COMMAND DESCRIPTIONS
     adduser
         adduser [OPTIONS] user_name
 
-        Add an user
+        Add a user
 
         Options:
 
@@ -586,20 +608,23 @@ COMMAND DESCRIPTIONS
                 -l,-s   Create (sym)links
 
     cpio
-        cpio -[dimotuv][F cpiofile][H newc]
+        cpio -[tiopdmvu] [-F FILE] [-H newc]
 
         Extract or list files from a cpio archive, or create a cpio archive
         Main operation mode:
 
-                d       Make leading directories
-                i       Extract
-                m       Preserve mtime
-                o       Create
-                H newc  Define format
-                t       List
-                v       Verbose
-                u       Unconditional overwrite
-                F       Input from file
+                -t      List
+                -i      Extract
+                -o      Create
+                -p      Passthrough
+        Options:
+
+                -d      Make leading directories
+                -m      Preserve mtime
+                -v      Verbose
+                -u      Overwrite
+                -F      Input file
+                -H      Define format
 
     crond
         crond -fbS -l N -d N -L LOGFILE -c DIR
@@ -623,14 +648,16 @@ COMMAND DESCRIPTIONS
                 FILE    Replace crontab by FILE ('-': stdin)
 
     cryptpw
-        cryptpw [-a des|md5] [string]
+        cryptpw [OPTIONS] [PASSWORD] [SALT]
 
-        Output crypted string. If string isn't supplied on cmdline, read it
-        from stdin.
+        Crypt the PASSWORD using crypt(3)
 
         Options:
 
-                -a      Algorithm to use (default: md5)
+                -P,--password-fd=NUM    Read password from fd NUM/*   "
+                -s,--stdin              Use stdin; like -P0" */ 
+                -m,--method=TYPE        Encryption method TYPE
+                -S,--salt=SALT
 
     cttyhack
         cttyhack #define cttyhack_full_usage
@@ -809,10 +836,9 @@ COMMAND DESCRIPTIONS
                 /dev/sda3             17381728  17107080    274648      98% /
 
     dhcprelay
-        dhcprelay [client1,client2,...] [server_device]
+        dhcprelay CLIENT_IFACE[,CLIENT_IFACE2...] SERVER_IFACE [SERVER_IP]
 
-        Relay dhcp requests from client devices to server device. Pass
-        clients as CSV
+        Relay DHCP requests between clients and server
 
     diff
         diff [-abdiNqrTstw] [-L LABEL] [-S FILE] [-U LINES] FILE1 FILE2
@@ -1207,6 +1233,7 @@ COMMAND DESCRIPTIONS
                 -xdev           Don't descend directories on other filesystems
                 -maxdepth N     Descend at most N levels. -maxdepth 0 applies
                                 tests/actions to command line arguments only
+                -mindepth N     Do not act on first N levels
                 -name PATTERN   File name (w/o directory name) matches PATTERN
                 -iname PATTERN  Case insensitive -name
                 -path PATTERN   Path matches PATTERN
@@ -1248,6 +1275,16 @@ COMMAND DESCRIPTIONS
         Example:
 
                 $ findfs LABEL=MyDevice
+
+    flash_eraseall
+        flash_eraseall [-jq] MTD_DEVICE
+
+        Erase an MTD device
+
+        Options:
+
+                -j      format the device for jffs2
+                -q      don't display progress messages
 
     fold
         fold [-bs] [-w WIDTH] [FILE]
@@ -1313,6 +1350,26 @@ COMMAND DESCRIPTIONS
                 -s      Output superblock information
                 -m      Show "mode not cleared" warnings
                 -f      Force file system check
+
+    ftpd
+        ftpd [-wvS] [-t N] [-T N] [DIR]
+
+        FTP server
+
+        ftpd should be used as an inetd service. ftpd's line for inetd.conf:
+
+                21 stream tcp nowait root ftpd ftpd /files/to/serve
+        It also can be ran from tcpsvd:
+
+                tcpsvd -vE 0.0.0.0 21 ftpd /files/to/serve
+
+        Options:
+
+                -w      Allow upload
+                -v      Log to stderr
+                -S      Log to syslog
+                -t,-T   Idle and absolute timeouts
+                DIR     Change root to this directory
 
     ftpget
         ftpget [options] remote-host local-file remote-file
@@ -1418,7 +1475,7 @@ COMMAND DESCRIPTIONS
                 -H login_host   Log login_host into the utmp file as the hostname
 
     grep
-        grep [-HhrilLnqvsoweFEABC] PATTERN [FILEs...]
+        grep [-HhrilLnqvsoweFEABCz] PATTERN [FILEs...]
 
         Search for PATTERN in each FILE or standard input
 
@@ -1445,6 +1502,7 @@ COMMAND DESCRIPTIONS
                 -A      Print NUM lines of trailing context
                 -B      Print NUM lines of leading context
                 -C      Print NUM lines of output context
+                -z      Input is NUL terminated
 
         Example:
 
@@ -1895,13 +1953,11 @@ COMMAND DESCRIPTIONS
                 ::shutdown:/sbin/swapoff -a
 
     inotifyd
-        inotifyd /user/space/agent dir/or/file/being/watched[:mask] ...
+        inotifyd PROG FILE1[:MASK] ...
 
-        Spawn userspace agent on filesystem changes. When a filesystem event
-        matching the mask occurs on specified file/directory an userspace
-        agent is spawned with the parameters: 1. actual event(s) 2.
-        file/directory name 3. name of subfile (if any), in case of watching
-        a directory
+        Run PROG on filesystem changes. When a filesystem event matching
+        MASK occurs on FILEn, PROG <actual_event(s)> <FILEn>
+        [<subfile_name>] is run. Events:
 
                 a       File is accessed
                 c       File is modified
@@ -1909,12 +1965,20 @@ COMMAND DESCRIPTIONS
                 w       Writtable file is closed
                 0       Unwrittable file is closed
                 r       File is opened
-                m       File is moved from X
-                y       File is moved to Y
+                D       File is deleted
+                M       File is moved
+                u       Backing fs is unmounted
+                o       Event queue overflowed
+                x       File can't be watched anymore
+        If watching a directory:
+
+                m       Subfile is moved into dir
+                y       Subfile is moved out of dir
                 n       Subfile is created
                 d       Subfile is deleted
-                D       Self is deleted
-                M       Self is moved
+
+        inotifyd waits for PROG to exit. When x event happens for all FILEs,
+        inotifyd exits
 
     insmod
         insmod [OPTION]... MODULE [symbol=value]...
@@ -1949,6 +2013,16 @@ COMMAND DESCRIPTIONS
                 -g GRP  Set group ownership
                 -m MODE Set permissions
                 -Z      Set security context
+
+    ionice
+        ionice [-c 1-3] [-n 0-7] [-p PID] [PROG]
+
+        Change I/O scheduling class and priority
+
+        Options:
+
+                -c      Class. 1:realtime 2:best-effort 3:idle
+                -n      Priority
 
     ip  ip [OPTIONS] {address | route | link | tunnel | rule} {COMMAND}
 
@@ -2108,14 +2182,15 @@ COMMAND DESCRIPTIONS
                 $ killall apache
 
     killall5
-        killall5 [-l] [-SIG]
+        killall5 [-l] [-SIG] [-o PID]...
 
         Send a signal (default is TERM) to all processes outside current
         session
 
         Options:
 
-                -l      List all signal names and numbers/*   "
+                -l      List all signal names and numbers
+                -o PID  Do not signal this PID/*   "
                 -s SIG  Yet another way of specifying SIG" */
 
     klogd
@@ -2416,7 +2491,7 @@ COMMAND DESCRIPTIONS
         Options:
 
                 -C      Charset
-                -e      Tranfer encoding. Ignored. base64 is assumed
+                -e      Transfer encoding. Ignored. base64 is assumed
 
         Other options are silently ignored.
 
@@ -2445,9 +2520,9 @@ COMMAND DESCRIPTIONS
 
         Options:
 
-                -c      Check MD5 sums against given list
+                -c      Check sums against given list
                 -s      Don't output anything, status code shows success
-                -w      Warn about improperly formatted MD5 checksum lines
+                -w      Warn about improperly formatted checksum lines
 
         Example:
 
@@ -2465,8 +2540,11 @@ COMMAND DESCRIPTIONS
 
                 -s      Scan /sys and populate /dev during system boot
 
-        Called with no options (via hotplug) it uses environment variables
-        to determine which device to add/remove.
+        It can be run by kernel as a hotplug helper. To activate it:
+
+         echo /bin/mdev >/proc/sys/kernel/hotplug
+        It uses /etc/mdev.conf with lines
+        [-]DEVNAME UID:GID PERM [>|=PATH] [@|$|*COMMAND]
 
                  The mdev config file contains lines that look like:
           hd[a-z][0-9]* 0:3 660
@@ -2586,6 +2664,18 @@ COMMAND DESCRIPTIONS
                 -l FILENAME     Read bad blocks list from FILENAME
                 -v              Make version 2 filesystem
 
+    mkfs_vfat
+        mkfs_vfat [-v] [-n LABEL] FILE_OR_DEVICE [SIZE_IN_KB]
+
+        Make a FAT32 filesystem
+
+        Options:/* "
+
+                -c      Check device for bad blocks" */ 
+                -v      Verbose/*   "
+                -I      Allow to use entire disk device (e.g. /dev/hda)" */ 
+                -n LBL  Volume label
+
     mknod
         mknod [OPTIONS] NAME TYPE MAJOR MINOR
 
@@ -2605,6 +2695,18 @@ COMMAND DESCRIPTIONS
 
                 $ mknod /dev/fd0 b 2 0
                 $ mknod -m 644 /tmp/pipe p
+
+    mkpasswd
+        mkpasswd [OPTIONS] [PASSWORD] [SALT]
+
+        Crypt the PASSWORD using crypt(3)
+
+        Options:
+
+                -P,--password-fd=NUM    Read password from fd NUM/*   "
+                -s,--stdin              Use stdin; like -P0" */ 
+                -m,--method=TYPE        Encryption method TYPE
+                -S,--salt=SALT
 
     mkswap
         mkswap DEVICE
@@ -2651,7 +2753,7 @@ COMMAND DESCRIPTIONS
         options (when loading). modprobe uses a configuration file to
         determine what option(s) to pass each module it loads.
 
-        The configuration file is searched (in order) amongst:
+        The configuration file is searched (in this order):
 
             /etc/modprobe.conf (2.6 only)
             /etc/modules.conf
@@ -2726,7 +2828,7 @@ COMMAND DESCRIPTIONS
                 $ dmesg | more
 
     mount
-        mount [flags] DEVICE NODE [-o options,more-options]
+        mount [flags] DEVICE NODE [-o OPT,OPT]
 
         Mount a filesystem. Filesystem autodetection requires /proc be
         mounted.
@@ -2737,18 +2839,19 @@ COMMAND DESCRIPTIONS
                 -f              Update /etc/mtab, but don't mount
                 -n              Don't update /etc/mtab
                 -r              Read-only mount
-                -t fs-type      Filesystem type
                 -w              Read-write mount (default)
-        B<-o> option:
+                -t FSTYPE       Filesystem type
+                -O OPT          Mount only filesystems with option OPT (-a only)
+        B<-o> OPT:
 
                 loop            Ignored (loop devices are autodetected)
-                [a]sync         Writes are asynchronous / synchronous
-                [no]atime       Disable / enable updates to inode access times
-                [no]diratime    Disable / enable atime updates to directories
-                [no]relatime    Disable / enable atime updates relative to modification time
-                [no]dev         Allow use of special device files / disallow them
-                [no]exec        Allow use of executable files / disallow them
-                [no]suid        Allow set-user-id-root programs / disallow them
+                [a]sync         Writes are [a]synchronous
+                [no]atime       Disable/enable updates to inode access times
+                [no]diratime    Disable/enable atime updates to directories
+                [no]relatime    Disable/enable atime updates relative to modification time
+                [no]dev         (Dis)allow use of special device files
+                [no]exec        (Dis)allow use of executable files
+                [no]suid        (Dis)allow set-user-id-root programs
                 [r]shared       Convert [recursively] to a shared subtree
                 [r]slave        Convert [recursively] to a slave subtree
                 [r]private      Convert [recursively] to a private subtree
@@ -2756,7 +2859,7 @@ COMMAND DESCRIPTIONS
                 bind            Bind a directory to an additional location
                 move            Relocate an existing mount point
                 remount         Remount a mounted filesystem, changing its flags
-                ro/rw           Mount for read-only / read-write
+                ro/rw           Read-only/read-write mount
 
         There are EVEN MORE flags that are specific to each filesystem
         You'll have to see the written documentation for those filesystems
@@ -2775,14 +2878,15 @@ COMMAND DESCRIPTIONS
                 $ mount cd_image.iso mydir
 
     mountpoint
-        mountpoint [-q] <[-d] DIR | -x DEVICE>
+        mountpoint [-q] <[-dn] DIR | -x DEVICE>
 
-        mountpoint checks if the directory is a mountpoint
+        Check if the directory is a mountpoint
 
         Options:
 
                 -q      Quiet
                 -d      Print major/minor device number of the filesystem
+                -n      Print device name of the filesystem
                 -x      Print major/minor device number of the blockdevice
 
         Example:
@@ -3414,17 +3518,17 @@ COMMAND DESCRIPTIONS
         Output a cpio archive of the rpm file
 
     rtcwake
-        rtcwake [-a | -l | -u] [-d DEV] [-m MODE] [-s SECS | -t TIME]
+        rtcwake [-a | -l | -u] [-d DEV] [-m MODE] [-s SEC | -t TIME]
 
         Enter a system sleep state until specified wakeup time
 
-                -a,--auto        Read clock mode from adjtime
-                -l,--local       Clock is set to local time
-                -u,--utc         Clock is set to UTC time
-                -d,--device=DEV  Specify the RTC device
-                -m,--mode=MODE   Set the sleep state (default: standby)
+                -a,--auto       Read clock mode from adjtime
+                -l,--local      Clock is set to local time
+                -u,--utc        Clock is set to UTC time
+                -d,--device=DEV Specify the RTC device
+                -m,--mode=MODE  Set the sleep state (default: standby)
                 -s,--seconds=SEC Set the timeout in SEC seconds from now
-                -t,--time=TIME   Set the timeout to TIME seconds from epoch
+                -t,--time=TIME  Set the timeout to TIME seconds from epoch
 
     run-parts
         run-parts [-t] [-l] [-a ARG] [-u MASK] DIRECTORY
@@ -3539,32 +3643,39 @@ COMMAND DESCRIPTIONS
 
         Send an email
 
+        Standard options:
+
+                -t              Read recipients from message body, add them to those on cmdline
+                -f sender       Sender. REQUIRED!
+                -o options      various options. -oi IMPLIED! others are IGNORED!
+
+        Busybox specific options:
+
+                -w seconds      Network timeout
+                -H 'prog args'  Run connection helper
+                                Examples:
+                                -H 'exec openssl s_client -quiet -tls1 -starttls smtp
+                                        -connect smtp.gmail.com:25' <email.txt
+                                        [4<username_and_passwd.txt | -au<username> -ap<password>]
+                                -H 'exec openssl s_client -quiet -tls1
+                                        -connect smtp.gmail.com:465' <email.txt
+                                        [4<username_and_passwd.txt | -au<username> -ap<password>]
+                -S server[:port] Server
+                -au<username>   Username for AUTH LOGIN
+                -ap<password>   Password for AUTH LOGIN
+                -am<method>     Authentication method. Ignored. login is implied.
+
+        Other options are silently ignored; -oi -t is implied
+
+    seq seq [-w] [-s SEP] [FIRST [INC]] LAST
+
+        Print numbers from FIRST to LAST, in steps of INC. FIRST, INC
+        default to 1
+
         Options:
 
-                -w timeout      Network timeout
-                -H [user:pass@]server[:port] Server
-                -S              Use openssl connection helper for secure servers
-                -N type         Request delivery notification. Type is ignored
-                -f sender       Sender
-                -F fullname     Sender full name. Overrides $NAME
-                -s subject      Subject
-                -j charset      Assume charset for body and subject (" CONFIG_FEATURE_MIME_CHARSET  
-                -a file         File to attach. May be multiple
-                -H "prog args..." Use external connection helper. E.g. openssl for secure servers
-                -S server[:port] Server         )        
-                -c rcpt         Cc: recipient. May be multiple
-                -e rcpt         Errors-To: recipient
-
-    seq seq [first [increment]] last
-
-        Print numbers from FIRST to LAST, in steps of INCREMENT. FIRST,
-        INCREMENT default to 1
-
-        Arguments:
-
-                LAST
-                FIRST LAST
-                FIRST INCREMENT LAST
+                -w      Pad to last with leading zeros
+                -s SEP  String separator
 
     sestatus
         sestatus [-vb]
@@ -3671,9 +3782,31 @@ COMMAND DESCRIPTIONS
 
         Options:
 
-                -c      Check SHA1 sums against given list
+                -c      Check sums against given list
                 -s      Don't output anything, status code shows success
-                -w      Warn about improperly formatted SHA1 checksum lines
+                -w      Warn about improperly formatted checksum lines
+
+    sha256sum
+        sha256sum [OPTION] [FILEs...] or: sha256sum [OPTION] -c [FILE]
+
+        Print or check SHA1 checksums.
+
+        Options:
+
+                -c      Check sums against given list
+                -s      Don't output anything, status code shows success
+                -w      Warn about improperly formatted checksum lines
+
+    sha512sum
+        sha512sum [OPTION] [FILEs...] or: sha512sum [OPTION] -c [FILE]
+
+        Print or check SHA1 checksums.
+
+        Options:
+
+                -c      Check sums against given list
+                -s      Don't output anything, status code shows success
+                -w      Warn about improperly formatted checksum lines
 
     showkey
         showkey [-a | -k | -s]
@@ -4275,6 +4408,12 @@ COMMAND DESCRIPTIONS
 
                 -v      Verbose
 
+    timeout
+        timeout [-t SECS] [-s SIG] PROG [ARGS]
+
+        Runs PROG. Sends SIG to it if it is not gone in SECS seconds.
+        Defaults: SECS: 10, SIG: TERM.
+
     top top [-b] [-nCOUNT] [-dSECONDS]
 
         Provide a view of process activity in real time. Read the status of
@@ -4369,6 +4508,23 @@ COMMAND DESCRIPTIONS
 
         Print dimension(s) of standard input's terminal, on error return
         80x25
+
+    tunctl
+        tunctl [-f device] ([-t name] | -d name) [-u owner] [-g group] [-b]
+
+        Create or delete tun interfaces Options:
+
+                -f name         tun device (/dev/net/tun)
+                -t name         Create iface 'name'
+                -d name         Delete iface 'name'
+                -u owner        Set iface owner
+                -g group        Set iface group
+                -b              Brief output
+
+        Example:
+
+                # tunctl
+                # tunctl -d tun0
 
     tune2fs
         tune2fs [-c max-mounts-count] [-e errors-behavior] [-g group] [-i
@@ -4957,852 +5113,870 @@ POD ERRORS
     Hey! The above document had some coding errors, which are explained
     below:
 
-    Around line 129:
+    Around line 131:
         Unterminated B<...> sequence
 
-    Around line 141:
+    Around line 153:
         Unterminated B<...> sequence
 
-    Around line 159:
+    Around line 165:
         Unterminated B<...> sequence
 
-    Around line 176:
+    Around line 183:
         Unterminated B<...> sequence
 
-    Around line 192:
+    Around line 200:
         Unterminated B<...> sequence
 
-    Around line 218:
+    Around line 216:
         Unterminated B<...> sequence
 
-    Around line 240:
+    Around line 241:
         Unterminated B<...> sequence
 
-    Around line 248:
+    Around line 263:
         Unterminated B<...> sequence
 
-    Around line 260:
+    Around line 271:
         Unterminated B<...> sequence
 
-    Around line 278:
+    Around line 283:
         Unterminated B<...> sequence
 
-    Around line 286:
+    Around line 301:
         Unterminated B<...> sequence
 
-    Around line 295:
+    Around line 309:
         Unterminated B<...> sequence
 
-    Around line 303:
+    Around line 318:
         Unterminated B<...> sequence
 
-    Around line 327:
+    Around line 326:
         Unterminated B<...> sequence
 
-    Around line 340:
+    Around line 350:
         Unterminated B<...> sequence
 
-    Around line 351:
+    Around line 363:
         Unterminated B<...> sequence
 
-    Around line 359:
+    Around line 374:
         Unterminated B<...> sequence
 
-    Around line 375:
+    Around line 382:
         Unterminated B<...> sequence
 
-    Around line 388:
+    Around line 398:
         Unterminated B<...> sequence
 
-    Around line 405:
+    Around line 411:
         Unterminated B<...> sequence
 
-    Around line 419:
+    Around line 428:
         Unterminated B<...> sequence
 
-    Around line 430:
+    Around line 442:
         Unterminated B<...> sequence
 
-    Around line 461:
+    Around line 453:
         Unterminated B<...> sequence
 
-    Around line 482:
+    Around line 484:
         Unterminated B<...> sequence
 
-    Around line 509:
+    Around line 505:
         Unterminated B<...> sequence
 
-    Around line 536:
+    Around line 532:
         Unterminated B<...> sequence
 
-    Around line 566:
+    Around line 559:
         Unterminated B<...> sequence
 
-    Around line 579:
+    Around line 589:
         Unterminated B<...> sequence
 
-    Around line 609:
+    Around line 602:
         Unterminated B<...> sequence
 
-    Around line 626:
+    Around line 632:
         Unterminated B<...> sequence
 
-    Around line 648:
+    Around line 649:
         Unterminated B<...> sequence
 
-    Around line 656:
+    Around line 671:
         Unterminated B<...> sequence
 
-    Around line 664:
+    Around line 679:
         Unterminated B<...> sequence
 
-    Around line 672:
+    Around line 687:
         Unterminated B<...> sequence
 
-    Around line 686:
+    Around line 695:
         Unterminated B<...> sequence
 
-    Around line 700:
+    Around line 709:
         Unterminated B<...> sequence
 
-    Around line 720:
+    Around line 723:
         Unterminated B<...> sequence
 
-    Around line 739:
+    Around line 743:
         Unterminated B<...> sequence
 
-    Around line 753:
-        Unterminated B<...> sequence
-
-    Around line 766:
+    Around line 765:
         Unterminated B<...> sequence
 
     Around line 779:
         Unterminated B<...> sequence
 
-    Around line 787:
+    Around line 792:
         Unterminated B<...> sequence
 
-    Around line 811:
+    Around line 807:
         Unterminated B<...> sequence
 
-    Around line 844:
+    Around line 815:
         Unterminated B<...> sequence
 
-    Around line 870:
+    Around line 839:
         Unterminated B<...> sequence
 
-    Around line 911:
+    Around line 872:
         Unterminated B<...> sequence
 
-    Around line 919:
+    Around line 898:
         Unterminated B<...> sequence
 
-    Around line 927:
+    Around line 939:
         Unterminated B<...> sequence
 
-    Around line 935:
+    Around line 947:
         Unterminated B<...> sequence
 
-    Around line 953:
+    Around line 955:
         Unterminated B<...> sequence
 
-    Around line 965:
+    Around line 963:
         Unterminated B<...> sequence
 
-    Around line 1008:
+    Around line 981:
         Unterminated B<...> sequence
 
-    Around line 1034:
+    Around line 993:
         Unterminated B<...> sequence
 
-    Around line 1049:
+    Around line 1035:
         Unterminated B<...> sequence
 
-    Around line 1063:
+    Around line 1061:
         Unterminated B<...> sequence
 
-    Around line 1079:
+    Around line 1076:
         Unterminated B<...> sequence
 
-    Around line 1093:
+    Around line 1090:
         Unterminated B<...> sequence
 
-    Around line 1111:
+    Around line 1106:
         Unterminated B<...> sequence
 
-    Around line 1131:
+    Around line 1120:
         Unterminated B<...> sequence
 
-    Around line 1168:
+    Around line 1138:
         Unterminated B<...> sequence
 
-    Around line 1194:
+    Around line 1158:
         Unterminated B<...> sequence
 
-    Around line 1216:
+    Around line 1195:
         Unterminated B<...> sequence
 
-    Around line 1241:
+    Around line 1221:
         Unterminated B<...> sequence
 
-    Around line 1249:
+    Around line 1243:
         Unterminated B<...> sequence
 
-    Around line 1257:
+    Around line 1268:
         Unterminated B<...> sequence
 
-    Around line 1271:
+    Around line 1276:
         Unterminated B<...> sequence
 
-    Around line 1285:
+    Around line 1284:
         Unterminated B<...> sequence
 
-    Around line 1318:
+    Around line 1298:
         Unterminated B<...> sequence
 
-    Around line 1331:
+    Around line 1312:
         Unterminated B<...> sequence
 
-    Around line 1386:
+    Around line 1345:
         Unterminated B<...> sequence
 
-    Around line 1400:
+    Around line 1358:
         Unterminated B<...> sequence
 
-    Around line 1419:
+    Around line 1413:
         Unterminated B<...> sequence
 
-    Around line 1436:
+    Around line 1427:
         Unterminated B<...> sequence
 
-    Around line 1444:
+    Around line 1446:
         Unterminated B<...> sequence
 
-    Around line 1456:
+    Around line 1463:
         Unterminated B<...> sequence
 
-    Around line 1475:
+    Around line 1471:
         Unterminated B<...> sequence
 
     Around line 1483:
         Unterminated B<...> sequence
 
-    Around line 1531:
+    Around line 1502:
         Unterminated B<...> sequence
 
-    Around line 1543:
+    Around line 1510:
         Unterminated B<...> sequence
 
-    Around line 1558:
+    Around line 1559:
         Unterminated B<...> sequence
 
-    Around line 1586:
+    Around line 1584:
         Unterminated B<...> sequence
 
-    Around line 1623:
+    Around line 1599:
         Unterminated B<...> sequence
 
-    Around line 1639:
+    Around line 1627:
         Unterminated B<...> sequence
 
-    Around line 1654:
+    Around line 1664:
         Unterminated B<...> sequence
 
-    Around line 1679:
+    Around line 1688:
         Unterminated B<...> sequence
 
-    Around line 1727:
+    Around line 1704:
         Unterminated B<...> sequence
 
-    Around line 1749:
+    Around line 1719:
         Unterminated B<...> sequence
 
-    Around line 1788:
+    Around line 1744:
         Unterminated B<...> sequence
 
-    Around line 1810:
+    Around line 1792:
         Unterminated B<...> sequence
 
-    Around line 1832:
+    Around line 1814:
         Unterminated B<...> sequence
 
-    Around line 1847:
+    Around line 1854:
         Unterminated B<...> sequence
 
-    Around line 1855:
+    Around line 1876:
         Unterminated B<...> sequence
 
-    Around line 1903:
+    Around line 1898:
         Unterminated B<...> sequence
 
-    Around line 1926:
+    Around line 1913:
         Unterminated B<...> sequence
 
-    Around line 1949:
+    Around line 1921:
         Unterminated B<...> sequence
 
-    Around line 1957:
+    Around line 1969:
         Unterminated B<...> sequence
 
-    Around line 1978:
+    Around line 1992:
         Unterminated B<...> sequence
 
-    Around line 2000:
+    Around line 2015:
         Unterminated B<...> sequence
 
-    Around line 2008:
+    Around line 2023:
         Unterminated B<...> sequence
 
-    Around line 2025:
+    Around line 2044:
         Unterminated B<...> sequence
 
-    Around line 2047:
+    Around line 2066:
         Unterminated B<...> sequence
 
-    Around line 2068:
+    Around line 2074:
         Unterminated B<...> sequence
 
-    Around line 2120:
+    Around line 2091:
         Unterminated B<...> sequence
 
-    Around line 2136:
+    Around line 2113:
         Unterminated B<...> sequence
 
-    Around line 2152:
+    Around line 2134:
         Unterminated B<...> sequence
 
-    Around line 2287:
+    Around line 2186:
         Unterminated B<...> sequence
 
-    Around line 2314:
+    Around line 2202:
         Unterminated B<...> sequence
 
-    Around line 2333:
+    Around line 2218:
         Unterminated B<...> sequence
 
     Around line 2353:
         Unterminated B<...> sequence
 
-    Around line 2363:
+    Around line 2385:
         Unterminated B<...> sequence
 
-    Around line 2379:
+    Around line 2404:
         Unterminated B<...> sequence
 
-    Around line 2396:
+    Around line 2424:
         Unterminated B<...> sequence
 
-    Around line 2411:
+    Around line 2437:
         Unterminated B<...> sequence
 
-    Around line 2432:
+    Around line 2447:
         Unterminated B<...> sequence
 
-    Around line 2444:
+    Around line 2463:
         Unterminated B<...> sequence
 
-    Around line 2461:
+    Around line 2480:
         Unterminated B<...> sequence
 
-    Around line 2476:
+    Around line 2495:
         Unterminated B<...> sequence
 
-    Around line 2490:
+    Around line 2516:
         Unterminated B<...> sequence
 
-    Around line 2506:
+    Around line 2528:
         Unterminated B<...> sequence
 
-    Around line 2530:
+    Around line 2545:
         Unterminated B<...> sequence
 
-    Around line 2548:
-        Unterminated B<...> sequence
-
-    Around line 2561:
+    Around line 2560:
         Unterminated B<...> sequence
 
     Around line 2574:
         Unterminated B<...> sequence
 
-    Around line 2583:
+    Around line 2590:
         Unterminated B<...> sequence
 
-    Around line 2597:
+    Around line 2614:
         Unterminated B<...> sequence
 
-    Around line 2610:
+    Around line 2632:
         Unterminated B<...> sequence
 
-    Around line 2628:
+    Around line 2646:
         Unterminated B<...> sequence
 
-    Around line 2636:
+    Around line 2659:
         Unterminated B<...> sequence
 
-    Around line 2644:
+    Around line 2668:
         Unterminated B<...> sequence
 
-    Around line 2652:
+    Around line 2682:
         Unterminated B<...> sequence
 
-    Around line 2683:
+    Around line 2695:
         Unterminated B<...> sequence
 
-    Around line 2697:
+    Around line 2713:
         Unterminated B<...> sequence
 
-    Around line 2712:
+    Around line 2721:
         Unterminated B<...> sequence
 
-    Around line 2730:
+    Around line 2729:
         Unterminated B<...> sequence
 
-    Around line 2744:
+    Around line 2737:
         Unterminated B<...> sequence
 
-    Around line 2757:
+    Around line 2768:
         Unterminated B<...> sequence
 
-    Around line 2769:
+    Around line 2782:
         Unterminated B<...> sequence
 
-    Around line 2793:
+    Around line 2797:
         Unterminated B<...> sequence
 
-    Around line 2808:
+    Around line 2815:
         Unterminated B<...> sequence
 
-    Around line 2821:
+    Around line 2829:
         Unterminated B<...> sequence
 
-    Around line 2834:
+    Around line 2842:
         Unterminated B<...> sequence
 
-    Around line 2874:
+    Around line 2854:
         Unterminated B<...> sequence
 
-    Around line 2890:
+    Around line 2878:
         Unterminated B<...> sequence
 
-    Around line 2898:
+    Around line 2893:
         Unterminated B<...> sequence
 
     Around line 2906:
         Unterminated B<...> sequence
 
-    Around line 2945:
+    Around line 2919:
         Unterminated B<...> sequence
 
-    Around line 2960:
+    Around line 2959:
         Unterminated B<...> sequence
 
-    Around line 2985:
+    Around line 2975:
         Unterminated B<...> sequence
 
-    Around line 3011:
+    Around line 2983:
         Unterminated B<...> sequence
 
-    Around line 3044:
+    Around line 2991:
         Unterminated B<...> sequence
 
-    Around line 3055:
+    Around line 3030:
         Unterminated B<...> sequence
 
-    Around line 3071:
+    Around line 3045:
         Unterminated B<...> sequence
 
-    Around line 3094:
+    Around line 3070:
         Unterminated B<...> sequence
 
-    Around line 3123:
+    Around line 3096:
         Unterminated B<...> sequence
 
-    Around line 3152:
+    Around line 3132:
         Unterminated B<...> sequence
 
-    Around line 3175:
+    Around line 3143:
         Unterminated B<...> sequence
 
-    Around line 3183:
+    Around line 3159:
         Unterminated B<...> sequence
 
-    Around line 3209:
+    Around line 3182:
         Unterminated B<...> sequence
 
-    Around line 3294:
+    Around line 3211:
         Unterminated B<...> sequence
 
-    Around line 3306:
+    Around line 3255:
         Unterminated B<...> sequence
 
-    Around line 3377:
+    Around line 3278:
         Unterminated B<...> sequence
 
-    Around line 3385:
+    Around line 3293:
         Unterminated B<...> sequence
 
-    Around line 3400:
+    Around line 3301:
         Unterminated B<...> sequence
 
-    Around line 3418:
+    Around line 3327:
         Unterminated B<...> sequence
 
-    Around line 3438:
+    Around line 3412:
         Unterminated B<...> sequence
 
-    Around line 3477:
+    Around line 3424:
         Unterminated B<...> sequence
 
-    Around line 3499:
+    Around line 3497:
         Unterminated B<...> sequence
 
-    Around line 3511:
+    Around line 3505:
         Unterminated B<...> sequence
 
-    Around line 3542:
+    Around line 3520:
         Unterminated B<...> sequence
 
-    Around line 3554:
+    Around line 3538:
         Unterminated B<...> sequence
 
-    Around line 3572:
+    Around line 3558:
         Unterminated B<...> sequence
 
-    Around line 3581:
+    Around line 3597:
         Unterminated B<...> sequence
 
-    Around line 3600:
+    Around line 3619:
         Unterminated B<...> sequence
 
-    Around line 3608:
+    Around line 3631:
         Unterminated B<...> sequence
 
-    Around line 3624:
+    Around line 3662:
         Unterminated B<...> sequence
 
-    Around line 3639:
+    Around line 3674:
         Unterminated B<...> sequence
 
-    Around line 3656:
+    Around line 3692:
         Unterminated B<...> sequence
 
-    Around line 3677:
+    Around line 3701:
         Unterminated B<...> sequence
 
-    Around line 3708:
+    Around line 3720:
         Unterminated B<...> sequence
 
-    Around line 3751:
+    Around line 3728:
         Unterminated B<...> sequence
 
-    Around line 3800:
+    Around line 3744:
         Unterminated B<...> sequence
 
-    Around line 3814:
+    Around line 3759:
         Unterminated B<...> sequence
 
-    Around line 3823:
+    Around line 3776:
         Unterminated B<...> sequence
 
-    Around line 3837:
+    Around line 3797:
         Unterminated B<...> sequence
 
-    Around line 3863:
+    Around line 3828:
         Unterminated B<...> sequence
 
-    Around line 3880:
+    Around line 3871:
         Unterminated B<...> sequence
 
-    Around line 3905:
+    Around line 3920:
         Unterminated B<...> sequence
 
-    Around line 3918:
+    Around line 3934:
         Unterminated B<...> sequence
 
-    Around line 3939:
+    Around line 3943:
         Unterminated B<...> sequence
 
-    Around line 3970:
+    Around line 3957:
         Unterminated B<...> sequence
 
-    Around line 3978:
+    Around line 3983:
         Unterminated B<...> sequence
 
-    Around line 4008:
+    Around line 4000:
         Unterminated B<...> sequence
 
-    Around line 4023:
+    Around line 4025:
         Unterminated B<...> sequence
 
-    Around line 4031:
+    Around line 4038:
         Unterminated B<...> sequence
 
     Around line 4059:
         Unterminated B<...> sequence
 
-    Around line 4078:
+    Around line 4090:
         Unterminated B<...> sequence
 
-    Around line 4095:
+    Around line 4098:
         Unterminated B<...> sequence
 
-    Around line 4113:
+    Around line 4128:
         Unterminated B<...> sequence
 
-    Around line 4127:
+    Around line 4143:
         Unterminated B<...> sequence
 
-    Around line 4145:
+    Around line 4151:
         Unterminated B<...> sequence
 
-    Around line 4153:
+    Around line 4179:
         Unterminated B<...> sequence
 
-    Around line 4201:
+    Around line 4198:
         Unterminated B<...> sequence
 
-    Around line 4218:
+    Around line 4215:
         Unterminated B<...> sequence
 
-    Around line 4231:
+    Around line 4233:
         Unterminated B<...> sequence
 
-    Around line 4239:
+    Around line 4247:
         Unterminated B<...> sequence
 
-    Around line 4250:
+    Around line 4265:
         Unterminated B<...> sequence
 
-    Around line 4262:
+    Around line 4273:
         Unterminated B<...> sequence
 
-    Around line 4275:
+    Around line 4321:
         Unterminated B<...> sequence
 
-    Around line 4308:
+    Around line 4338:
         Unterminated B<...> sequence
 
-    Around line 4332:
+    Around line 4351:
         Unterminated B<...> sequence
 
-    Around line 4347:
+    Around line 4359:
         Unterminated B<...> sequence
 
-    Around line 4356:
+    Around line 4370:
         Unterminated B<...> sequence
 
-    Around line 4387:
+    Around line 4382:
         Unterminated B<...> sequence
 
-    Around line 4409:
+    Around line 4395:
         Unterminated B<...> sequence
 
-    Around line 4458:
+    Around line 4428:
         Unterminated B<...> sequence
 
-    Around line 4477:
+    Around line 4460:
         Unterminated B<...> sequence
 
-    Around line 4485:
+    Around line 4474:
         Unterminated B<...> sequence
 
-    Around line 4500:
+    Around line 4483:
         Unterminated B<...> sequence
 
     Around line 4514:
         Unterminated B<...> sequence
 
-    Around line 4533:
+    Around line 4536:
         Unterminated B<...> sequence
 
-    Around line 4578:
+    Around line 4585:
         Unterminated B<...> sequence
 
-    Around line 4620:
+    Around line 4604:
         Unterminated B<...> sequence
 
-    Around line 4685:
+    Around line 4612:
         Unterminated B<...> sequence
 
-    Around line 4746:
+    Around line 4657:
         Unterminated B<...> sequence
 
-    Around line 4761:
+    Around line 4671:
+        Unterminated B<...> sequence
+
+    Around line 4690:
+        Unterminated B<...> sequence
+
+    Around line 4735:
         Unterminated B<...> sequence
 
     Around line 4777:
         Unterminated B<...> sequence
 
-    Around line 4791:
+    Around line 4842:
         Unterminated B<...> sequence
 
-    Around line 4803:
+    Around line 4903:
         Unterminated B<...> sequence
 
-    Around line 4816:
+    Around line 4918:
         Unterminated B<...> sequence
 
-    Around line 4837:
+    Around line 4934:
         Unterminated B<...> sequence
 
-    Around line 4845:
+    Around line 4948:
         Unterminated B<...> sequence
 
-    Around line 4857:
+    Around line 4960:
         Unterminated B<...> sequence
 
-    Around line 4883:
+    Around line 4973:
         Unterminated B<...> sequence
 
-    Around line 4891:
+    Around line 4994:
         Unterminated B<...> sequence
 
-    Around line 4916:
+    Around line 5002:
         Unterminated B<...> sequence
 
-    Around line 4943:
+    Around line 5014:
         Unterminated B<...> sequence
 
-    Around line 4951:
+    Around line 5040:
         Unterminated B<...> sequence
 
-    Around line 4979:
+    Around line 5048:
         Unterminated B<...> sequence
 
-    Around line 5012:
+    Around line 5073:
         Unterminated B<...> sequence
 
-    Around line 5036:
+    Around line 5100:
         Unterminated B<...> sequence
 
-    Around line 5064:
+    Around line 5108:
         Unterminated B<...> sequence
 
-    Around line 5088:
+    Around line 5136:
         Unterminated B<...> sequence
 
-    Around line 5107:
+    Around line 5169:
         Unterminated B<...> sequence
 
-    Around line 5115:
+    Around line 5193:
         Unterminated B<...> sequence
 
-    Around line 5134:
+    Around line 5221:
         Unterminated B<...> sequence
 
-    Around line 5158:
+    Around line 5245:
         Unterminated B<...> sequence
 
-    Around line 5174:
+    Around line 5264:
         Unterminated B<...> sequence
 
-    Around line 5196:
+    Around line 5272:
         Unterminated B<...> sequence
 
-    Around line 5209:
+    Around line 5291:
         Unterminated B<...> sequence
 
-    Around line 5219:
+    Around line 5315:
         Unterminated B<...> sequence
 
-    Around line 5239:
+    Around line 5331:
         Unterminated B<...> sequence
 
-    Around line 5288:
+    Around line 5353:
         Unterminated B<...> sequence
 
-    Around line 5302:
+    Around line 5366:
         Unterminated B<...> sequence
 
-    Around line 5319:
+    Around line 5375:
         Unterminated B<...> sequence
 
-    Around line 5327:
+    Around line 5385:
         Unterminated B<...> sequence
 
-    Around line 5335:
+    Around line 5405:
         Unterminated B<...> sequence
 
-    Around line 5377:
+    Around line 5454:
         Unterminated B<...> sequence
 
-    Around line 5389:
+    Around line 5468:
         Unterminated B<...> sequence
 
-    Around line 5409:
+    Around line 5485:
         Unterminated B<...> sequence
 
-    Around line 5430:
+    Around line 5493:
         Unterminated B<...> sequence
 
-    Around line 5466:
+    Around line 5514:
         Unterminated B<...> sequence
 
-    Around line 5480:
+    Around line 5522:
         Unterminated B<...> sequence
 
-    Around line 5504:
+    Around line 5564:
         Unterminated B<...> sequence
 
-    Around line 5518:
+    Around line 5576:
         Unterminated B<...> sequence
 
-    Around line 5531:
+    Around line 5596:
         Unterminated B<...> sequence
 
-    Around line 5549:
-        Unterminated B<...> sequence
-
-    Around line 5562:
-        Unterminated B<...> sequence
-
-    Around line 5575:
-        Unterminated B<...> sequence
-
-    Around line 5590:
-        Unterminated B<...> sequence
-
-    Around line 5610:
-        Unterminated B<...> sequence
-
-    Around line 5627:
-        Unterminated B<...> sequence
-
-    Around line 5641:
+    Around line 5617:
         Unterminated B<...> sequence
 
     Around line 5653:
         Unterminated B<...> sequence
 
-    Around line 5673:
+    Around line 5667:
         Unterminated B<...> sequence
 
-    Around line 5689:
+    Around line 5691:
         Unterminated B<...> sequence
 
-    Around line 5710:
+    Around line 5705:
         Unterminated B<...> sequence
 
-    Around line 5730:
+    Around line 5718:
         Unterminated B<...> sequence
 
-    Around line 5743:
+    Around line 5736:
         Unterminated B<...> sequence
 
-    Around line 5755:
+    Around line 5749:
         Unterminated B<...> sequence
 
-    Around line 5763:
+    Around line 5762:
         Unterminated B<...> sequence
 
-    Around line 5787:
+    Around line 5777:
         Unterminated B<...> sequence
 
-    Around line 5795:
+    Around line 5797:
         Unterminated B<...> sequence
 
-    Around line 5803:
+    Around line 5814:
+        Unterminated B<...> sequence
+
+    Around line 5828:
+        Unterminated B<...> sequence
+
+    Around line 5840:
+        Unterminated B<...> sequence
+
+    Around line 5860:
+        Unterminated B<...> sequence
+
+    Around line 5876:
+        Unterminated B<...> sequence
+
+    Around line 5897:
+        Unterminated B<...> sequence
+
+    Around line 5917:
+        Unterminated B<...> sequence
+
+    Around line 5930:
+        Unterminated B<...> sequence
+
+    Around line 5942:
+        Unterminated B<...> sequence
+
+    Around line 5950:
+        Unterminated B<...> sequence
+
+    Around line 5974:
+        Unterminated B<...> sequence
+
+    Around line 5982:
+        Unterminated B<...> sequence
+
+    Around line 5990:
         Unterminated B<...> sequence
 

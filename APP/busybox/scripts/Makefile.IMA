@@ -195,10 +195,10 @@ include/autoconf.h: .config
 	$(MAKE) -f $(srctree)/Makefile silentoldconfig
 
 applets/usage: include/autoconf.h
-	$(HOSTCC) -Wall -Wstrict-prototypes -Os -fomit-frame-pointer -I$(srctree)/include -o applets/usage applets/usage.c
+	$(HOSTCC) -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -I$(srctree)/include -o applets/usage applets/usage.c
 
 applets/applet_tables: include/autoconf.h
-	$(HOSTCC) -Wall -Wstrict-prototypes -Os -fomit-frame-pointer -I$(srctree)/include -o applets/applet_tables applets/applet_tables.c
+	$(HOSTCC) -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -I$(srctree)/include -o applets/applet_tables applets/applet_tables.c
 
 include/usage_compressed.h: $(srctree)/include/usage.h applets/usage
 	$(srctree)/applets/usage_compressed include/usage_compressed.h applets

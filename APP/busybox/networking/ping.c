@@ -744,10 +744,10 @@ int ping_main(int argc UNUSED_PARAM, char **argv)
 	{
 		sa_family_t af = AF_UNSPEC;
 		if (opt & OPT_IPV4)
-		af = AF_INET;
+			af = AF_INET;
 		if (opt & OPT_IPV6)
-		af = AF_INET6;
-	lsa = xhost_and_af2sockaddr(hostname, 0, af);
+			af = AF_INET6;
+		lsa = xhost_and_af2sockaddr(hostname, 0, af);
 	}
 #else
 	lsa = xhost_and_af2sockaddr(hostname, 0, AF_INET);

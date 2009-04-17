@@ -630,7 +630,7 @@ static gid_t *getgrouplist_internal(int *ngroups_ptr, const char *user, gid_t gi
 	struct group group;
 	char buff[PWD_BUFFER_SIZE];
 
-		/* We alloc space for 8 gids at a time. */
+	/* We alloc space for 8 gids at a time. */
 	group_list = xmalloc(8 * sizeof(group_list[0]));
 	group_list[0] = gid;
 	ngroups = 1;
@@ -642,16 +642,16 @@ static gid_t *getgrouplist_internal(int *ngroups_ptr, const char *user, gid_t gi
 			assert(group.gr_mem); /* Must have at least a NULL terminator. */
 			if (group.gr_gid == gid)
 				continue;
-				for (m = group.gr_mem; *m; m++) {
+			for (m = group.gr_mem; *m; m++) {
 				if (strcmp(*m, user) != 0)
 					continue;
 				group_list = xrealloc_vector(group_list, 3, ngroups);
 				group_list[ngroups++] = group.gr_gid;
-						break;
-					}
-				}
-		fclose(grfile);
+				break;
 			}
+		}
+		fclose(grfile);
+	}
 	*ngroups_ptr = ngroups;
 	return group_list;
 }
@@ -662,7 +662,7 @@ int initgroups(const char *user, gid_t gid)
 	gid_t *group_list = getgrouplist_internal(&ngroups, user, gid);
 
 	ngroups = setgroups(ngroups, group_list);
-		free(group_list);
+	free(group_list);
 	return ngroups;
 }
 

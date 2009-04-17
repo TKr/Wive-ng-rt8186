@@ -51,7 +51,7 @@ int lsmod_main(int argc UNUSED_PARAM, char **argv UNUSED_PARAM)
 
 	if (ENABLE_FEATURE_2_4_MODULES
 	 && get_linux_version_code() < KERNEL_VERSION(2,6,0)
-				) {
+	) {
 		while (config_read(parser, token, 4, 3, "# \t", PARSE_NORMAL)) {
 			if (token[3] != NULL && token[3][0] == '[') {
 				token[3]++;
@@ -59,7 +59,7 @@ int lsmod_main(int argc UNUSED_PARAM, char **argv UNUSED_PARAM)
 			} else
 				token[3] = (char *) "";
 			printf("%-19s %8s %2s %s\n", token[0], token[1], token[2], token[3]);
-				}
+		}
 	} else {
 		while (config_read(parser, token, 4, 4, "# \t", PARSE_NORMAL & ~PARSE_GREEDY)) {
 			// N.B. token[3] is either '-' (module is not used by others)

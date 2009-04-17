@@ -30,7 +30,8 @@ enum {
 /*	CMD_XCOMPAT =     10, */
 	CMD_ALL = 11,
 	CMD_INFO = 12,
-	CMD_CHANGE = 13,
+	CMD_SHOW = 13,
+	CMD_CHANGE = 14,
 
 #if ENABLE_FEATURE_FBSET_FANCY
 	CMD_XRES = 100,
@@ -90,7 +91,7 @@ struct fb_var_screeninfo {
 	uint32_t height;                /* height of picture in mm */
 	uint32_t width;                 /* width of picture in mm */
 
-	uint32_t accel_flags;		/* acceleration flags (hints)	*/
+	uint32_t accel_flags;		/* acceleration flags (hints) */
 
 	/* Timing: All values in pixclocks, except pixclock (of course) */
 	uint32_t pixclock;              /* pixel clock in ps (pico seconds) */
@@ -123,7 +124,8 @@ static const struct cmdoptions_t {
 	{ "vsync"   , 1, CMD_VSYNC    },
 	{ "laced"   , 1, CMD_LACED    },
 	{ "double"  , 1, CMD_DOUBLE   },
-	{ "n"       , 0, CMD_CHANGE   },
+	{ "show"    , 0, CMD_SHOW     },
+	{ "s"       , 0, CMD_SHOW     },
 #if ENABLE_FEATURE_FBSET_FANCY
 	{ "all"     , 0, CMD_ALL      },
 	{ "xres"    , 1, CMD_XRES     },
@@ -154,11 +156,11 @@ static const struct cmdoptions_t {
 #if ENABLE_FEATURE_FBSET_READMODE
 /* taken from linux/fb.h */
 enum {
-	FB_VMODE_INTERLACED = 1,	/* interlaced	*/
-	FB_VMODE_DOUBLE = 2,	/* double scan */
-	FB_SYNC_HOR_HIGH_ACT = 1,	/* horizontal sync high active	*/
-	FB_SYNC_VERT_HIGH_ACT = 2,	/* vertical sync high active	*/
-	FB_SYNC_EXT = 4,	/* external sync		*/
+	FB_VMODE_INTERLACED = 1,        /* interlaced */
+	FB_VMODE_DOUBLE = 2,            /* double scan */
+	FB_SYNC_HOR_HIGH_ACT = 1,       /* horizontal sync high active */
+	FB_SYNC_VERT_HIGH_ACT = 2,      /* vertical sync high active */
+	FB_SYNC_EXT = 4,                /* external sync */
 	FB_SYNC_COMP_HIGH_ACT = 8,      /* composite sync high active */
 };
 #endif
@@ -172,7 +174,7 @@ static void ss(uint32_t *x, uint32_t flag, char *buf, const char *what)
 		*x |= flag;
 }
 
-static int readmode(struct fb_var_screeninfo *base, const char *fn,
+static int read_mode_db(struct fb_var_screeninfo *base, const char *fn,
 					const char *mode)
 {
 	char *token[2], *p, *s;
@@ -212,19 +214,19 @@ static int readmode(struct fb_var_screeninfo *base, const char *fn,
 			token[0]);
 		switch (i) {
 		case 0:
-				/* FIXME: catastrophic on arches with 64bit ints */
-				sscanf(p, "%d %d %d %d %d",
-					&(base->xres), &(base->yres),
-					&(base->xres_virtual), &(base->yres_virtual),
-					&(base->bits_per_pixel));
+			/* FIXME: catastrophic on arches with 64bit ints */
+			sscanf(p, "%d %d %d %d %d",
+				&(base->xres), &(base->yres),
+				&(base->xres_virtual), &(base->yres_virtual),
+				&(base->bits_per_pixel));
 //bb_info_msg("GEO[%s]", p);
 			break;
 		case 1:
-				sscanf(p, "%d %d %d %d %d %d %d",
-					&(base->pixclock),
-					&(base->left_margin), &(base->right_margin),
-					&(base->upper_margin), &(base->lower_margin),
-					&(base->hsync_len), &(base->vsync_len));
+			sscanf(p, "%d %d %d %d %d %d %d",
+				&(base->pixclock),
+				&(base->left_margin), &(base->right_margin),
+				&(base->upper_margin), &(base->lower_margin),
+				&(base->hsync_len), &(base->vsync_len));
 //bb_info_msg("TIM[%s]", p);
 			break;
 		case 2:
@@ -233,7 +235,7 @@ static int readmode(struct fb_var_screeninfo *base, const char *fn,
 			ss(&base->vmode, syncs[i-2], p, "false");
 //bb_info_msg("VMODE[%s]", p);
 			break;
-			}
+		}
 		case 4:
 		case 5:
 		case 6:	{
@@ -302,7 +304,7 @@ int fbset_main(int argc, char **argv)
 {
 	enum {
 		OPT_CHANGE   = (1 << 0),
-		/*OPT_INFO     = (1 << 1), ??*/
+		OPT_SHOW     = (1 << 1),
 		OPT_READMODE = (1 << 2),
 		OPT_ALL      = (1 << 9),
 	};
@@ -333,6 +335,12 @@ int fbset_main(int argc, char **argv)
 			case CMD_DB:
 				modefile = argv[1];
 				break;
+			case CMD_ALL:
+				options |= OPT_ALL;
+				break;
+			case CMD_SHOW:
+				options |= OPT_SHOW;
+				break;
 			case CMD_GEOMETRY:
 				varset.xres = xatou32(argv[1]);
 				varset.yres = xatou32(argv[2]);
@@ -349,12 +357,6 @@ int fbset_main(int argc, char **argv)
 				varset.hsync_len = xatou32(argv[6]);
 				varset.vsync_len = xatou32(argv[7]);
 				break;
-			case CMD_ALL:
-				options |= OPT_ALL;
-				break;
-			case CMD_CHANGE:
-				options |= OPT_CHANGE;
-				break;
 #if ENABLE_FEATURE_FBSET_FANCY
 			case CMD_XRES:
 				varset.xres = xatou32(argv[1]);
@@ -367,13 +369,22 @@ int fbset_main(int argc, char **argv)
 				break;
 #endif
 			}
+			switch (g_cmdoptions[i].code) {
+			case CMD_FB:
+			case CMD_DB:
+			case CMD_ALL:
+			case CMD_SHOW:
+				break;
+			default:
+				options |= OPT_CHANGE; /* the other commands imply changes */
+			}
 			argc -= g_cmdoptions[i].param_count;
 			argv += g_cmdoptions[i].param_count;
 			goto contin;
 		}
-			if (argc != 1)
-				bb_show_usage();
-			mode = *argv;
+		if (argc != 1)
+			bb_show_usage();
+		mode = *argv;
 		options |= OPT_READMODE;
  contin: ;
 	}
@@ -384,19 +395,20 @@ int fbset_main(int argc, char **argv)
 #if !ENABLE_FEATURE_FBSET_READMODE
 		bb_show_usage();
 #else
-		if (!readmode(&var, modefile, mode)) {
+		if (!read_mode_db(&var, modefile, mode)) {
 			bb_error_msg_and_die("unknown video mode '%s'", mode);
 		}
 #endif
 	}
 
-	setmode(&var, &varset);
 	if (options & OPT_CHANGE) {
+		setmode(&var, &varset);
 		if (options & OPT_ALL)
 			var.activate = FB_ACTIVATE_ALL;
 		xioctl(fh, FBIOPUT_VSCREENINFO, &var);
 	}
-	showmode(&var);
+	if (options == 0 || options & OPT_SHOW)
+		showmode(&var);
 	/* Don't close the file, as exiting will take care of that */
 	/* close(fh); */
 

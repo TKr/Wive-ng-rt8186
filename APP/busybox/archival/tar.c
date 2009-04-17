@@ -357,7 +357,8 @@ static int writeTarHeader(struct TarBallInfo *tbInfo,
 	if (tbInfo->verboseFlag) {
 		FILE *vbFd = stdout;
 
-		if (tbInfo->tarFd == STDOUT_FILENO)	/* If the archive goes to stdout, verbose to stderr */
+		/* If archive goes to stdout, verbose goes to stderr */
+		if (tbInfo->tarFd == STDOUT_FILENO)
 			vbFd = stderr;
 		/* GNU "tar cvvf" prints "extended" listing a-la "ls -l" */
 		/* We don't have such excesses here: for us "v" == "vv" */
@@ -934,10 +935,8 @@ int tar_main(int argc UNUSED_PARAM, char **argv)
 			tar_handle->src_fd = fileno(tar_stream);
 			tar_handle->seek = seek_by_read;
 		} else {
-			if (ENABLE_FEATURE_TAR_AUTODETECT
-			 && get_header_ptr == get_header_tar
-			 && flags == O_RDONLY
-			) {
+			if (ENABLE_FEATURE_TAR_AUTODETECT && flags == O_RDONLY) {
+				get_header_ptr = get_header_tar;
 				tar_handle->src_fd = open_zipped(tar_filename);
 				if (tar_handle->src_fd < 0)
 					bb_perror_msg_and_die("can't open '%s'", tar_filename);

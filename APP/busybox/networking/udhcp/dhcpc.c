@@ -43,11 +43,17 @@ static void change_listen_mode(int new_mode)
 {
 	DEBUG("entering %s listen mode",
 		new_mode ? (new_mode == 1 ? "kernel" : "raw") : "none");
+
+	listen_mode = new_mode;
 	if (sockfd >= 0) {
 		close(sockfd);
 		sockfd = -1;
 	}
-	listen_mode = new_mode;
+	if (new_mode == LISTEN_KERNEL)
+		sockfd = udhcp_listen_socket(/*INADDR_ANY,*/ CLIENT_PORT, client_config.interface);
+	else if (new_mode != LISTEN_NONE)
+		sockfd = udhcp_raw_socket(client_config.ifindex);
+	/* else LISTEN_NONE: sockfd stay closed */
 }
 
 
@@ -274,11 +280,11 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 	/* on NOMMU reexec (i.e., background) early */
 	if (!(opt & OPT_f)) {
 		bb_daemonize_or_rexec(0 /* flags */, argv);
-		logmode = 0;
+		logmode = LOGMODE_NONE;
 	}
 #endif
 	if (opt & OPT_S) {
-		openlog(applet_name, LOG_PID, LOG_LOCAL0);
+		openlog(applet_name, LOG_PID, LOG_DAEMON);
 		logmode |= LOGMODE_SYSLOG;
 	}
 
@@ -318,14 +324,18 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 	 * "continue" statements in code below jump to the top of the loop.
 	 */
 	for (;;) {
-		unsigned timestamp_before_wait;
+		/* silence "uninitialized!" warning */
+		unsigned timestamp_before_wait = timestamp_before_wait;
 
-		if (listen_mode != LISTEN_NONE && sockfd < 0) {
-			if (listen_mode == LISTEN_KERNEL)
-				sockfd = udhcp_listen_socket(/*INADDR_ANY,*/ CLIENT_PORT, client_config.interface);
-			else
-				sockfd = udhcp_raw_socket(client_config.ifindex);
-		}
+		//bb_error_msg("sockfd:%d, listen_mode:%d", sockfd, listen_mode);
+
+		/* Was opening raw or udp socket here
+		 * if (listen_mode != LISTEN_NONE && sockfd < 0),
+		 * but on fast network renew responses return faster
+		 * than we open sockets. Thus this code is moved
+		 * to change_listen_mode(). Thus we open listen socket
+		 * BEFORE we send renew request (see "case BOUND:"). */
+
 		max_fd = udhcp_sp_fd_set(&rfds, sockfd);
 
 		tv.tv_sec = timeout - already_waited_sec;
@@ -432,7 +442,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 				 * try to find DHCP server using broadcast */
 				if (timeout > 0) {
 					/* send a request packet */
-					send_renew(xid, 0 /* INADDR_ANY*/, requested_ip); /* broadcast */
+					send_renew(xid, 0 /*INADDR_ANY*/, requested_ip); /* broadcast */
 					timeout >>= 1;
 					continue;
 				}
@@ -503,7 +513,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 						/* still selecting - this server looks bad */
 					}
 					/* it IS unaligned sometimes, don't "optimize" */
-					server_addr = get_unaligned_u32p((uint32_t*)temp);
+					move_from_unaligned32(server_addr, temp);
 					xid = packet.xid;
 					requested_ip = packet.yiaddr;
 
@@ -525,7 +535,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 						lease_seconds = 60 * 60;
 					} else {
 						/* it IS unaligned sometimes, don't "optimize" */
-						lease_seconds = get_unaligned_u32p((uint32_t*)temp);
+						move_from_unaligned32(lease_seconds, temp);
 						lease_seconds = ntohl(lease_seconds);
 						lease_seconds &= 0x0fffffff; /* paranoia: must not be prone to overflows */
 						if (lease_seconds < 10) /* and not too small */
@@ -573,7 +583,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 					}
 					requested_ip = packet.yiaddr;
 					udhcp_run_script(&packet,
-						   ((state == RENEWING || state == REBINDING) ? "renew" : "bound"));
+							((state == RENEWING || state == REBINDING) ? "renew" : "bound"));
 
 					state = BOUND;
 					change_listen_mode(LISTEN_NONE);

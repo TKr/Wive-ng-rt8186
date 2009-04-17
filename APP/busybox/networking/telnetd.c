@@ -35,8 +35,8 @@
 /* Structure that describes a session */
 struct tsession {
 	struct tsession *next;
+	pid_t shell_pid;
 	int sockfd_read, sockfd_write, ptyfd;
-	int shell_pid;
 
 	/* two circular buffers */
 	/*char *buf1, *buf2;*/
@@ -73,9 +73,6 @@ static const char *issuefile = "/etc/issue.net";
    Note - If an IAC (3 byte quantity) starts before (bf + len) but extends
    past (bf + len) then that IAC will be left unprocessed and *processed
    will be less than len.
-
-   FIXME - if we mean to send 0xFF to the terminal then it will be escaped,
-   what is the escape character?  We aren't handling that situation here.
 
    CR-LF ->'s CR mapping is also done here, for convenience.
 
@@ -117,35 +114,35 @@ remove_iacs(struct tsession *ts, int *pnum_totty)
 			continue;
 		}
 
-			/*
-			 * TELOPT_NAWS support!
-			 */
-			if ((ptr+2) >= end) {
-				/* only the beginning of the IAC is in the
-				buffer we were asked to process, we can't
-				process this char. */
-				break;
-			}
-			/*
-			 * IAC -> SB -> TELOPT_NAWS -> 4-byte -> IAC -> SE
-			 */
+		/*
+		 * TELOPT_NAWS support!
+		 */
+		if ((ptr+2) >= end) {
+			/* only the beginning of the IAC is in the
+			buffer we were asked to process, we can't
+			process this char. */
+			break;
+		}
+		/*
+		 * IAC -> SB -> TELOPT_NAWS -> 4-byte -> IAC -> SE
+		 */
 		if (ptr[1] == SB && ptr[2] == TELOPT_NAWS) {
-				struct winsize ws;
-				if ((ptr+8) >= end)
-					break;	/* incomplete, can't process */
-				ws.ws_col = (ptr[3] << 8) | ptr[4];
-				ws.ws_row = (ptr[5] << 8) | ptr[6];
-				ioctl(ts->ptyfd, TIOCSWINSZ, (char *)&ws);
-				ptr += 9;
+			struct winsize ws;
+			if ((ptr+8) >= end)
+				break;	/* incomplete, can't process */
+			ws.ws_col = (ptr[3] << 8) | ptr[4];
+			ws.ws_row = (ptr[5] << 8) | ptr[6];
+			ioctl(ts->ptyfd, TIOCSWINSZ, (char *)&ws);
+			ptr += 9;
 			continue;
 		}
-				/* skip 3-byte IAC non-SB cmd */
+		/* skip 3-byte IAC non-SB cmd */
 #if DEBUG
-				fprintf(stderr, "Ignoring IAC %s,%s\n",
-					TELCMD(ptr[1]), TELOPT(ptr[2]));
+		fprintf(stderr, "Ignoring IAC %s,%s\n",
+				TELCMD(ptr[1]), TELOPT(ptr[2]));
 #endif
-				ptr += 3;
-			}
+		ptr += 3;
+	}
 
 	num_totty = totty - ptr0;
 	*pnum_totty = num_totty;
@@ -159,6 +156,48 @@ remove_iacs(struct tsession *ts, int *pnum_totty)
 	return memmove(ptr - num_totty, ptr0, num_totty);
 }
 
+/*
+ * Converting single IAC into double on output
+ */
+static size_t iac_safe_write(int fd, const char *buf, size_t count)
+{
+	const char *IACptr;
+	size_t wr, rc, total;
+
+	total = 0;
+	while (1) {
+		if (count == 0)
+			return total;
+		if (*buf == (char)IAC) {
+			static const char IACIAC[] ALIGN1 = { IAC, IAC };
+			rc = safe_write(fd, IACIAC, 2);
+			if (rc != 2)
+				break;
+			buf++;
+			total++;
+			count--;
+			continue;
+		}
+		/* count != 0, *buf != IAC */
+		IACptr = memchr(buf, IAC, count);
+		wr = count;
+		if (IACptr)
+			wr = IACptr - buf;
+		rc = safe_write(fd, buf, wr);
+		if (rc != wr)
+			break;
+		buf += rc;
+		total += rc;
+		count -= rc;
+	}
+	/* here: rc - result of last short write */
+	if ((ssize_t)rc < 0) { /* error? */
+		if (total == 0)
+			return rc;
+		rc = 0;
+	}
+	return total + rc;
+}
 
 static struct tsession *
 make_new_session(
@@ -208,13 +247,24 @@ make_new_session(
 		static const char iacs_to_send[] ALIGN1 = {
 			IAC, DO, TELOPT_ECHO,
 			IAC, DO, TELOPT_NAWS,
-			IAC, DO, TELOPT_LFLOW,
+		/* This requires telnetd.ctrlSQ.patch (incomplete) */
+		/*	IAC, DO, TELOPT_LFLOW, */
 			IAC, WILL, TELOPT_ECHO,
 			IAC, WILL, TELOPT_SGA
 		};
-		memcpy(TS_BUF2, iacs_to_send, sizeof(iacs_to_send));
-		ts->rdidx2 = sizeof(iacs_to_send);
-		ts->size2 = sizeof(iacs_to_send);
+		/* This confuses iac_safe_write(), it will try to duplicate
+		 * each IAC... */
+		//memcpy(TS_BUF2, iacs_to_send, sizeof(iacs_to_send));
+		//ts->rdidx2 = sizeof(iacs_to_send);
+		//ts->size2 = sizeof(iacs_to_send);
+		/* So just stuff it into TCP stream! (no error check...) */
+#if ENABLE_FEATURE_TELNETD_STANDALONE
+		safe_write(sock, iacs_to_send, sizeof(iacs_to_send));
+#else
+		safe_write(1, iacs_to_send, sizeof(iacs_to_send));
+#endif
+		/*ts->rdidx2 = 0; - xzalloc did it */
+		/*ts->size2 = 0;*/
 	}
 
 	fflush(NULL); /* flush all streams */
@@ -235,13 +285,13 @@ make_new_session(
 	/* Child */
 	/* Careful - we are after vfork! */
 
-	/* make new session and process group */
-	setsid();
-
-	/* Restore default signal handling */
+	/* Restore default signal handling ASAP */
 	bb_signals((1 << SIGCHLD) + (1 << SIGPIPE), SIG_DFL);
 
-	/* open the child's side of the tty. */
+	/* Make new session and process group */
+	setsid();
+
+	/* Open the child's side of the tty. */
 	/* NB: setsid() disconnects from any previous ctty's. Therefore
 	 * we must open child's side of the tty AFTER setsid! */
 	close(0);
@@ -311,7 +361,7 @@ free_session(struct tsession *ts)
 	 * doesn't send SIGKILL. When we close ptyfd,
 	 * kernel sends SIGHUP to processes having slave side opened. */
 	kill(ts->shell_pid, SIGKILL);
-	wait4(ts->shell_pid, NULL, 0, NULL);
+	waitpid(ts->shell_pid, NULL, 0);
 #endif
 	close(ts->ptyfd);
 	close(ts->sockfd_read);
@@ -402,7 +452,7 @@ int telnetd_main(int argc UNUSED_PARAM, char **argv)
 	}
 	/* Redirect log to syslog early, if needed */
 	if (IS_INETD || !(opt & OPT_FOREGROUND)) {
-		openlog(applet_name, 0, LOG_USER);
+		openlog(applet_name, LOG_PID, LOG_DAEMON);
 		logmode = LOGMODE_SYSLOG;
 	}
 	USE_FEATURE_TELNETD_STANDALONE(
@@ -538,7 +588,7 @@ int telnetd_main(int argc UNUSED_PARAM, char **argv)
 		if (/*ts->size2 &&*/ FD_ISSET(ts->sockfd_write, &wrfdset)) {
 			/* Write to socket from buffer 2. */
 			count = MIN(BUFSIZE - ts->wridx2, ts->size2);
-			count = safe_write(ts->sockfd_write, TS_BUF2 + ts->wridx2, count);
+			count = iac_safe_write(ts->sockfd_write, (void*)(TS_BUF2 + ts->wridx2), count);
 			if (count < 0) {
 				if (errno == EAGAIN)
 					goto skip2;

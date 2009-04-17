@@ -1,3 +1,11 @@
+wive-ng-0.2.19
+1) drivers/net and a code the serving processor gather now with -O3 optimisation, from calculation 
+    to receive the general prize of productivity, and also work optimisation rtl8186 the driver and 
+    ppp* modules 
+2) It is updated a code pptp in a kernel with what many minor problems arising at work of tunnels
+   are solved
+3) Is updated busybox to last stable version
+
 wive-ng-0.2.18 
 1) igmpproxy now works. 
 2) Backport support igmpv3 of the 2.6 kernel branch. 
