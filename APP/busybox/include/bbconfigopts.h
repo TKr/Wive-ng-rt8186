@@ -469,7 +469,7 @@ static const char *const bbconfig_config =
 "CONFIG_CROND=y\n"
 "# CONFIG_FEATURE_CROND_D is not set\n"
 "# CONFIG_FEATURE_CROND_CALL_SENDMAIL is not set\n"
-"CONFIG_FEATURE_CROND_DIR=\"/etc/crontabs\"\n"
+"CONFIG_FEATURE_CROND_DIR=\"/etc\"\n"
 "CONFIG_CRONTAB=y\n"
 "# CONFIG_DC is not set\n"
 "# CONFIG_FEATURE_DC_LIBM is not set\n"

@@ -1,3 +1,8 @@
+wive-ng-0.2.20
+1) Plural small editings of a kernel (basically inveterate errors) 
+2) Are added additional timeouts before lifting of tunnels 
+3) Work crond is corrected (regress 0.2.19)
+
 wive-ng-0.2.19
 1) drivers/net and a code the serving processor gather now with -O3 optimisation, from calculation 
     to receive the general prize of productivity, and also work optimisation rtl8186 the driver and 
