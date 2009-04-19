@@ -13,7 +13,7 @@ if [ "$PPTP_CALL_START" = "yes" ] ; then
 	echo "Wait for recive network parametrs from dhcpclient. PPTP start delayed."
 	sleep 10
     fi
-
+	sleep 5
     echo "Starting VPN network pptp..."
     echo > /etc/ppp/connect-errors
     #Disable nat ipsec (SDK)

@@ -323,7 +323,7 @@ static __inline__ int tcp_sk_listen_hashfn(struct sock *sk)
 				  * TIME-WAIT timer.
 				  */
 
-#define TCP_DELACK_MAX	((unsigned)(HZ/5))	/* maximal time to delay before sending an ACK */
+#define TCP_DELACK_MAX	((unsigned)(HZ/2))	/* maximal time to delay before sending an ACK */
 #if HZ >= 100
 #define TCP_DELACK_MIN	((unsigned)(HZ/25))	/* minimal time to delay before sending an ACK */
 #define TCP_ATO_MIN	((unsigned)(HZ/25))

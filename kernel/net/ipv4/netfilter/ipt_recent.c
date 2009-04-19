@@ -838,6 +838,7 @@ checkentry(const char *tablename,
 			if(debug) printk(KERN_INFO RECENT_NAME ": checkentry() create_proc failed, table already destroyed.\n");
 #endif
 			spin_unlock_bh(&recent_lock);
+			vfree(hold);
 			return -ENOMEM;
 		}
 		if(last_table) last_table->next = curr_table->next; else r_tables = curr_table->next;

@@ -250,11 +250,10 @@ static void tcp_delack_timer(unsigned long data)
 			/* Delayed ACK missed: inflate ATO. */
 			tp->ack.ato = min(tp->ack.ato << 1, tp->rto);
 		} else {
-			/* Delayed ACK missed: leave pingpong mode and
-			 * deflate ATO.
+			/* Delayed ACK missed: leave pingpong mode
+			 * but be ready to reenable delay acks fast.
 			 */
 			tp->ack.pingpong = 0;
-			tp->ack.ato = TCP_ATO_MIN;
 		}
 		tcp_send_ack(sk);
 		NET_INC_STATS_BH(DelayedACKs);

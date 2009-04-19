@@ -12,6 +12,7 @@ if [ "$L2TP_CALL_START" = "yes" ] ; then
         echo "Wait for recive network parametrs from dhcpclient. L2TP start delayed."
         sleep 10
     fi
+	sleep 5
     echo "Starting VPN network l2tp..."
     echo > /etc/ppp/connect-errors
     #Disable nat ipsec (SDK)

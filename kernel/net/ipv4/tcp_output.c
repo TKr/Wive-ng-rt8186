@@ -1252,19 +1252,13 @@ void tcp_send_delayed_ack(struct sock *sk)
 	unsigned long timeout;
 
 	if (ato > TCP_DELACK_MIN) {
-		int max_ato = HZ/2;
-
-		if (tp->ack.pingpong || (tp->ack.pending&TCP_ACK_PUSHED))
-			max_ato = TCP_DELACK_MAX;
+		int max_ato = TCP_DELACK_MAX;
 
 		/* Slow path, intersegment interval is "high". */
 
-		/* If some rtt estimate is known, use it to bound delayed ack.
-		 * Do not use tp->rto here, use results of rtt measurements
-		 * directly.
-		 */
-		if (tp->srtt) {
-			int rtt = max(tp->srtt>>3, TCP_DELACK_MIN);
+		/* If some rtt estimate is known, use it to bound delayed ack. */
+		if (tp->rto) {
+			int rtt = max(tp->rto, TCP_DELACK_MIN);
 
 			if (rtt < max_ato)
 				max_ato = rtt;

@@ -219,6 +219,11 @@ void tcp_enter_quickack_mode(struct tcp_opt *tp)
 	tp->ack.ato = TCP_ATO_MIN;
 }
 
+static inline void tcp_exit_quickack_mode(struct tcp_opt *tp)
+{
+	tp->ack.pingpong = 1;
+}
+
 /* Send ACKs quickly, if "quick" count is not exhausted
  * and the session is not interactive.
  */
@@ -427,16 +432,21 @@ static void tcp_event_data_recv(struct sock *sk, struct tcp_opt *tp, struct sk_b
 		if (m <= TCP_ATO_MIN/2) {
 			/* The fastest case is the first. */
 			tp->ack.ato = (tp->ack.ato>>1) + TCP_ATO_MIN/2;
-		} else if (m < tp->ack.ato) {
-			tp->ack.ato = (tp->ack.ato>>1) + m;
-			if (tp->ack.ato > tp->rto)
-				tp->ack.ato = tp->rto;
-		} else if (m > tp->rto) {
+			tcp_exit_quickack_mode(tp);
+		} else if (unlikely(m > TCP_DELACK_MAX)) {
+			/* Delayed acks are worthless on a very slow link. */
+			tcp_incr_quickack(tp);
+		} else if (unlikely(m > tp->rto)) {
 			/* Too long gap. Apparently sender falled to
 			 * restart window, so that we send ACKs quickly.
 			 */
 			tcp_incr_quickack(tp);
 			tcp_mem_reclaim(sk);
+		} else { 
+			tp->ack.ato = (tp->ack.ato>>1) + m;
+			if (tp->ack.ato > tp->rto)
+				tp->ack.ato = tp->rto;
+			tcp_exit_quickack_mode(tp);
 		}
 	}
 	tp->ack.lrcvtime = now;
@@ -3430,11 +3440,7 @@ static __inline__ void __tcp_ack_snd_check(struct sock *sk, int ofo_possible)
 	struct tcp_opt *tp = &(sk->tp_pinfo.af_tcp);
 
 	    /* More than one full frame received... */
-	if (((tp->rcv_nxt - tp->rcv_wup) > tp->ack.rcv_mss
-	     /* ... and right edge of window advances far enough.
-	      * (tcp_recvmsg() will send ACK otherwise). Or...
-	      */
-	     && __tcp_select_window(sk) >= tp->rcv_wnd) ||
+	if ((tp->rcv_nxt - tp->rcv_wup) > tp->ack.rcv_mss ||
 	    /* We ACK each frame or... */
 	    tcp_in_quickack_mode(tp) ||
 	    /* We have out of order data. */

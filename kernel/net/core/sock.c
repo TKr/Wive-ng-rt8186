@@ -782,7 +782,6 @@ struct sk_buff *sock_alloc_send_pskb(struct sock *sk, unsigned long header_len,
 				if (!data_len)
 					break;
 
-				npages = (data_len + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
 				skb->truesize += data_len;
 				skb_shinfo(skb)->nr_frags = npages;
 				for (i = 0; i < npages; i++) {
@@ -803,6 +802,9 @@ struct sk_buff *sock_alloc_send_pskb(struct sock *sk, unsigned long header_len,
 						      PAGE_SIZE :
 						      data_len);
 					data_len -= PAGE_SIZE;
+
+					/* frag[i] is now initialized */
+					skb_shinfo(skb)->nr_frags = i + 1;
 				}
 
 				/* Full success... */

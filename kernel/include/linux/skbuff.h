@@ -1136,6 +1136,20 @@ extern int			skb_copy_bits(const struct sk_buff *skb, int offset, void *to, int 
 extern unsigned int		skb_copy_and_csum_bits(const struct sk_buff *skb, int offset, u8 *to, int len, unsigned int csum);
 extern void			skb_copy_and_csum_dev(const struct sk_buff *skb, u8 *to);
 
+static inline void *skb_header_pointer(const struct sk_buff *skb, int offset,
+				       int len, void *buffer)
+{
+	int hlen = skb_headlen(skb);
+
+	if (offset + len <= hlen)
+		return skb->data + offset;
+
+	if (skb_copy_bits(skb, offset, buffer, len) < 0)
+		return NULL;
+
+	return buffer;
+}
+
 extern void skb_init(void);
 extern void skb_add_mtu(int mtu);
 

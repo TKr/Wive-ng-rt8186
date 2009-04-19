@@ -1030,7 +1030,10 @@ do_it_again:
 				break;
 			cs = tty->link->ctrl_status;
 			tty->link->ctrl_status = 0;
-			put_user(cs, b++);
+			if (put_user(cs, b++)) {
+				retval = -EFAULT;
+				break;
+			}
 			nr--;
 			break;
 		}
@@ -1069,7 +1072,10 @@ do_it_again:
 
 		/* Deal with packet mode. */
 		if (tty->packet && b == buf) {
-			put_user(TIOCPKT_DATA, b++);
+			if (put_user(TIOCPKT_DATA, b++)) {
+				retval = -EFAULT;
+				break;
+			}
 			nr--;
 		}
 
@@ -1096,12 +1102,17 @@ do_it_again:
 				spin_unlock_irqrestore(&tty->read_lock, flags);
 
 				if (!eol || (c != __DISABLED_CHAR)) {
-					put_user(c, b++);
+					if (put_user(c, b++)) {
+						retval = -EFAULT;
+						break;
+					}
 					nr--;
 				}
 				if (eol)
 					break;
 			}
+			if (retval)
+				break;
 		} else {
 			int uncopied;
 			uncopied = copy_from_read_buf(tty, &b, &nr);
@@ -1136,7 +1147,7 @@ do_it_again:
 
 	current->state = TASK_RUNNING;
 	size = b - buf;
-	if (size) {
+	if (!retval && size) {
 		retval = size;
 		if (nr)
 	       		clear_bit(TTY_PUSH, &tty->flags);

@@ -278,7 +278,10 @@ static ssize_t proc_info_read(struct file * file, char * buf,
 	if (count + *ppos > length)
 		count = length - *ppos;
 	end = count + *ppos;
-	copy_to_user(buf, (char *) page + *ppos, count);
+	if (copy_to_user(buf, (char *) page + *ppos, count)) {
+		free_page(page);
+		return -EFAULT;
+	}
 	*ppos = end;
 	free_page(page);
 	return count;

@@ -1287,22 +1287,10 @@ static void cleanup_rbuf(struct sock *sk, int copied)
 #endif
 
 	if (tcp_ack_scheduled(tp)) {
-		   /* Delayed ACKs frequently hit locked sockets during bulk receive. */
-		if (tp->ack.blocked
-		    /* Once-per-two-segments ACK was not sent by tcp_input.c */
-		    || tp->rcv_nxt - tp->rcv_wup > tp->ack.rcv_mss
-		    /*
-		     * If this read emptied read buffer, we send ACK, if
-		     * connection is not bidirectional, user drained
-		     * receive buffer and there was a small segment
-		     * in queue.
-		     */
-		    || (copied > 0 &&
-			(tp->ack.pending&TCP_ACK_PUSHED) &&
-			!tp->ack.pingpong &&
-			atomic_read(&sk->rmem_alloc) == 0)) {
+		if (tp->ack.blocked)
+			/* Delayed ACKs frequently hit locked sockets during bulk receive. */
 			time_to_ack = 1;
-		}
+		goto out;
 	}
 
   	/* We send an ACK if we can now advertise a non-zero window
@@ -1315,7 +1303,7 @@ static void cleanup_rbuf(struct sock *sk, int copied)
 		__u32 rcv_window_now = tcp_receive_window(tp);
 
 		/* Optimize, __tcp_select_window() is not cheap. */
-		if (2*rcv_window_now <= tp->window_clamp) {
+		if (2*rcv_window_now < tp->window_clamp) {
 			__u32 new_window = __tcp_select_window(sk);
 
 			/* Send ACK now, if this read freed lots of space
@@ -1323,10 +1311,11 @@ static void cleanup_rbuf(struct sock *sk, int copied)
 			 * We can advertise it now, if it is not less than current one.
 			 * "Lots" means "at least twice" here.
 			 */
-			if(new_window && new_window >= 2*rcv_window_now)
+			if(new_window && new_window > 2*rcv_window_now)
 				time_to_ack = 1;
 		}
 	}
+ out:
 	if (time_to_ack)
 		tcp_send_ack(sk);
 }
