@@ -1,0 +1,4 @@
+signal.c: In function `restore_sigcontext':
+signal.c:244: warning: use of cast expressions as lvalues is deprecated
+signal.c:268: warning: use of cast expressions as lvalues is deprecated
+signal.c:269: warning: use of cast expressions as lvalues is deprecated

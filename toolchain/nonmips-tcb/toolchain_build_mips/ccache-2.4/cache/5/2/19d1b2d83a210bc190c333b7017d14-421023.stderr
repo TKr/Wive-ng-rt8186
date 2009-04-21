@@ -1,0 +1,2 @@
+tty_io.c: In function `tty_wakeup':
+tty_io.c:439: warning: unused variable `ld'

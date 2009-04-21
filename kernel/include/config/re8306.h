@@ -1,0 +1,1 @@
+#define CONFIG_RE8306 1

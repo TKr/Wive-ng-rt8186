@@ -1,0 +1,2 @@
+pptp.c: In function `launch_pppd':
+pptp.c:574: warning: assignment makes pointer from integer without a cast

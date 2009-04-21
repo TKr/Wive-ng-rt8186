@@ -1,0 +1,3 @@
+ioctl.c: In function `ext2_ioctl':
+ioctl.c:36: warning: use of cast expressions as lvalues is deprecated
+ioctl.c:83: warning: use of cast expressions as lvalues is deprecated

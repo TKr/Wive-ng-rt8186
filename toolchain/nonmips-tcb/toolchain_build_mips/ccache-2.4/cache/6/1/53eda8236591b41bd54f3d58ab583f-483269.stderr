@@ -1,0 +1,8 @@
+eth8186.c: In function `read_proc_mib':
+eth8186.c:749: warning: int format, uint32 arg (arg 3)
+eth8186.c:751: warning: implicit declaration of function `rtl8306_getAsicMibCounterUnit'
+eth8186.c:752: warning: int format, uint32 arg (arg 3)
+eth8186.c:755: warning: int format, uint32 arg (arg 3)
+eth8186.c:757: warning: int format, uint32 arg (arg 3)
+eth8186.c:759: warning: int format, uint32 arg (arg 3)
+eth8186.c:761: warning: int format, uint32 arg (arg 3)

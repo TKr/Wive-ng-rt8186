@@ -1,0 +1,5 @@
+src/hashing.c: In function `olsr_ip_hashing':
+src/hashing.c:69: warning: inlining failed in call to `jenkins_hash'
+src/hashing.c:140: warning: called from here
+src/hashing.c:69: warning: inlining failed in call to `jenkins_hash'
+src/hashing.c:144: warning: called from here

@@ -1,0 +1,2 @@
+sysctl.c: In function `do_sysctl':
+sysctl.c:342: warning: use of cast expressions as lvalues is deprecated
