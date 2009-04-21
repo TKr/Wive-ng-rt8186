@@ -1,2 +1,0 @@
-sys-linux.c: In function `make_ppp_unit':
-sys-linux.c:623: warning: `x' might be used uninitialized in this function

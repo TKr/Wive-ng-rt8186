@@ -1,2 +1,0 @@
-br.c: In function `br_igmpProxyWrite_proc':
-br.c:162: warning: use of cast expressions as lvalues is deprecated

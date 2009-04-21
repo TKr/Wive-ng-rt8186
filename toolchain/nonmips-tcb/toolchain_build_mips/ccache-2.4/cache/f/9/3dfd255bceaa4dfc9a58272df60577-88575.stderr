@@ -1,2 +1,0 @@
-extensions/libipt_recent.c: In function `help':
-extensions/libipt_recent.c:33: warning: too many arguments for format

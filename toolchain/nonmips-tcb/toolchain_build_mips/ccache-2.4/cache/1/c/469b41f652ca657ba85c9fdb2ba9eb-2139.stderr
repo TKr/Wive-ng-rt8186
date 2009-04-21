@@ -1,2 +1,0 @@
-mdcmdio.c: In function `smiRead':
-mdcmdio.c:48: warning: `mydata' might be used uninitialized in this function

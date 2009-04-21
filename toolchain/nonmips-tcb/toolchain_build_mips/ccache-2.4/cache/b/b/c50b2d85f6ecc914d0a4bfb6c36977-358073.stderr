@@ -1,5 +1,0 @@
-ipt_time.c: In function `write_proc':
-ipt_time.c:138: warning: unused variable `tokptr'
-ipt_time.c:138: warning: unused variable `strptr'
-ipt_time.c: In function `localtime':
-ipt_time.c:201: warning: unused variable `sys_tz'

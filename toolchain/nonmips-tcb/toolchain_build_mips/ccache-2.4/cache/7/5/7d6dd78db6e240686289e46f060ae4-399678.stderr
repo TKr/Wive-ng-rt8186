@@ -1,2 +1,0 @@
-base.c: In function `devfsd_ioctl':
-base.c:3374: warning: unused variable `lock'

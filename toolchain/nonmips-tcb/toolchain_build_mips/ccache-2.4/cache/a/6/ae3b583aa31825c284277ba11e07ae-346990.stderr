@@ -1,9 +1,0 @@
-init.c: In function `fixrange_init':
-init.c:183: warning: initialization makes integer from pointer without a cast
-init.c: In function `pagetable_init':
-init.c:195: warning: unused variable `vaddr'
-init.c:196: warning: unused variable `pgd'
-init.c:197: warning: unused variable `pmd'
-init.c:198: warning: unused variable `pte'
-init.c: At top level:
-init.c:166: warning: `fixrange_init' defined but not used

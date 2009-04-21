@@ -1,2 +1,0 @@
-sp_flong.c: In function `ieee754sp_flong':
-sp_flong.c:32: warning: unused variable `xc'

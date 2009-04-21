@@ -1,2 +1,0 @@
-In file included from ifvc.c:34:
-defs.h:129: warning: conflicting types for built-in function `log'

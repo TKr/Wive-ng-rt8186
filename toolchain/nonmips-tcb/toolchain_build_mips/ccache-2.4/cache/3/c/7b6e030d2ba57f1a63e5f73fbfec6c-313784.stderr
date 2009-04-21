@@ -1,6 +1,0 @@
-unaligned.c: In function `emulate_load_store_insn':
-unaligned.c:370: warning: concatenation of string literals with __FUNCTION__ is deprecated
-unaligned.c:375: warning: concatenation of string literals with __FUNCTION__ is deprecated
-unaligned.c:381: warning: concatenation of string literals with __FUNCTION__ is deprecated
-unaligned.c: In function `do_ade':
-unaligned.c:420: warning: concatenation of string literals with __FUNCTION__ is deprecated
