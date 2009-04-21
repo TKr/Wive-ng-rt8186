@@ -1,4 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
-ifconfig eth0 192.168.1.1
-tftp -m binary 192.168.1.6 -c put clear/black_fw.bin
+cd clear &>/dev/null
+
+ip ad add 192.168.1.2/24 dev eth0 &>/dev/null
+
+( echo mode binary; echo put black_fw.bin) | tftp 192.168.1.6
+
+ip ad delete 192.168.1.2/24 dev eth0 &>/dev/null
