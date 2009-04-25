@@ -1056,7 +1056,7 @@ asmlinkage long sys_accept(int fd, struct sockaddr *upeer_sockaddr, int *upeer_a
 	if (!sock)
 		goto out;
 
-	err = -EMFILE;
+	err = -ENFILE;
 	if (!(newsock = sock_alloc())) 
 		goto out_put;
 
@@ -1717,6 +1717,7 @@ void __init sock_init(void)
 	 */
 
 #ifdef CONFIG_NET
+	netlink_proto_init();
 	rtnetlink_init();
 #endif
 #ifdef CONFIG_NETLINK_DEV

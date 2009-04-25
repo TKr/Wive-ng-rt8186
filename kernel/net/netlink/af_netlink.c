@@ -1002,7 +1002,7 @@ struct net_proto_family netlink_family_ops = {
 	netlink_create
 };
 
-static int __init netlink_proto_init(void)
+int __init netlink_proto_init(void)
 {
 	struct sk_buff *dummy_skb;
 
@@ -1023,5 +1023,7 @@ static void __exit netlink_proto_exit(void)
        remove_proc_entry("net/netlink", NULL);
 }
 
+#ifdef MODULE
 module_init(netlink_proto_init);
+#endif
 module_exit(netlink_proto_exit);
