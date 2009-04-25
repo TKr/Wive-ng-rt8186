@@ -159,6 +159,8 @@ EXPORT_SYMBOL(datagram_poll);
 EXPORT_SYMBOL(put_cmsg);
 EXPORT_SYMBOL(sock_kmalloc);
 EXPORT_SYMBOL(sock_kfree_s);
+EXPORT_SYMBOL(sock_map_fd);
+EXPORT_SYMBOL(sockfd_lookup);
 
 #ifdef CONFIG_FILTER
 EXPORT_SYMBOL(sk_run_filter);
@@ -326,6 +328,7 @@ EXPORT_SYMBOL(tcp_hashinfo);
 EXPORT_SYMBOL(tcp_listen_wlock);
 EXPORT_SYMBOL(udp_hash);
 EXPORT_SYMBOL(udp_hash_lock);
+EXPORT_SYMBOL(udp_poll);
 
 EXPORT_SYMBOL(tcp_destroy_sock);
 EXPORT_SYMBOL(ip_queue_xmit);

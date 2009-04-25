@@ -187,7 +187,12 @@ struct raw6_opt {
 
 	struct icmp6_filter	filter;
 };
-
+#define __ipv6_only_sock(sk)    ((sk)->net_pinfo.af_inet6.ipv6only)
+#define ipv6_only_sock(sk)      ((sk)->family == PF_INET6 && \
+                                 (sk)->net_pinfo.af_inet6.ipv6only)
+#else
+#define __ipv6_only_sock(sk)    0
+#define ipv6_only_sock(sk)      0
 #endif /* IPV6 */
 
 #if defined(CONFIG_INET) || defined(CONFIG_INET_MODULE)
