@@ -9,4 +9,3 @@ if [ "$PERIODIC_TIME_SYNC" == "yes" ]; then
       fi
     fi
 fi  
-

@@ -5,7 +5,7 @@
 start() {
 if [ "$START_DHCPSERVER" == "yes" ]; then
  echo "Starting uDHCPD: "
-  /sbin/udhcpd
+  /sbin/udhcpd -S
  echo " Ok"
 fi
 }
