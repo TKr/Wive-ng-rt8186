@@ -8,28 +8,13 @@ start() {
 echo "Starting network..."
 #---------------- Forward enable--------------------
 
-#workaround for LCP bug and fix trouble for MTU/MRU for some host and VPN
-if [ "$PPPOE_CALL_START" = "yes" ] || [ "$PPTP_CALL_START" = "yes" ] || [ "$L2TP_CALL_START" = "yes" ]; then
+#Workaround for LCP bug
+if [ "$PPTP_CALL_START" = "yes" ]; then
     echo "ADD iptables rules for fix LCP bug"
     iptables -A OUTPUT -o br0 -p icmp -m icmp --icmp-type 3 -j DROP
     iptables -A OUTPUT -o eth0 -p icmp -m icmp --icmp-type 3 -j DROP
     iptables -A OUTPUT -o eth1 -p icmp -m icmp --icmp-type 3 -j DROP
     iptables -A OUTPUT -o wlan0 -p icmp -m icmp --icmp-type 3 -j DROP
-    echo "ADD iptables rules for fix MTU size"
-    iptables -I FORWARD -o ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    iptables -I FORWARD -i ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    iptables -A OUTPUT -o ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu                    
-fi
-
-#Enable MASQUERADE foe all interfaces (fix ME)
-if [ "$MASQUERADE" = "yes" ] ; then
-     echo "Enable MASQUERADE"
-    if [ "$CLIENTSNET" = "" ] ; then
-	 iptables -t nat -A POSTROUTING -j MASQUERADE
-	else
-    	 iptables -t nat -A POSTROUTING -s $CLIENTSNET -j MASQUERADE
-    fi
 fi
 
 if [ "$IPV4_FORWARD_ENABLE" = "yes" ] ; then
@@ -37,7 +22,6 @@ if [ "$IPV4_FORWARD_ENABLE" = "yes" ] ; then
      echo "1">/proc/sys/net/ipv4/conf/all/forwarding
      echo "2">/proc/sys/net/ipv4/conf/all/arp_announce
      echo "1">/proc/sys/net/ipv4/conf/all/arp_ignore
-     iptables -A FORWARD -m state --state INVALID -j DROP
      iptables -P FORWARD ACCEPT
      else
      iptables -P FORWARD DROP

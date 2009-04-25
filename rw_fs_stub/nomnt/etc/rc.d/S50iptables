@@ -7,6 +7,31 @@ modtest=`uname -r`
 moddir=/lib/modules/$modtest/kernel/net
 
 start() {
+
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#Fix trouble for MTU/MRU for some host and VPN
+if [ "$PPPOE_CALL_START" = "yes" ] || [ "$PPTP_CALL_START" = "yes" ] || [ "$L2TP_CALL_START" = "yes" ]; then
+    echo "ADD iptables rules for fix MTU size"
+    iptables -t mangle -I FORWARD -o ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    iptables -t mangle -I FORWARD -i ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    iptables -t mangle -A OUTPUT -o ppp+ -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu                    
+fi
+
+#Enable MASQUERADE for all interfaces
+if [ "$MASQUERADE" = "yes" ] ; then
+     echo "Enable MASQUERADE"
+	if [ "$CLIENTSNET" = "" ] ; then
+	 iptables -t nat -A POSTROUTING -j MASQUERADE
+	else
+    	 iptables -t nat -A POSTROUTING -s $CLIENTSNET -j MASQUERADE
+    	 iptables -A FORWARD -m state --state NEW -s $CLIENTSNET -j ACCEPT
+        fi
+     iptables -A FORWARD -m state --state INVALID -j DROP
+fi
+
+#Load conntrack modules and start iptables scripts
 if [ "$START_IPTABLES" == "yes" ] || [ "$MASQUERADE" = "yes" ] ; then
  echo "Starting iptables: "
     if [ "$PPTP_CALL_START" = "yes" ] ; then
@@ -26,7 +51,7 @@ if [ "$START_IPTABLES" == "yes" ] || [ "$MASQUERADE" = "yes" ] ; then
  echo " Ok"
 fi
 
-#workaroud for bad servers (Corbina) not include in in the first IF
+#Workaroud for bad servers (Corbina) not include in in the first IF
 if [ "$BUGGY_NAS" == "yes" ] ; then
     iptables -I OUTPUT -o ppp+ -d $PPTP_SERVER -j DROP
     iptables -I FORWARD -o ppp+ -d $PPTP_SERVER -j DROP
