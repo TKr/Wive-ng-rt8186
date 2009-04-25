@@ -418,6 +418,22 @@ no_route:
 	return -EHOSTUNREACH;
 }
 
+#ifdef CONFIG_NETFILTER
+/* If the original packet is part of a connection, but the connection
+   is not confirmed, our manufactured reply will not be associated
+   with it, so we need to do this manually. */
+static void nfct_attach(struct sk_buff *new_skb, struct nf_ct_info *nfct)
+{
+       void (*attach)(struct sk_buff *, struct nf_ct_info *);
+
+       /* Avoid module unload race with ip_ct_attach being NULLed out */
+       if (nfct && (attach = ip_ct_attach) != NULL)
+               attach(new_skb, nfct);
+}
+#else
+static void nfct_attach(struct sk_buff *new_skb, struct nf_ct_info *nfct) { }
+#endif
+
 /*
  *	Build and send a packet, with as little as one copy
  *
@@ -447,7 +463,8 @@ static int ip_build_xmit_slow(struct sock *sk,
 		  unsigned length,
 		  struct ipcm_cookie *ipc,
 		  struct rtable *rt,
-		  int flags)
+                  int flags,
+                  struct nf_ct_info *nfct)
 {
 	unsigned int fraglen, maxfraglen, fragheaderlen;
 	int err;
@@ -621,7 +638,8 @@ static int ip_build_xmit_slow(struct sock *sk,
 		fraglen = maxfraglen;
 
 		nfrags++;
-
+		
+		nfct_attach(skb, nfct);
 		err = NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, skb, NULL, 
 			      skb->dst->dev, output_maybe_reroute);
 		if (err) {
@@ -656,7 +674,8 @@ int ip_build_xmit(struct sock *sk,
 		  unsigned length,
 		  struct ipcm_cookie *ipc,
 		  struct rtable *rt,
-		  int flags)
+                  int flags,
+                  struct nf_ct_info *nfct)
 {
 	int err;
 	struct sk_buff *skb;
@@ -671,14 +690,14 @@ int ip_build_xmit(struct sock *sk,
 	if (!sk->protinfo.af_inet.hdrincl) {
 		length += sizeof(struct iphdr);
 
-		/*
-		 * 	Check for slow path.
-		 */
-		if (length > rt->u.dst.pmtu || ipc->opt != NULL)  
-			return ip_build_xmit_slow(sk,getfrag,frag,length,ipc,rt,flags); 
-	} else {
-		if (length > rt->u.dst.dev->mtu) {
-			ip_local_error(sk, EMSGSIZE, rt->rt_dst, sk->dport, rt->u.dst.dev->mtu);
+	/*
+	 * 	Check for slow path.
+	 */
+	if (length > rt->u.dst.pmtu || ipc->opt != NULL)  
+	     return ip_build_xmit_slow(sk,getfrag,frag,length,ipc,rt,flags,nfct); 
+		} else {
+			if (length > rt->u.dst.dev->mtu) {
+			    ip_local_error(sk, EMSGSIZE, rt->rt_dst, sk->dport, rt->u.dst.dev->mtu);
 			return -EMSGSIZE;
 		}
 	}
@@ -743,6 +762,7 @@ int ip_build_xmit(struct sock *sk,
 	if (err)
 		goto error_fault;
 
+	nfct_attach(skb, nfct);
 	err = NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, skb, NULL, rt->u.dst.dev,
 		      output_maybe_reroute);
 	if (err > 0)
@@ -1018,7 +1038,8 @@ void ip_send_reply(struct sock *sk, struct sk_buff *skb, struct ip_reply_arg *ar
 	sk->protinfo.af_inet.tos = skb->nh.iph->tos;
 	sk->priority = skb->priority;
 	sk->protocol = skb->nh.iph->protocol;
-	ip_build_xmit(sk, ip_reply_glue_bits, arg, len, &ipc, rt, MSG_DONTWAIT);
+        ip_build_xmit(sk, ip_reply_glue_bits, arg, len, &ipc, rt, MSG_DONTWAIT,
+                      NULL);
 	bh_unlock_sock(sk);
 
 	ip_rt_put(rt);

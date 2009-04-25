@@ -66,6 +66,7 @@ struct ip_ra_chain
 
 extern struct ip_ra_chain *ip_ra_chain;
 extern rwlock_t ip_ra_lock;
+struct nf_ct_info;
 
 /* IP flags. */
 #define IP_CE		0x8000		/* Flag: "Congestion"		*/
@@ -110,7 +111,8 @@ extern int		ip_build_xmit(struct sock *sk,
 				      unsigned length,
 				      struct ipcm_cookie *ipc,
 				      struct rtable *rt,
-				      int flags);
+				      int flags,
+				      struct nf_ct_info *nfct);
 
 /*
  *	Map a multicast IP onto multicast MAC for type Token Ring.

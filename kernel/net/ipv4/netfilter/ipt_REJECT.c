@@ -75,7 +75,8 @@ static inline struct rtable *route_reverse(struct sk_buff *skb, int hook)
 	return rt;
 }
 
-/* Send RST reply */
+/* Send RST reply: we want to use the dest as the RST src ip, so can't
+   use normal RST routine. --RR */
 static void send_reset(struct sk_buff *oldskb, int hook)
 {
 	struct sk_buff *nskb;
@@ -196,6 +197,7 @@ static void send_reset(struct sk_buff *oldskb, int hook)
 	kfree_skb(nskb);
 }
 
+#if 0
 static void send_unreach(struct sk_buff *skb_in, int code)
 {
 	struct iphdr *iph;
@@ -327,6 +329,12 @@ static void send_unreach(struct sk_buff *skb_in, int code)
 	NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, nskb, NULL, nskb->dst->dev,
 		ip_finish_output);
 }	
+#else
+static void send_unreach(struct sk_buff *skb_in, int code)
+{
+       icmp_send(skb_in, ICMP_DEST_UNREACH, code, 0);
+}
+#endif
 
 static unsigned int reject(struct sk_buff **pskb,
 			   unsigned int hooknum,

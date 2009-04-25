@@ -1177,8 +1177,19 @@ nf_reset(struct sk_buff *skb)
 #endif
 }
 
+static inline struct nf_ct_info *
+skb_nf_ct(struct sk_buff *skb)
+{
+       return skb->nfct;
+}
+
 #else /* CONFIG_NETFILTER */
 static inline void nf_reset(struct sk_buff *skb) {}
+static inline struct nf_ct_info *
+skb_nf_ct(struct sk_buff *skb)
+{
+       return NULL;
+}
 #endif /* CONFIG_NETFILTER */
 
 #endif	/* __KERNEL__ */

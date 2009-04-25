@@ -860,6 +860,18 @@ do_bindings(struct ip_conntrack *ct,
 	/* not reached */
 }
 
+/*
+ * Decide whether to map inner header of an ICMP reply, including when
+ * we generate the reply ourselves.
+ */
+static inline int
+map_innards(unsigned int maniphook, unsigned int hooknum)
+{
+       return (maniphook == opposite_hook[hooknum]
+               || (hooknum == NF_IP_LOCAL_OUT
+                    && HOOK2MANIP(maniphook) == IP_NAT_MANIP_SRC));
+}
+
 static inline int tuple_src_equal_dst(const struct ip_conntrack_tuple *t1,
                                       const struct ip_conntrack_tuple *t2)
 {
@@ -942,7 +954,7 @@ icmp_reply_translation(struct sk_buff *skb,
 		/* Mapping the inner packet is just like a normal packet, except
 		 * it was never src/dst reversed, so where we would normally
 		 * apply a dst manip, we apply a src, and vice versa. */
-
+		
 		/* Only true for forwarded packets, locally generated packets
 		 * never hit PRE_ROUTING, we need to apply their PRE_ROUTING
 		 * manips in LOCAL_OUT. */

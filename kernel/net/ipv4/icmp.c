@@ -371,7 +371,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, struct sk_buff *skb)
 			       icmp_param->data.icmph.code)) { 
 		ip_build_xmit(sk, icmp_glue_bits, icmp_param, 
 			      icmp_param->data_len+icmp_param->head_len,
-			      &ipc, rt, MSG_DONTWAIT);
+			      &ipc, rt, MSG_DONTWAIT, NULL);
 	}
 	ip_rt_put(rt);
 out:
@@ -528,7 +528,7 @@ void icmp_send(struct sk_buff *skb_in, int type, int code, u32 info)
 
 	ip_build_xmit(icmp_socket->sk, icmp_glue_bits, &icmp_param, 
 		icmp_param.data_len+sizeof(struct icmphdr),
-		&ipc, rt, MSG_DONTWAIT);
+		&ipc, rt, MSG_DONTWAIT, skb_nf_ct(skb_in));
 
 ende:
 	ip_rt_put(rt);
