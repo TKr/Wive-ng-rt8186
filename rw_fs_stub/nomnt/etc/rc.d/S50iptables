@@ -8,7 +8,34 @@ moddir=/lib/modules/$modtest/kernel/net
 
 start() {
 
+#Load conntrack modules and start iptables scripts
+if [ "$START_IPTABLES" == "yes" ] || [ "$MASQUERADE" = "yes" ] ; then
+ echo "Starting iptables: "
+    if [ "$PPTP_CALL_START" = "yes" ] ; then
+     echo  "No VPN conntrack: "
+     mods=`find $moddir/ipv4/netfilter -type f | grep -v "pptp"`
+     else
+     echo  "No FULL conntrack: "
+     mods=`find $moddir/ipv4/netfilter -type f`
+    fi
+     for i in $mods; do
+       if [ "$i" == "" ];then 
+         continue;
+       fi
+        /sbin/insmod $i
+     done
+ echo "Modules load Ok"
+fi
+
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#For dhcpd
+if [ "$START_DHCPSERVER" = "yes" ] ; then
+    echo "ADD iptables rules for DHCPD"
+    DHCPDETH=`cat /etc/udhcpd.conf | grep interface | awk {' print $2'}`
+    iptables -I INPUT -i $DHCPDETH -p udp -d 255.255.255.255 -m multiport --dport 67:68 -j ACCEPT
+    iptables -I INPUT -i $DHCPDETH -p 47 -j ACCEPT
+fi
 
 #Fix trouble for MTU/MRU for some host and VPN
 if [ "$PPPOE_CALL_START" = "yes" ] || [ "$PPTP_CALL_START" = "yes" ] || [ "$L2TP_CALL_START" = "yes" ]; then
@@ -29,26 +56,6 @@ if [ "$MASQUERADE" = "yes" ] ; then
     	 iptables -A FORWARD -m state --state NEW -s $CLIENTSNET -j ACCEPT
         fi
      iptables -A FORWARD -m state --state INVALID -j DROP
-fi
-
-#Load conntrack modules and start iptables scripts
-if [ "$START_IPTABLES" == "yes" ] || [ "$MASQUERADE" = "yes" ] ; then
- echo "Starting iptables: "
-    if [ "$PPTP_CALL_START" = "yes" ] ; then
-     echo  "No VPN conntrack: "
-     mods=`find $moddir/ipv4/netfilter -type f | grep -v "pptp"`
-     else
-     echo  "No FULL conntrack: "
-     mods=`find $moddir/ipv4/netfilter -type f`
-    fi
-     for i in $mods; do
-       if [ "$i" == "" ];then 
-         continue;
-       fi
-        /sbin/insmod $i
-     done
-    /etc/network/iptables
- echo " Ok"
 fi
 
 #Workaroud for bad servers (Corbina) not include in in the first IF
@@ -80,6 +87,14 @@ if [ "$WLAN_IPADDR" != "" ] ; then
     iptables -t raw -A PREROUTING -i wlan0 -d $WLAN_IPADDR -p udp -m multiport --dports 53,1701 -j NOTRACK
     iptables -t raw -A PREROUTING -i wlan0 -d $WLAN_IPADDR -p 47 -j NOTRACK
 fi
+
+#External rules load
+if [ "$START_IPTABLES" == "yes" ] ; then
+    echo "Exec external iptables script"
+    /etc/network/iptables
+fi
+
+echo "All netfilter rules load OK"
 
 }
 

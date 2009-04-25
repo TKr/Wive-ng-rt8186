@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.14.0.-wive-ng.sf.net
-# Sun Apr 19 15:09:16 2009
+# Tue Apr 21 14:51:24 2009
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
