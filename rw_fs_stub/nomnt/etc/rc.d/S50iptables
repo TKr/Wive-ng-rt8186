@@ -33,7 +33,7 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 if [ "$START_DHCPSERVER" = "yes" ] ; then
     echo "ADD iptables rules for DHCPD"
     DHCPDETH=`cat /etc/udhcpd.conf | grep interface | awk {' print $2'}`
-    iptables -I INPUT -i $DHCPDETH -p udp -d 255.255.255.255 -m multiport --dport 67:68 -j ACCEPT
+    iptables -I INPUT -i $DHCPDETH -p udp -d 255.255.255.255 --dport 67:68 -j ACCEPT
     iptables -I INPUT -i $DHCPDETH -p 47 -j ACCEPT
 fi
 
