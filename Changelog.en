@@ -1,3 +1,8 @@
+wive-ng-0.2.21 
+1) Cosmetic editings of a kernel 
+2) ICMP traceroute (traceroute-I) now works correctly through NAT 
+3) Are ordered rules iptables, are corrected small errors in init scripts
+
 wive-ng-0.2.20
 1) Plural small editings of a kernel (basically inveterate errors) 
 2) Are added additional timeouts before lifting of tunnels 
