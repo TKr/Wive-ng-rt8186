@@ -8,12 +8,9 @@
  *
  * February 2000: Modified by James Morris to have 1 queue per protocol.
  * 15-Mar-2000:   Added NF_REPEAT --RR.
- * 08-May-2003:	  Internal logging interface added by Jozsef Kadlecsik.
  */
 #include <linux/config.h>
-#include <linux/kernel.h>
 #include <linux/netfilter.h>
-#include <linux/netfilter_logging.h>
 #include <net/protocol.h>
 #include <linux/init.h>
 #include <linux/skbuff.h>
@@ -27,6 +24,8 @@
 #include <net/sock.h>
 #include <net/route.h>
 #include <linux/ip.h>
+#include <linux/kernel.h>
+#include <linux/netfilter_logging.h>
 
 #define __KERNEL_SYSCALLS__
 #include <linux/unistd.h>
@@ -694,11 +693,20 @@ void nf_log(int pf,
 	}
 }
 
-/* This does not belong here, but ipt_REJECT needs it if connection
-   tracking in use: without this, connection may not be in hash table,
-   and hence manufactured ICMP or RST packets will not be associated
-   with it. */
+/* This does not belong here, but locally generated errors need it if connection
+   tracking in use: without this, connection may not be in hash table, and hence
+   manufactured ICMP or RST packets will not be associated with it. */
 void (*ip_ct_attach)(struct sk_buff *, struct nf_ct_info *);
+
+void nf_ct_attach(struct sk_buff *new, struct sk_buff *skb)
+{
+	void (*attach)(struct sk_buff *, struct nf_ct_info *);
+
+	if (skb->nfct && (attach = ip_ct_attach) != NULL) {
+		mb(); /* Just to be sure: must be read before executing this */
+		attach(new, skb->nfct);
+	}
+}
 
 void __init netfilter_init(void)
 {

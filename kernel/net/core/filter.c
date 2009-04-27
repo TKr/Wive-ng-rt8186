@@ -37,9 +37,6 @@
 #include <asm/system.h>
 #include <asm/uaccess.h>
 #include <linux/filter.h>
-#ifdef JACKSON_NET_WORK
-#include <asm/unaligned.h>
-#endif
 
 /* No hurry in this branch */
 
@@ -205,11 +202,7 @@ int sk_run_filter(struct sk_buff *skb, struct sock_filter *filter, int flen)
 				k = fentry->k;
 load_w:
 				if(k >= 0 && (unsigned int)(k+sizeof(u32)) <= len) {
-				#ifndef JACKSON_NET_WORK	
 					A = ntohl(*(u32*)&data[k]);
-				#else
-					A = ntohl(get_unaligned(((u32*)&data[k])));
-				#endif	
 					continue;
 				}
 				if (k<0) {
@@ -218,11 +211,7 @@ load_w:
 					if (k>=SKF_AD_OFF)
 						break;
 					if ((ptr = load_pointer(skb, k)) != NULL) {
-					#ifndef JACKSON_NET_WORK	
 						A = ntohl(*(u32*)ptr);
-					#else
-						A = ntohl(get_unaligned(((u32*)ptr)));
-					#endif	
 						continue;
 					}
 				} else {
@@ -238,11 +227,7 @@ load_w:
 				k = fentry->k;
 load_h:
 				if(k >= 0 && (unsigned int) (k + sizeof(u16)) <= len) {
-				#ifndef JACKSON_NET_WORK	
 					A = ntohs(*(u16*)&data[k]);
-				#else
-					A = ntohs(get_unaligned(((u16*)&data[k])));
-				#endif	
 					continue;
 				}
 				if (k<0) {
@@ -251,11 +236,7 @@ load_h:
 					if (k>=SKF_AD_OFF)
 						break;
 					if ((ptr = load_pointer(skb, k)) != NULL) {
-					#ifndef JACKSON_NET_WORK	
 						A = ntohs(*(u16*)ptr);
-					#else
-						A = ntohs(get_unaligned(((u16*)ptr)));
-					#endif	
 						continue;
 					}
 				} else {
@@ -313,10 +294,9 @@ load_b:
 				goto load_b;
 
 			case BPF_LDX|BPF_B|BPF_MSH:
-				k = fentry->k;
-				if(k >= 0 && (unsigned int)k >= len)
+				if(fentry->k >= len)
 					return (0);
-				X = (data[k] & 0xf) << 2;
+				X = (data[fentry->k] & 0xf) << 2;
 				continue;
 
 			case BPF_LD|BPF_IMM:

@@ -593,6 +593,7 @@ EXPORT_SYMBOL(nf_hooks);
 EXPORT_SYMBOL(nf_setsockopt);
 EXPORT_SYMBOL(nf_getsockopt);
 EXPORT_SYMBOL(ip_ct_attach);
+EXPORT_SYMBOL(nf_ct_attach);
 EXPORT_SYMBOL(nf_log_register);
 EXPORT_SYMBOL(nf_log_unregister);
 EXPORT_SYMBOL(nf_log_packet);

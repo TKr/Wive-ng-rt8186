@@ -1,1 +1,1 @@
-#undef  CONFIG_IP_NF_IRC
+#define CONFIG_IP_NF_IRC 1

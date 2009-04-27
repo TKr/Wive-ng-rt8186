@@ -187,8 +187,9 @@ static void send_reset(struct sk_buff *oldskb, int hook)
 	if (nskb->len > nskb->dst->pmtu)
 		goto free_nskb;
 
-	connection_attach(nskb, oldskb->nfct);
-
+//	connection_attach(nskb, oldskb->nfct);
+	nf_ct_attach(nskb, oldskb);
+	
 	NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, nskb, NULL, nskb->dst->dev,
 		ip_finish_output);
 	return;
@@ -324,7 +325,8 @@ static void send_unreach(struct sk_buff *skb_in, int code)
 	icmph->checksum = ip_compute_csum((unsigned char *)icmph,
 					  length - sizeof(struct iphdr));
 
-	connection_attach(nskb, skb_in->nfct);
+//	connection_attach(nskb, skb_in->nfct);
+	nf_ct_attach(nskb, skb_in);
 
 	NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, nskb, NULL, nskb->dst->dev,
 		ip_finish_output);
