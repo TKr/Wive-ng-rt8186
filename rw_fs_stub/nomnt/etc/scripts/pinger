@@ -28,6 +28,16 @@ if [ "$WIFI_DOG" == "yes" ]; then
   fi
 fi
 
+#If use WPA in client mode do reinit wlan of base station restart
+if [ "$WIFI_DOG" == "wpa" ]; then
+WPA_KEYSTA=`cat /proc/wlan0/sta_keyinfo | grep keyInCam | awk {'print $2'}`
+if [ "$WPA_KEYSTA" != "yes" ]; then
+    wifireset
+    echo -n `date` >> /var/log/wi-rederg.log
+    echo ":No wpa keyInCam - rederg..." >> /var/log/wi-rederg.log
+fi
+fi
+
 #If remote stastion dead - remove from list
 if [ "$RMODE" = "AP" ] ; then
     if [ "$ZOMBIE_DOG" == "yes" ]; then

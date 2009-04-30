@@ -109,7 +109,7 @@ if [ "$BRIDGE_START" != "yes" ]; then
   if [ -f /etc/devices/eth0 ]; then
   if [ "$ETH0_ENABLED" = "yes" ]; then
   echo  "   Stopping eth0: "
-  ip link set $ETH0_DEVICE down
+  ip link set eth0 down
   echo " Ok"
   fi
   fi
@@ -117,13 +117,13 @@ if [ "$BRIDGE_START" != "yes" ]; then
   if [ -f /etc/devices/eth1 ]; then
   if [ "$ETH1_ENABLED" = "yes" ]; then
   echo  "   Stopping eth1: "
-  ip link set $ETH1_DEVICE down
+  ip link set eth1 down
   echo " Ok"
   fi
   fi
   #for wlan
   if [ -f /etc/devices/wlan0 ]; then
-  if [ "$WLAN_ENABLED" = "yes"]; then
+  if [ "$WLAN_ENABLED" = "yes" ]; then
   echo  "   Stopping wlan0: "
   ip link set wlan0 down
   echo " Ok"

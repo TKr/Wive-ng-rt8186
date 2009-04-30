@@ -51,7 +51,9 @@ NTP_SERVER=10.7.0.254
 PINGER=no
 PINGER_HOST=10.0.0.233
 
-#Wifi watchdog (ping selected host and if ping error exec wifireset)
+#Wifi watchdog 
+#yes = ping selected host and if ping error exec wifireset)
+#wpa = reinit wifi interface on base station reconnect in wpa(2) mode
 WIFI_DOG=no
 WIFI_DOGHOST=10.0.0.233
 
