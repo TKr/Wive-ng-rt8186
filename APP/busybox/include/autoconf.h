@@ -2,7 +2,7 @@
  * Automatically generated C config: don't edit
  * Busybox version: 1.14.0.-wive-ng.sf.net
  */
-#define AUTOCONF_TIMESTAMP "2009-05-12 01:13:09 OMSST"
+#define AUTOCONF_TIMESTAMP "2009-05-14 00:39:24 OMSST"
 
 #define CONFIG_HAVE_DOT_CONFIG 1
 #define ENABLE_HAVE_DOT_CONFIG 1
