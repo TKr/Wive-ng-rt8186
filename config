@@ -2,7 +2,7 @@
 
 #------------------General config mode set-----------------------------
 BASE_STATION=YES
-VERSION="::Wive-NG-0.2.22-test2::RTL8186-REALTIME::"
+VERSION="::Wive-NG-0.2.22-test3::RTL8186-REALTIME::"
 FULLREBUILD=YES
 CLEANCCACHE=NO
 REBUILDTOOLCHAIN=NO
@@ -32,7 +32,6 @@ INCLUDE_HDC="NO"
 if [ "$BASE_STATION" = "YES" ] ; then
     #debug to console
     INCLUDE_TC="YES"
-    INCLUDE_PPP_CLIENT="YES"
     INCLUDE_KERNEL_PPTP="YES"
     INCLUDE_PPTP_CLIENT="NO"
     INCLUDE_PPPOE="YES"
@@ -45,9 +44,7 @@ if [ "$BASE_STATION" = "YES" ] ; then
 else
     #no console bind
     INCLUDE_TC="YES"
-    INCLUDE_PPP_CLIENT="YES"
     INCLUDE_KERNEL_PPTP="YES"
-    INCLUDE_PPTP_CLIENT="NO"
     INCLUDE_PPPOE="YES"
     INCLUDE_L2TP_CLIENT="NO"
     INCLUDE_IGMPPROXY="YES"

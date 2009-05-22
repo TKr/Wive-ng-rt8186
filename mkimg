@@ -160,11 +160,6 @@ if [ "$INCLUDE_L2TP_CLIENT" = "YES" ] ; then
   cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/pppol2tp.so $RO_ROOT/lib/pppol2tp.so
   cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/openl2tp.so $RO_ROOT/lib/openl2tp.so
 fi
-#pptp-client
-if [ "$INCLUDE_PPTP_CLIENT" = "YES" ] ; then
-  echo -n " pptp "
-  cp -R $APP_PATH/pptp/filesystem/usr/sbin/pptp $RO_ROOT/sbin/pptp
-fi
 
 #kernel-pptp-client
 if [ "$INCLUDE_KERNEL_PPTP" = "YES" ] ; then
@@ -322,11 +317,6 @@ fi
 if [ "$INCLUDE_TC" = "YES" ] ; then
     cp $UCLIB_PATH/lib/libm-$UCLIB_VER.so $RO_ROOT/lib/libm.so.0
     cp $UCLIB_PATH/lib/libresolv-$UCLIB_VER.so $RO_ROOT/lib/libresolv.so.0
-fi
-
-#Needed for pptp
-if [ "$INCLUDE_PPTP_CLIENT" = "YES" ] ; then
-    cp $UCLIB_PATH/lib/libutil-$UCLIB_VER.so $RO_ROOT/lib/libutil.so.0
 fi
 
 ##Making timestamp
