@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./compile 2&> log/compile.log
-cat log/compile.log | grep warning > log/warnings.log
-cat log/warnings.log | grep -v 'deprecated' > log/critical.log
+./compile 2&> compile.log
+cat compile.log | grep warning > log/warnings.log
+cat warnings.log | grep -v 'deprecated' > log/critical.log
 

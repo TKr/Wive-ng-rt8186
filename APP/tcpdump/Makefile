@@ -24,8 +24,8 @@
 #
 
 # Top level hierarchy
-INCLUDE = /opt/Wive/kernel/include
-prefix = /opt/Wive/APP/tcpdump/filesystem
+INCLUDE = ../../kernel/include
+prefix = ./filesystem
 exec_prefix = ${prefix}
 # Pathname of directory to install the binary
 sbindir = ${exec_prefix}/sbin
