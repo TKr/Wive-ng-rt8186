@@ -138,7 +138,7 @@ fi
 #pppd
 if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then
   echo -n " pppd "
-  $STRIP /opt/Wive/APP/ppp/filesystem/lib/pppd/2.4.5/*
+  $STRIP $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/*
   cp -R $APP_PATH/ppp/filesystem/sbin/pppd $RO_ROOT/sbin/pppd
 fi
 #PPPOE 

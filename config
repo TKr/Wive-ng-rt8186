@@ -11,7 +11,7 @@ DEBUG=NO
 #----------------------------------------------------------------------
 #-------------------TOOLCHAIN DIR CONFIG--------------------------------
 #root dir of Wive
-WIVEROOT=/opt/Wive
+WIVEROOT=`pwd`
 CROSSPATH=$WIVEROOT/toolchain
 #--------------------- Packages----------------------------------------
 # For all mode
