@@ -27,8 +27,7 @@ CVIMG=$WIVEROOT/tools/cvimg
 TEMP_IMG=images/tmpramfs.bin
 #Lib path
 UCLIB_VER=0.9.26
-#UCLIB_PATH=/opt/Wive/toolchain/lexra-nnop-v5
-UCLIB_PATH=/opt/Wive/toolchain/mips-linux-uclibc
+UCLIB_PATH=$WIVEROOT/toolchain/mips-linux-uclibc
 
 
 

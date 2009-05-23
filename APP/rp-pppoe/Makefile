@@ -58,7 +58,7 @@ PATHS='-DPPPOE_PATH="$(PPPOE_PATH)"' '-DPPPD_PATH="$(PPPD_PATH)"' \
 	'-DPLUGIN_PATH="$(PLUGIN_PATH)"' \
 	'-DPPPOE_SERVER_OPTIONS="$(PPPOESERVER_PPPD_OPTIONS)"'
 
-CFLAGS= -s -Os -fPIC -Wall -Wstrict-prototypes -ansi $(LIC_INCDIR) $(DEFINES) $(LIC_DEFINE) $(PATHS) -Ilibevent
+CFLAGS= -s -Os -Wall -Wstrict-prototypes -ansi $(LIC_INCDIR) $(DEFINES) $(LIC_DEFINE) $(PATHS) -Ilibevent
 TARGETS=pppoe pppoe-server pppoe-sniff pppoe-relay rp-pppoe.so
 PPPOE_SERVER_LIBS=$(LIC_LIBDIR) $(LIC_LIB)
 
