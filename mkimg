@@ -362,7 +362,7 @@ fi
 
 echo "********************* RO filesystem *********************"
 echo "============Create Squashfs====================="
-rm -rf ./images/root.bin
+rm -rf $IMAGES_PATH/root.bin
 $MKSQUASHFS $RO_ROOT squashfs.o -be -all-root -2.0 >>/dev/null
 $CVIMG root squashfs.o $IMAGES_PATH/root.bin 100000 100000
 IMGSIZE=`du -s squashfs.o |  cut -f1`
