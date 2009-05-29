@@ -307,8 +307,8 @@ if [ "$INCLUDE_OLSR" = "YES" ] ; then
     cp $UCLIB_PATH/lib/libpthread-$UCLIB_VER.so $RO_ROOT/lib/libpthread.so.0
 fi
 
-#Need for pppd
-if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then
+#Need for pppd and dropbeer
+if [ "$INCLUDE_PPP_CLIENT" = "YES" ] || [ "$INCLUDE_DROPBEAR" = "YES" ] ; then
     cp $UCLIB_PATH/lib/libcrypt-$UCLIB_VER.so $RO_ROOT/lib/libcrypt.so.0
 fi
 
