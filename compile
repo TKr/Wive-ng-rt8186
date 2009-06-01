@@ -3,6 +3,11 @@
 #load build config options
 . config
 
+#export compile options
+echo "WIVEROOT=$WIVEROOT" > .config
+echo "CROSSPATH=$CROSSPATH" >> .config
+echo "CROSS_COMPILE=$CROSS_COMPILE" >> .config
+
 #debug info to file. 
 if [ "$DEBUG" = "YES" ] ; then
     echo > rw_fs_stub/etc/debug

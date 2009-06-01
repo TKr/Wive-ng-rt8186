@@ -65,7 +65,7 @@ bindir=${exec_prefix}/bin
 sbindir=${exec_prefix}/sbin
 
 CC=mips-linux-gcc
-AR=ar
+AR=mips-linux-ar
 RANLIB=ranlib
 STRIP=mips-linux-strip
 INSTALL=install

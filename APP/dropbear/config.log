@@ -101,18 +101,15 @@ configure:3089: result: i686-pc-linux-gnu
 configure:3111: checking host system type
 configure:3126: result: mips-unknown-elf
 configure:3346: checking for mips-ar
-configure:3376: result: no
-configure:3386: checking for ar
-configure:3402: found /usr/bin/ar
-configure:3413: result: ar
-configure:3427: WARNING: In the future, Autoconf will not detect cross-tools
-whose name does not start with the host triplet.  If you think this
-configuration is useful to you, please write to autoconf@gnu.org.
+configure:3373: result: mips-linux-ar
 configure:3442: checking for mips-ranlib
 configure:3472: result: no
 configure:3482: checking for ranlib
 configure:3498: found /usr/bin/ranlib
 configure:3509: result: ranlib
+configure:3523: WARNING: In the future, Autoconf will not detect cross-tools
+whose name does not start with the host triplet.  If you think this
+configuration is useful to you, please write to autoconf@gnu.org.
 configure:3538: checking for mips-strip
 configure:3565: result: mips-linux-strip
 configure:3634: checking for mips-install
@@ -2923,7 +2920,7 @@ configure:9096: $? = 0
 configure:9114: result: yes
 configure:9132: checking for endutxent
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccqRhSfg.o(.text+0x1c): In function `main':
+/root/tmp/ccgGuuXn.o(.text+0x1c): In function `main':
 : undefined reference to `endutxent'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3036,7 +3033,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxent
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccUzHg2p.o(.text+0x1c): In function `main':
+/root/tmp/cckiTbpd.o(.text+0x1c): In function `main':
 : undefined reference to `getutxent'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3149,7 +3146,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxid
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccwk0gYz.o(.text+0x1c): In function `main':
+/root/tmp/cccncjYq.o(.text+0x1c): In function `main':
 : undefined reference to `getutxid'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3262,7 +3259,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxline
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccEdJN7J.o(.text+0x1c): In function `main':
+/root/tmp/ccyrdJXB.o(.text+0x1c): In function `main':
 : undefined reference to `getutxline'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3375,7 +3372,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for pututxline
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccudklpW.o(.text+0x1c): In function `main':
+/root/tmp/ccsDFVtL.o(.text+0x1c): In function `main':
 : undefined reference to `pututxline'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3488,7 +3485,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9227: checking for setutxent
 configure:9283: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccOQbwX3.o(.text+0x1c): In function `main':
+/root/tmp/cckiJFTV.o(.text+0x1c): In function `main':
 : undefined reference to `setutxent'
 collect2: ld returned 1 exit status
 configure:9289: $? = 1
@@ -3601,7 +3598,7 @@ configure: failed program was:
 configure:9307: result: no
 configure:9227: checking for utmpxname
 configure:9283: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/cckwL3Td.o(.text+0x1c): In function `main':
+/root/tmp/cc6xBfy6.o(.text+0x1c): In function `main':
 : undefined reference to `utmpxname'
 collect2: ld returned 1 exit status
 configure:9289: $? = 1
@@ -3714,7 +3711,7 @@ configure: failed program was:
 configure:9307: result: no
 configure:9323: checking for logout
 configure:9379: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/cca8DHZl.o(.text+0x1c): In function `main':
+/root/tmp/ccqj5EBi.o(.text+0x1c): In function `main':
 : undefined reference to `logout'
 collect2: ld returned 1 exit status
 configure:9385: $? = 1
@@ -3831,7 +3828,7 @@ configure:9385: $? = 0
 configure:9403: result: yes
 configure:9323: checking for logwtmp
 configure:9379: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccuAGhbJ.o(.text+0x1c): In function `main':
+/root/tmp/cckWZJIG.o(.text+0x1c): In function `main':
 : undefined reference to `logwtmp'
 collect2: ld returned 1 exit status
 configure:9385: $? = 1
@@ -4519,7 +4516,7 @@ conftest.c:75:1: warning: "DISABLE_UTMPX" redefined
 conftest.c:70:1: warning: this is the location of the previous definition
 conftest.c:76:1: warning: "DISABLE_WTMPX" redefined
 conftest.c:72:1: warning: this is the location of the previous definition
-/root/tmp/cccTG4Df.o(.text+0x1c): In function `main':
+/root/tmp/ccK1Kpkr.o(.text+0x1c): In function `main':
 : undefined reference to `_getpty'
 collect2: ld returned 1 exit status
 configure:10641: $? = 1
@@ -4884,10 +4881,10 @@ ac_cv_member_struct_utmpx_ut_type=no
 ac_cv_objext=o
 ac_cv_path_EGREP='/bin/grep -E'
 ac_cv_path_GREP=/bin/grep
+ac_cv_prog_AR=mips-linux-ar
 ac_cv_prog_CC=mips-linux-gcc
 ac_cv_prog_CPP='mips-linux-gcc -E'
 ac_cv_prog_STRIP=mips-linux-strip
-ac_cv_prog_ac_ct_AR=ar
 ac_cv_prog_ac_ct_INSTALL=install
 ac_cv_prog_ac_ct_RANLIB=ranlib
 ac_cv_prog_cc_c89=
@@ -4909,7 +4906,7 @@ ac_cv_type_uint16_t=yes
 ## Output variables. ##
 ## ----------------- ##
 
-AR='ar'
+AR='mips-linux-ar'
 CC='mips-linux-gcc'
 CFLAGS='-s -Os -fomit-frame-pointer -mno-memcpy'
 CPP='mips-linux-gcc -E'
@@ -4922,7 +4919,7 @@ EGREP='/bin/grep -E'
 EXEEXT=''
 GREP='/bin/grep'
 INSTALL='install'
-LD='mips-linux-gcc'
+LD='mips-linux-ld'
 LDFLAGS='-s -Os'
 LIBOBJS=' ${LIBOBJDIR}${LIBOBJDIR}${LIBOBJDIR}memcmp$U.o'
 LIBS=' -lcrypt'

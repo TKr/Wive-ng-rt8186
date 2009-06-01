@@ -1,6 +1,15 @@
-CC=mips-linux-gcc
-CFLAGS = -D__MIPSEB__ -Os -fPIC
-INCLUDEDIR=../kernel/include
+include ../.config
+
+KERNELSRC = $(WIVEROOT)/kernel
+INCLUDEALL = $(CROSSPATH)/mips-linux-uclibc/include
+
+export CFLAGS = -Os -fPIC -Wall -g -fomit-frame-pointer -mno-memcpy -D__MIPSEB__ -DLINUX -I$(INCLUDEALL)
+export CC = $(CROSS_COMPILE)gcc $(CFLAGS)
+export LD = $(CROSS_COMPILE)ld
+export AR = $(CROSS_COMPILE)ar
+export STRIP = $(CROSS_COMPILE)strip
+export OBJCOPY = $(CROSS_COMPILE)objcopy
+export INCLUDEDIR=$(INCLUDEALL)
 
 SUBDIRS  = busybox bridge-utils dropbear mount
 SUBDIRS += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump

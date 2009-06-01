@@ -25,7 +25,6 @@
 
 #include <linux/if.h>
 
-
 /* This structure gets passed by the SIOCADDRT and SIOCDELRT calls. */
 struct rtentry 
 {

@@ -13,6 +13,7 @@ DEBUG=NO
 #root dir of Wive
 WIVEROOT=`pwd`
 CROSSPATH=$WIVEROOT/toolchain
+CROSS_COMPILE=mips-linux-
 #--------------------- Packages----------------------------------------
 # For all mode
 MODULES_ENABLED="YES"
