@@ -597,7 +597,7 @@ int main(int argc, char **argv){
 
      char id[64],val[64],hwonly[12];
      char wds_list[8][13];//mac-length is 12+NULL, and there's max 8 wds-stations
-     int i,cwds,expdel=0;
+     int i,cwds=0,expdel=0;
      FILE * fd;
      fd = fopen("/proc/wlan0/mib_wds","r");
      fscanf(fd,"%s %s %s %s",id+45,id+55,id,val);
@@ -631,7 +631,6 @@ int main(int argc, char **argv){
      printf("aid bssid         rssi   dB     TxPackets  RxPackets    TxFail   TxRate   RxRate\n");
 
      fd = fopen("/proc/wlan0/sta_info","r");
-
      char line[256],c,*llen;
      char aid[3],bssid[13],rssi[4],txp[9],rxp[9],ftxp[9],rssi_db[7],expt[32],spec=' ',txr[6],rxr[6];
      int chck=0,p,len;
@@ -677,7 +676,7 @@ int main(int argc, char **argv){
         if(!strcmp(id,"hwaddr:")){
           strcpy(bssid,val);
           chck++;
-          for(i=0;i<=cwds-1;i++)
+          if(cwds) for(i=0;i<=cwds-1;i++)
              if(!strcmp(wds_list[i],bssid)){spec='W';break;}
           }
         if(!strcmp(id,"rssi:")){strcpy(rssi,val);chck++;}
@@ -704,10 +703,12 @@ int main(int argc, char **argv){
                  }
               }
            if(!strcmp(hwonly,"")){
-              printf("%-2s  %-12s  %-3s%% %-6s %c %09s  %09s  %08s   %06s   %06s\n",aid,bssid,rssi,rssi_db,spec,txp,rxp,ftxp,txr,rxr);
+              printf("%-2s  %-12s  %-3s%% %-6s %c %09s  %09s  %08s   %06s   %06s\n"
+            	     ,aid,bssid,rssi,rssi_db,spec,txp,rxp,ftxp,txr,rxr);
            }else{
               if(!strcmp(hwonly,bssid)){
-              printf("%-2s  %-12s  %-3s%% %-6s %c %09s  %09s  %08s   %06s   %06s\n",aid,bssid,rssi,rssi_db,spec,txp,rxp,ftxp,txr,rxr);
+              printf("%-2s  %-12s  %-3s%% %-6s %c %09s  %09s  %08s   %06s   %06s\n"
+            	     ,aid,bssid,rssi,rssi_db,spec,txp,rxp,ftxp,txr,rxr);
                 break;
                 }
               }
