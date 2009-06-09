@@ -1,8 +1,8 @@
 /*
  * Automatically generated C config: don't edit
- * Busybox version: 1.14.0.-wive-ng.sf.net
+ * Busybox version: 1.14.1
  */
-#define AUTOCONF_TIMESTAMP "2009-06-02 00:43:49 OMSST"
+#define AUTOCONF_TIMESTAMP "2009-06-09 07:32:48 OMSST"
 
 #define CONFIG_HAVE_DOT_CONFIG 1
 #define ENABLE_HAVE_DOT_CONFIG 1
@@ -3024,6 +3024,10 @@
 #define ENABLE_HUSH_FUNCTIONS 0
 #define USE_HUSH_FUNCTIONS(...)
 #define SKIP_HUSH_FUNCTIONS(...) __VA_ARGS__
+#undef CONFIG_HUSH_EXPORT_N
+#define ENABLE_HUSH_EXPORT_N 0
+#define USE_HUSH_EXPORT_N(...)
+#define SKIP_HUSH_EXPORT_N(...) __VA_ARGS__
 #undef CONFIG_LASH
 #define ENABLE_LASH 0
 #define USE_LASH(...)

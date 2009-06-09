@@ -42,7 +42,7 @@
 8030b674 D BZ2_crc32Table
 8030ba74 D BZ2_rNums
 8030c400 D __vmlinux_start
-803bfbbf D __vmlinux_end
+803bfa5f D __vmlinux_end
 803bfc00 B _bstart
 803bfc00 b inbuf
 803bfc04 b window

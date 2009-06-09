@@ -595,10 +595,11 @@ int main(int argc, char **argv){
 //----STA/WDS
   if(!strcmp(argv[1], "sta")){
 
-     FILE * fd = fopen("/proc/wlan0/mib_wds","r");
-     char id[64], val[64],hwonly[12];
+     char id[64],val[64],hwonly[12];
      char wds_list[8][13];//mac-length is 12+NULL, and there's max 8 wds-stations
      int i,cwds,expdel=0;
+     FILE * fd;
+     fd = fopen("/proc/wlan0/mib_wds","r");
      fscanf(fd,"%s %s %s %s",id+45,id+55,id,val);
      if(atoi(val)==1){
        fscanf(fd,"%s %s %s %s %s %s",id+25,id+35,id+45,id+55,id,val);
@@ -607,11 +608,12 @@ int main(int argc, char **argv){
           fscanf(fd,"%s %s",id,val);
           strcpy(wds_list[i],val);//Forming list of bssid-wds
        }
+
      }
      fclose(fd);
 
      if(argc==3){
-
+//----Delete old station
        if(!strcmp(argv[2], "-d")){
          printf("Deleting all expired stations from list.\n");
          expdel=1;

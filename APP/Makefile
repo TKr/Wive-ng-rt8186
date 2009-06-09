@@ -3,7 +3,7 @@ include ../.config
 KERNELSRC = $(WIVEROOT)/kernel
 INCLUDEALL = $(CROSSPATH)/mips-linux-uclibc/include
 
-export CFLAGS = -Os -fPIC -Wall -g -fomit-frame-pointer -mno-memcpy -D__MIPSEB__ -DLINUX -I$(INCLUDEALL)
+export CFLAGS = -Os -g -Wall -D__MIPSEB__ -fPIC -fomit-frame-pointer -mno-memcpy -DLINUX -I$(INCLUDEALL)
 export CC = $(CROSS_COMPILE)gcc $(CFLAGS)
 export LD = $(CROSS_COMPILE)ld
 export AR = $(CROSS_COMPILE)ar

@@ -1,7 +1,3 @@
-CC=mips-linux-gcc
-STRIP=mips-linux-strip
-OBJCOPY=mips-linux-objcopy
-
 all :	wl
 
 wl :	wl.o

@@ -734,6 +734,7 @@ static const char *const bbconfig_config =
 "# CONFIG_HUSH_LOOPS is not set\n"
 "# CONFIG_HUSH_CASE is not set\n"
 "# CONFIG_HUSH_FUNCTIONS is not set\n"
+"# CONFIG_HUSH_EXPORT_N is not set\n"
 "# CONFIG_LASH is not set\n"
 "# CONFIG_MSH is not set\n"
 "CONFIG_SH_MATH_SUPPORT=y\n"

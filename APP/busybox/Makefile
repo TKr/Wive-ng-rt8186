@@ -1,8 +1,8 @@
 VERSION = 1
 PATCHLEVEL = 14
-SUBLEVEL = 0
-EXTRAVERSION = .-wive-ng.sf.net
-NAME = wive-ng
+SUBLEVEL = 1
+EXTRAVERSION =
+NAME = Unnamed
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -11,7 +11,6 @@ NAME = wive-ng
 # expect to learn how to build the kernel reading this file.
 
 # Do not print "Entering directory ..."
-CFLAGS = -Os -fPIC -Wall -g -fomit-frame-pointer -mno-memcpy
 MAKEFLAGS += --no-print-directory
 
 # We are using a recursive build, so we need to do a little thinking
@@ -279,8 +278,8 @@ HOSTCXXFLAGS	:=
 # We need some generic definitions
 include $(srctree)/scripts/Kbuild.include
 
-HOSTCFLAGS	+= $(call hostcc-option,-Wall -Wstrict-prototypes -Os -fomit-frame-pointer,)
-HOSTCXXFLAGS	+= -Os
+HOSTCFLAGS	+= $(call hostcc-option,-Wall -Wstrict-prototypes -O2 -fomit-frame-pointer,)
+HOSTCXXFLAGS	+= -O2
 
 # For maximum performance (+ possibly random breakage, uncomment
 # the following)
