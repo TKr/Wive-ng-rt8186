@@ -2920,7 +2920,7 @@ configure:9096: $? = 0
 configure:9114: result: yes
 configure:9132: checking for endutxent
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccorAh6h.o(.text+0x1c): In function `main':
+/root/tmp/ccSOqowg.o(.text+0x1c): In function `main':
 : undefined reference to `endutxent'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3033,7 +3033,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxent
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/cc26EXJr.o(.text+0x1c): In function `main':
+/root/tmp/ccykF7Vq.o(.text+0x1c): In function `main':
 : undefined reference to `getutxent'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3146,7 +3146,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxid
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccscFHZi.o(.text+0x1c): In function `main':
+/root/tmp/ccUpMUPh.o(.text+0x1c): In function `main':
 : undefined reference to `getutxid'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3259,7 +3259,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for getutxline
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccSkBsZs.o(.text+0x1c): In function `main':
+/root/tmp/ccAlb4Tt.o(.text+0x1c): In function `main':
 : undefined reference to `getutxline'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3372,7 +3372,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9132: checking for pututxline
 configure:9188: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccqnW04C.o(.text+0x1c): In function `main':
+/root/tmp/ccgE46VA.o(.text+0x1c): In function `main':
 : undefined reference to `pututxline'
 collect2: ld returned 1 exit status
 configure:9194: $? = 1
@@ -3485,7 +3485,7 @@ configure: failed program was:
 configure:9212: result: no
 configure:9227: checking for setutxent
 configure:9283: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccMN4ElK.o(.text+0x1c): In function `main':
+/root/tmp/cc2dzTvR.o(.text+0x1c): In function `main':
 : undefined reference to `setutxent'
 collect2: ld returned 1 exit status
 configure:9289: $? = 1
@@ -3598,7 +3598,7 @@ configure: failed program was:
 configure:9307: result: no
 configure:9227: checking for utmpxname
 configure:9283: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/ccI2LiyX.o(.text+0x1c): In function `main':
+/root/tmp/ccC3uyZY.o(.text+0x1c): In function `main':
 : undefined reference to `utmpxname'
 collect2: ld returned 1 exit status
 configure:9289: $? = 1
@@ -3711,7 +3711,7 @@ configure: failed program was:
 configure:9307: result: no
 configure:9323: checking for logout
 configure:9379: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/cc80Gpw7.o(.text+0x1c): In function `main':
+/root/tmp/ccoftgm9.o(.text+0x1c): In function `main':
 : undefined reference to `logout'
 collect2: ld returned 1 exit status
 configure:9385: $? = 1
@@ -3828,7 +3828,7 @@ configure:9385: $? = 0
 configure:9403: result: yes
 configure:9323: checking for logwtmp
 configure:9379: mips-linux-gcc -o conftest -s -Os -fomit-frame-pointer -mno-memcpy  -s -Os conftest.c  -lcrypt >&5
-/root/tmp/cc8nLIyt.o(.text+0x1c): In function `main':
+/root/tmp/cc0zXwew.o(.text+0x1c): In function `main':
 : undefined reference to `logwtmp'
 collect2: ld returned 1 exit status
 configure:9385: $? = 1
@@ -4516,7 +4516,7 @@ conftest.c:75:1: warning: "DISABLE_UTMPX" redefined
 conftest.c:70:1: warning: this is the location of the previous definition
 conftest.c:76:1: warning: "DISABLE_WTMPX" redefined
 conftest.c:72:1: warning: this is the location of the previous definition
-/root/tmp/cceqSFS4.o(.text+0x1c): In function `main':
+/root/tmp/ccq4P8D2.o(.text+0x1c): In function `main':
 : undefined reference to `_getpty'
 collect2: ld returned 1 exit status
 configure:10641: $? = 1
