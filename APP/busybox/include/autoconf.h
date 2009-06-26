@@ -1,8 +1,8 @@
 /*
  * Automatically generated C config: don't edit
- * Busybox version: 1.14.1
+ * Busybox version: 1.14.2
  */
-#define AUTOCONF_TIMESTAMP "2009-06-17 07:41:04 OMSST"
+#define AUTOCONF_TIMESTAMP "2009-06-26 16:51:03 OMSST"
 
 #define CONFIG_HAVE_DOT_CONFIG 1
 #define ENABLE_HAVE_DOT_CONFIG 1
