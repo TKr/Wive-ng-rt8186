@@ -4973,7 +4973,7 @@ where FORMAT controls the output exactly as in C printf</p>
 <dt><strong><a name="readlink" class="item"><strong>readlink  </strong></a></strong>
 
 <dd>
-<p>readlink   [<strong>-f</strong>] FILE</p>
+<p>readlink   [<strong>-fnv</strong>] FILE</p>
 </dd>
 <dd>
 <p>Display the value of a symlink</p>
@@ -4983,7 +4983,9 @@ where FORMAT controls the output exactly as in C printf</p>
 </dd>
 <dd>
 <pre>
-        -f      Canonicalize by following all symlinks</pre>
+        -f      Canonicalize by following all symlinks
+        -n      Don't add newline
+        -v      Verbose</pre>
 </dd>
 </li>
 <dt><strong><a name="readprofile" class="item"><strong>readprofile</strong></a></strong>

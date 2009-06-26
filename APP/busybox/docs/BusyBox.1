@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BUSYBOX 1"
-.TH BUSYBOX 1 "2009-06-09" "version 1" "BusyBox"
+.TH BUSYBOX 1 "2009-06-17" "version 1" "BusyBox"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -3970,14 +3970,16 @@ readahead  [\s-1FILE\s0]...
 Preload \s-1FILE\s0(s) in \s-1RAM\s0 cache so that subsequent reads for thosefiles do not block on disk I/O
 .IP "\fBreadlink\fR" 4
 .IX Item "readlink"
-readlink   [\fB\-f\fR] \s-1FILE\s0
+readlink   [\fB\-fnv\fR] \s-1FILE\s0
 .Sp
 Display the value of a symlink
 .Sp
 Options:
 .Sp
-.Vb 1
+.Vb 3
 \&        \-f      Canonicalize by following all symlinks
+\&        \-n      Don\*(Aqt add newline
+\&        \-v      Verbose
 .Ve
 .IP "\fBreadprofile\fR" 4
 .IX Item "readprofile"
@@ -6634,291 +6636,291 @@ Unterminated B<...> sequence
 .IP "Around line 4059:" 4
 .IX Item "Around line 4059:"
 Unterminated B<...> sequence
-.IP "Around line 4090:" 4
-.IX Item "Around line 4090:"
+.IP "Around line 4092:" 4
+.IX Item "Around line 4092:"
 Unterminated B<...> sequence
-.IP "Around line 4098:" 4
-.IX Item "Around line 4098:"
+.IP "Around line 4100:" 4
+.IX Item "Around line 4100:"
 Unterminated B<...> sequence
-.IP "Around line 4128:" 4
-.IX Item "Around line 4128:"
+.IP "Around line 4130:" 4
+.IX Item "Around line 4130:"
 Unterminated B<...> sequence
-.IP "Around line 4143:" 4
-.IX Item "Around line 4143:"
+.IP "Around line 4145:" 4
+.IX Item "Around line 4145:"
 Unterminated B<...> sequence
-.IP "Around line 4151:" 4
-.IX Item "Around line 4151:"
+.IP "Around line 4153:" 4
+.IX Item "Around line 4153:"
 Unterminated B<...> sequence
-.IP "Around line 4179:" 4
-.IX Item "Around line 4179:"
+.IP "Around line 4181:" 4
+.IX Item "Around line 4181:"
 Unterminated B<...> sequence
-.IP "Around line 4198:" 4
-.IX Item "Around line 4198:"
+.IP "Around line 4200:" 4
+.IX Item "Around line 4200:"
 Unterminated B<...> sequence
-.IP "Around line 4215:" 4
-.IX Item "Around line 4215:"
+.IP "Around line 4217:" 4
+.IX Item "Around line 4217:"
 Unterminated B<...> sequence
-.IP "Around line 4233:" 4
-.IX Item "Around line 4233:"
+.IP "Around line 4235:" 4
+.IX Item "Around line 4235:"
 Unterminated B<...> sequence
-.IP "Around line 4247:" 4
-.IX Item "Around line 4247:"
+.IP "Around line 4249:" 4
+.IX Item "Around line 4249:"
 Unterminated B<...> sequence
-.IP "Around line 4265:" 4
-.IX Item "Around line 4265:"
+.IP "Around line 4267:" 4
+.IX Item "Around line 4267:"
 Unterminated B<...> sequence
-.IP "Around line 4273:" 4
-.IX Item "Around line 4273:"
+.IP "Around line 4275:" 4
+.IX Item "Around line 4275:"
 Unterminated B<...> sequence
-.IP "Around line 4321:" 4
-.IX Item "Around line 4321:"
+.IP "Around line 4323:" 4
+.IX Item "Around line 4323:"
 Unterminated B<...> sequence
-.IP "Around line 4338:" 4
-.IX Item "Around line 4338:"
+.IP "Around line 4340:" 4
+.IX Item "Around line 4340:"
 Unterminated B<...> sequence
-.IP "Around line 4351:" 4
-.IX Item "Around line 4351:"
+.IP "Around line 4353:" 4
+.IX Item "Around line 4353:"
 Unterminated B<...> sequence
-.IP "Around line 4359:" 4
-.IX Item "Around line 4359:"
+.IP "Around line 4361:" 4
+.IX Item "Around line 4361:"
 Unterminated B<...> sequence
-.IP "Around line 4370:" 4
-.IX Item "Around line 4370:"
+.IP "Around line 4372:" 4
+.IX Item "Around line 4372:"
 Unterminated B<...> sequence
-.IP "Around line 4382:" 4
-.IX Item "Around line 4382:"
+.IP "Around line 4384:" 4
+.IX Item "Around line 4384:"
 Unterminated B<...> sequence
-.IP "Around line 4395:" 4
-.IX Item "Around line 4395:"
+.IP "Around line 4397:" 4
+.IX Item "Around line 4397:"
 Unterminated B<...> sequence
-.IP "Around line 4428:" 4
-.IX Item "Around line 4428:"
+.IP "Around line 4430:" 4
+.IX Item "Around line 4430:"
 Unterminated B<...> sequence
-.IP "Around line 4460:" 4
-.IX Item "Around line 4460:"
+.IP "Around line 4462:" 4
+.IX Item "Around line 4462:"
 Unterminated B<...> sequence
-.IP "Around line 4474:" 4
-.IX Item "Around line 4474:"
+.IP "Around line 4476:" 4
+.IX Item "Around line 4476:"
 Unterminated B<...> sequence
-.IP "Around line 4483:" 4
-.IX Item "Around line 4483:"
+.IP "Around line 4485:" 4
+.IX Item "Around line 4485:"
 Unterminated B<...> sequence
-.IP "Around line 4514:" 4
-.IX Item "Around line 4514:"
+.IP "Around line 4516:" 4
+.IX Item "Around line 4516:"
 Unterminated B<...> sequence
-.IP "Around line 4536:" 4
-.IX Item "Around line 4536:"
+.IP "Around line 4538:" 4
+.IX Item "Around line 4538:"
 Unterminated B<...> sequence
-.IP "Around line 4585:" 4
-.IX Item "Around line 4585:"
+.IP "Around line 4587:" 4
+.IX Item "Around line 4587:"
 Unterminated B<...> sequence
-.IP "Around line 4604:" 4
-.IX Item "Around line 4604:"
+.IP "Around line 4606:" 4
+.IX Item "Around line 4606:"
 Unterminated B<...> sequence
-.IP "Around line 4612:" 4
-.IX Item "Around line 4612:"
+.IP "Around line 4614:" 4
+.IX Item "Around line 4614:"
 Unterminated B<...> sequence
-.IP "Around line 4657:" 4
-.IX Item "Around line 4657:"
+.IP "Around line 4659:" 4
+.IX Item "Around line 4659:"
 Unterminated B<...> sequence
-.IP "Around line 4671:" 4
-.IX Item "Around line 4671:"
+.IP "Around line 4673:" 4
+.IX Item "Around line 4673:"
 Unterminated B<...> sequence
-.IP "Around line 4690:" 4
-.IX Item "Around line 4690:"
+.IP "Around line 4692:" 4
+.IX Item "Around line 4692:"
 Unterminated B<...> sequence
-.IP "Around line 4735:" 4
-.IX Item "Around line 4735:"
+.IP "Around line 4737:" 4
+.IX Item "Around line 4737:"
 Unterminated B<...> sequence
-.IP "Around line 4777:" 4
-.IX Item "Around line 4777:"
+.IP "Around line 4779:" 4
+.IX Item "Around line 4779:"
 Unterminated B<...> sequence
-.IP "Around line 4842:" 4
-.IX Item "Around line 4842:"
+.IP "Around line 4844:" 4
+.IX Item "Around line 4844:"
 Unterminated B<...> sequence
-.IP "Around line 4903:" 4
-.IX Item "Around line 4903:"
+.IP "Around line 4905:" 4
+.IX Item "Around line 4905:"
 Unterminated B<...> sequence
-.IP "Around line 4918:" 4
-.IX Item "Around line 4918:"
+.IP "Around line 4920:" 4
+.IX Item "Around line 4920:"
 Unterminated B<...> sequence
-.IP "Around line 4934:" 4
-.IX Item "Around line 4934:"
+.IP "Around line 4936:" 4
+.IX Item "Around line 4936:"
 Unterminated B<...> sequence
-.IP "Around line 4948:" 4
-.IX Item "Around line 4948:"
+.IP "Around line 4950:" 4
+.IX Item "Around line 4950:"
 Unterminated B<...> sequence
-.IP "Around line 4960:" 4
-.IX Item "Around line 4960:"
+.IP "Around line 4962:" 4
+.IX Item "Around line 4962:"
 Unterminated B<...> sequence
-.IP "Around line 4973:" 4
-.IX Item "Around line 4973:"
+.IP "Around line 4975:" 4
+.IX Item "Around line 4975:"
 Unterminated B<...> sequence
-.IP "Around line 4994:" 4
-.IX Item "Around line 4994:"
+.IP "Around line 4996:" 4
+.IX Item "Around line 4996:"
 Unterminated B<...> sequence
-.IP "Around line 5002:" 4
-.IX Item "Around line 5002:"
+.IP "Around line 5004:" 4
+.IX Item "Around line 5004:"
 Unterminated B<...> sequence
-.IP "Around line 5014:" 4
-.IX Item "Around line 5014:"
+.IP "Around line 5016:" 4
+.IX Item "Around line 5016:"
 Unterminated B<...> sequence
-.IP "Around line 5040:" 4
-.IX Item "Around line 5040:"
+.IP "Around line 5042:" 4
+.IX Item "Around line 5042:"
 Unterminated B<...> sequence
-.IP "Around line 5048:" 4
-.IX Item "Around line 5048:"
+.IP "Around line 5050:" 4
+.IX Item "Around line 5050:"
 Unterminated B<...> sequence
-.IP "Around line 5073:" 4
-.IX Item "Around line 5073:"
+.IP "Around line 5075:" 4
+.IX Item "Around line 5075:"
 Unterminated B<...> sequence
-.IP "Around line 5100:" 4
-.IX Item "Around line 5100:"
+.IP "Around line 5102:" 4
+.IX Item "Around line 5102:"
 Unterminated B<...> sequence
-.IP "Around line 5108:" 4
-.IX Item "Around line 5108:"
+.IP "Around line 5110:" 4
+.IX Item "Around line 5110:"
 Unterminated B<...> sequence
-.IP "Around line 5136:" 4
-.IX Item "Around line 5136:"
+.IP "Around line 5138:" 4
+.IX Item "Around line 5138:"
 Unterminated B<...> sequence
-.IP "Around line 5169:" 4
-.IX Item "Around line 5169:"
+.IP "Around line 5171:" 4
+.IX Item "Around line 5171:"
 Unterminated B<...> sequence
-.IP "Around line 5193:" 4
-.IX Item "Around line 5193:"
+.IP "Around line 5195:" 4
+.IX Item "Around line 5195:"
 Unterminated B<...> sequence
-.IP "Around line 5221:" 4
-.IX Item "Around line 5221:"
+.IP "Around line 5223:" 4
+.IX Item "Around line 5223:"
 Unterminated B<...> sequence
-.IP "Around line 5245:" 4
-.IX Item "Around line 5245:"
+.IP "Around line 5247:" 4
+.IX Item "Around line 5247:"
 Unterminated B<...> sequence
-.IP "Around line 5264:" 4
-.IX Item "Around line 5264:"
+.IP "Around line 5266:" 4
+.IX Item "Around line 5266:"
 Unterminated B<...> sequence
-.IP "Around line 5272:" 4
-.IX Item "Around line 5272:"
+.IP "Around line 5274:" 4
+.IX Item "Around line 5274:"
 Unterminated B<...> sequence
-.IP "Around line 5291:" 4
-.IX Item "Around line 5291:"
+.IP "Around line 5293:" 4
+.IX Item "Around line 5293:"
 Unterminated B<...> sequence
-.IP "Around line 5315:" 4
-.IX Item "Around line 5315:"
+.IP "Around line 5317:" 4
+.IX Item "Around line 5317:"
 Unterminated B<...> sequence
-.IP "Around line 5331:" 4
-.IX Item "Around line 5331:"
+.IP "Around line 5333:" 4
+.IX Item "Around line 5333:"
 Unterminated B<...> sequence
-.IP "Around line 5353:" 4
-.IX Item "Around line 5353:"
+.IP "Around line 5355:" 4
+.IX Item "Around line 5355:"
 Unterminated B<...> sequence
-.IP "Around line 5366:" 4
-.IX Item "Around line 5366:"
+.IP "Around line 5368:" 4
+.IX Item "Around line 5368:"
 Unterminated B<...> sequence
-.IP "Around line 5375:" 4
-.IX Item "Around line 5375:"
+.IP "Around line 5377:" 4
+.IX Item "Around line 5377:"
 Unterminated B<...> sequence
-.IP "Around line 5385:" 4
-.IX Item "Around line 5385:"
+.IP "Around line 5387:" 4
+.IX Item "Around line 5387:"
 Unterminated B<...> sequence
-.IP "Around line 5405:" 4
-.IX Item "Around line 5405:"
+.IP "Around line 5407:" 4
+.IX Item "Around line 5407:"
 Unterminated B<...> sequence
-.IP "Around line 5454:" 4
-.IX Item "Around line 5454:"
+.IP "Around line 5456:" 4
+.IX Item "Around line 5456:"
 Unterminated B<...> sequence
-.IP "Around line 5468:" 4
-.IX Item "Around line 5468:"
+.IP "Around line 5470:" 4
+.IX Item "Around line 5470:"
 Unterminated B<...> sequence
-.IP "Around line 5485:" 4
-.IX Item "Around line 5485:"
+.IP "Around line 5487:" 4
+.IX Item "Around line 5487:"
 Unterminated B<...> sequence
-.IP "Around line 5493:" 4
-.IX Item "Around line 5493:"
+.IP "Around line 5495:" 4
+.IX Item "Around line 5495:"
 Unterminated B<...> sequence
-.IP "Around line 5514:" 4
-.IX Item "Around line 5514:"
+.IP "Around line 5516:" 4
+.IX Item "Around line 5516:"
 Unterminated B<...> sequence
-.IP "Around line 5522:" 4
-.IX Item "Around line 5522:"
+.IP "Around line 5524:" 4
+.IX Item "Around line 5524:"
 Unterminated B<...> sequence
-.IP "Around line 5564:" 4
-.IX Item "Around line 5564:"
+.IP "Around line 5566:" 4
+.IX Item "Around line 5566:"
 Unterminated B<...> sequence
-.IP "Around line 5576:" 4
-.IX Item "Around line 5576:"
+.IP "Around line 5578:" 4
+.IX Item "Around line 5578:"
 Unterminated B<...> sequence
-.IP "Around line 5596:" 4
-.IX Item "Around line 5596:"
+.IP "Around line 5598:" 4
+.IX Item "Around line 5598:"
 Unterminated B<...> sequence
-.IP "Around line 5617:" 4
-.IX Item "Around line 5617:"
+.IP "Around line 5619:" 4
+.IX Item "Around line 5619:"
 Unterminated B<...> sequence
-.IP "Around line 5653:" 4
-.IX Item "Around line 5653:"
+.IP "Around line 5655:" 4
+.IX Item "Around line 5655:"
 Unterminated B<...> sequence
-.IP "Around line 5667:" 4
-.IX Item "Around line 5667:"
+.IP "Around line 5669:" 4
+.IX Item "Around line 5669:"
 Unterminated B<...> sequence
-.IP "Around line 5691:" 4
-.IX Item "Around line 5691:"
+.IP "Around line 5693:" 4
+.IX Item "Around line 5693:"
 Unterminated B<...> sequence
-.IP "Around line 5705:" 4
-.IX Item "Around line 5705:"
+.IP "Around line 5707:" 4
+.IX Item "Around line 5707:"
 Unterminated B<...> sequence
-.IP "Around line 5718:" 4
-.IX Item "Around line 5718:"
+.IP "Around line 5720:" 4
+.IX Item "Around line 5720:"
 Unterminated B<...> sequence
-.IP "Around line 5736:" 4
-.IX Item "Around line 5736:"
+.IP "Around line 5738:" 4
+.IX Item "Around line 5738:"
 Unterminated B<...> sequence
-.IP "Around line 5749:" 4
-.IX Item "Around line 5749:"
+.IP "Around line 5751:" 4
+.IX Item "Around line 5751:"
 Unterminated B<...> sequence
-.IP "Around line 5762:" 4
-.IX Item "Around line 5762:"
+.IP "Around line 5764:" 4
+.IX Item "Around line 5764:"
 Unterminated B<...> sequence
-.IP "Around line 5777:" 4
-.IX Item "Around line 5777:"
+.IP "Around line 5779:" 4
+.IX Item "Around line 5779:"
 Unterminated B<...> sequence
-.IP "Around line 5797:" 4
-.IX Item "Around line 5797:"
+.IP "Around line 5799:" 4
+.IX Item "Around line 5799:"
 Unterminated B<...> sequence
-.IP "Around line 5814:" 4
-.IX Item "Around line 5814:"
+.IP "Around line 5816:" 4
+.IX Item "Around line 5816:"
 Unterminated B<...> sequence
-.IP "Around line 5828:" 4
-.IX Item "Around line 5828:"
+.IP "Around line 5830:" 4
+.IX Item "Around line 5830:"
 Unterminated B<...> sequence
-.IP "Around line 5840:" 4
-.IX Item "Around line 5840:"
+.IP "Around line 5842:" 4
+.IX Item "Around line 5842:"
 Unterminated B<...> sequence
-.IP "Around line 5860:" 4
-.IX Item "Around line 5860:"
+.IP "Around line 5862:" 4
+.IX Item "Around line 5862:"
 Unterminated B<...> sequence
-.IP "Around line 5876:" 4
-.IX Item "Around line 5876:"
+.IP "Around line 5878:" 4
+.IX Item "Around line 5878:"
 Unterminated B<...> sequence
-.IP "Around line 5897:" 4
-.IX Item "Around line 5897:"
+.IP "Around line 5899:" 4
+.IX Item "Around line 5899:"
 Unterminated B<...> sequence
-.IP "Around line 5917:" 4
-.IX Item "Around line 5917:"
+.IP "Around line 5919:" 4
+.IX Item "Around line 5919:"
 Unterminated B<...> sequence
-.IP "Around line 5930:" 4
-.IX Item "Around line 5930:"
+.IP "Around line 5932:" 4
+.IX Item "Around line 5932:"
 Unterminated B<...> sequence
-.IP "Around line 5942:" 4
-.IX Item "Around line 5942:"
+.IP "Around line 5944:" 4
+.IX Item "Around line 5944:"
 Unterminated B<...> sequence
-.IP "Around line 5950:" 4
-.IX Item "Around line 5950:"
+.IP "Around line 5952:" 4
+.IX Item "Around line 5952:"
 Unterminated B<...> sequence
-.IP "Around line 5974:" 4
-.IX Item "Around line 5974:"
+.IP "Around line 5976:" 4
+.IX Item "Around line 5976:"
 Unterminated B<...> sequence
-.IP "Around line 5982:" 4
-.IX Item "Around line 5982:"
+.IP "Around line 5984:" 4
+.IX Item "Around line 5984:"
 Unterminated B<...> sequence
-.IP "Around line 5990:" 4
-.IX Item "Around line 5990:"
+.IP "Around line 5992:" 4
+.IX Item "Around line 5992:"
 Unterminated B<...> sequence

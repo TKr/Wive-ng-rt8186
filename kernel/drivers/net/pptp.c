@@ -445,7 +445,7 @@ static int pptp_rcv(struct sk_buff *skb) {
 
 	sock_put(sk);
 	return error;
-    } else icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
+    }
 drop:
     kfree_skb(skb);
     return NET_RX_DROP;

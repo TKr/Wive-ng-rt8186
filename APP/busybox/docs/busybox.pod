@@ -4058,13 +4058,15 @@ Preload FILE(s) in RAM cache so that subsequent reads for thosefiles do not bloc
 
 =item B<readlink  >
 
-readlink   [B<-f>] FILE
+readlink   [B<-fnv>] FILE
 
 Display the value of a symlink
 
 Options:
 
 	-f	Canonicalize by following all symlinks
+	-n	Don't add newline
+	-v	Verbose
 
 
 

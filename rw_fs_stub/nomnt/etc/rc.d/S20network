@@ -7,16 +7,6 @@ dhcpc=/sbin/udhcpc
 start() {
 echo "Starting network..."
 #---------------- Forward enable--------------------
-
-#Workaround for LCP bug
-if [ "$PPTP_CALL_START" = "yes" ]; then
-    echo "ADD iptables rules for fix LCP bug"
-    iptables -A OUTPUT -o br0 -p icmp -m icmp --icmp-type 3 -j DROP
-    iptables -A OUTPUT -o eth0 -p icmp -m icmp --icmp-type 3 -j DROP
-    iptables -A OUTPUT -o eth1 -p icmp -m icmp --icmp-type 3 -j DROP
-    iptables -A OUTPUT -o wlan0 -p icmp -m icmp --icmp-type 3 -j DROP
-fi
-
 if [ "$IPV4_FORWARD_ENABLE" = "yes" ] ; then
      echo "Forward ON and iptables FORWARD rule set to ACCEPT"
      echo "1">/proc/sys/net/ipv4/conf/all/forwarding
