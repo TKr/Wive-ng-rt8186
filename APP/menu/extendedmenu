@@ -11,7 +11,7 @@ while [ "2" != "1" ] ; do
     echo "-=Extended menu=-"
     echo "	"
     echo "1)Unchecked 2)Iptables 3)Routes 4)Sysctl 5) DHCPD 6)DNS 7)PPTPPEERS"
-    echo "8)VLAN 9)PPTPOPTIONS 10)CHAPPASSWORD 11)PAPPASSWORD 12)Back"
+    echo "8)VLAN 9)PPTPOPTIONS 10)CHAPPASSWORD 11)PAPPASSWORD 12) L2TP 13)Back"
     echo "	"
     echo "Enter choice number: "
     echo "	"
@@ -28,6 +28,7 @@ while [ "2" != "1" ] ; do
     9 )		vi /etc/ppp/options.pptp;;
     10 ) 	vi /etc/ppp/chap-secrets;;
     11 )	vi /etc/ppp/pap-secrets;;
-    12 )	exit;;
+    12 )	l2tp_setup;;
+    13 )	exit;;
     esac
 done

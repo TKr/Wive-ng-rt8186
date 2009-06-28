@@ -11,10 +11,11 @@ export STRIP = $(CROSS_COMPILE)strip
 export OBJCOPY = $(CROSS_COMPILE)objcopy
 export INCLUDEDIR=$(INCLUDEALL)
 
-SUBDIRS  = busybox bridge-utils dropbear mount
-SUBDIRS += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
-SUBDIRS += iptables iproute2 ntpclient igmpproxy dnsmasq
-SUBDIRS += ppp rp-pppoe l2tpd lwins mesh
+#SUBDIRS  = busybox bridge-utils dropbear mount
+#SUBDIRS += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
+#SUBDIRS += iptables iproute2 ntpclient igmpproxy dnsmasq
+#SUBDIRS += ppp rp-pppoe l2tpd lwins mesh
+SUBDIRS += ppp
 
 all: configure
 	@set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i; done
