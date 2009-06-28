@@ -46,6 +46,7 @@ replacedefaultroute" >> $ppp/options.l2tp
 echo "Setup of $ppp/chap-secrets"
 printf "$login_name * $pass" >> $ppp/chap-secrets
 
+arg s L2TP_CALL_START yes
 fs save
 
-echo "OK"
+echo "OK. Please reboot you router."
