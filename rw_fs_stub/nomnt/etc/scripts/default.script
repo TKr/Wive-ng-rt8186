@@ -27,9 +27,10 @@ case "$1" in
 		while route del default gw 0.0.0.0 dev $interface > /dev/null 2>&1; do
 		:
 		done
+		metric=0
 		for i in $router ; do
-		      route add default gw $i dev $interface
-		echo "add dgw $i"
+		      route add default gw $i dev $interface metric $((metric++))
+		echo "add gateway $i"
 		done
 	fi
 		echo -n > $RESOLV_CONF
