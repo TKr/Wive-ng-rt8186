@@ -7,6 +7,7 @@
 
 RESOLV_CONF="/etc/resolv.conf"
 OPTIONS="timeout:1 retry:1"
+STARTEDPPPD=`ps | grep pppd -c`
 
 [ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
 [ -n "$subnet" ] && NETMASK="netmask $subnet"
@@ -17,19 +18,20 @@ case "$1" in
 		;;
 
 	renew|bound)
+	#no change routes if pppd is started
+	if [ "$STARTEDPPPD" != "1" ]; then
+		echo "PPPD IS STARTED!!! No deleting or routers and adresses"
+	else
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
-
-		if [ -n "$router" ] ; then
-			echo "deleting routers"
-			while route del default gw 0.0.0.0 dev $interface > /dev/null 2>&1; do
-				:
-			done
-
-			for i in $router ; do
-				route add default gw $i dev $interface
-			done
-		fi
-
+		echo "deleting routers"
+		while route del default gw 0.0.0.0 dev $interface > /dev/null 2>&1; do
+		:
+		done
+		for i in $router ; do
+		      route add default gw $i dev $interface
+		echo "add dgw $i"
+		done
+	fi
 		echo -n > $RESOLV_CONF
 		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
 		[ -n "$OPTIONS" ] && echo options $OPTIONS >> $RESOLV_CONF
