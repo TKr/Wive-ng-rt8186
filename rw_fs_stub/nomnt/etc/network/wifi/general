@@ -42,6 +42,8 @@ ENHTX=yes
 
 #Set Initial Gain: in range 0-7
 GAIN=7
+
+#Autogain and dynamic On/Off mechanism support
 AUTOGAIN=yes
 
 #Dynamic RF sensitivity adjustment
