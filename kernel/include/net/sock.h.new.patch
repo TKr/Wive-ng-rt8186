@@ -1,0 +1,186 @@
+--- sock.h	2009-04-26 07:16:13.532900676 +0700
++++ sock.h.new	2009-04-26 07:10:56.778901465 +0700
+@@ -187,19 +187,16 @@
+ 
+ 	struct icmp6_filter	filter;
+ };
+-#define __ipv6_only_sock(sk)    ((sk)->net_pinfo.af_inet6.ipv6only)
+-#define ipv6_only_sock(sk)      ((sk)->family == PF_INET6 && \
+-                                 (sk)->net_pinfo.af_inet6.ipv6only)
+-#else
+-#define __ipv6_only_sock(sk)    0
+-#define ipv6_only_sock(sk)      0
++
+ #endif /* IPV6 */
+ 
+ #if defined(CONFIG_INET) || defined(CONFIG_INET_MODULE)
+ struct raw_opt {
+ 	struct icmp_filter	filter;
+ };
++#endif
+ 
++#if defined(CONFIG_INET) || defined (CONFIG_INET_MODULE)
+ struct inet_opt
+ {
+ 	int			ttl;			/* TTL setting */
+@@ -228,47 +225,18 @@
+ 					     relayed to (PPPoE relaying) */
+ };
+ 
+-#define pppoe_dev      proto.pppoe.dev
+-#define pppoe_pa       proto.pppoe.pa
+-#define pppoe_relay    proto.pppoe.relay
+-
+-#endif
+-
+-#if defined(CONFIG_PPTP) || defined (CONFIG_PPTP_MODULE)
+-struct pptp_opt {
+-	struct pptp_addr	src_addr;
+-	struct pptp_addr	dst_addr;
+-	__u32 ack_sent, ack_recv;
+-	__u32 seq_sent, seq_recv;
+-	__u32 first_seq;
+-	int ppp_flags;
+-};
+-#endif
+-
+-#define PPTP_FLAG_PAUSE 0
+-#define PPTP_FLAG_PROC 1
+-
+-#if defined(CONFIG_PPTP) || defined (CONFIG_PPTP_MODULE) || defined(CONFIG_PPPOE) || defined (CONFIG_PPPOE_MODULE)
+ struct pppox_opt
+ {
+ 	struct ppp_channel	chan;
+ 	struct sock		*sk;
+ 	struct pppox_opt	*next;	  /* for hash table */
+ 	union {
+-#if defined(CONFIG_PPPOE) || defined (CONFIG_PPPOE_MODULE)
+ 		struct pppoe_opt pppoe;
+-#endif
+-#if defined(CONFIG_PPTP) || defined (CONFIG_PPTP_MODULE) 
+-		struct pptp_opt  pptp;
+-#endif
+ 	} proto;
+ };
+-
+ #define pppoe_dev	proto.pppoe.dev
+ #define pppoe_pa	proto.pppoe.pa
+ #define pppoe_relay	proto.pppoe.relay
+-
+-
+ #endif
+ 
+ /* This defines a selective acknowledgement block. */
+@@ -277,12 +245,6 @@
+ 	__u32	end_seq;
+ };
+ 
+-#ifdef CONFIG_RTL_IPSEC 
+-struct udp_opt {
+-	__u32 esp_in_udp;
+-};
+-
+-#endif
+ struct tcp_opt {
+ 	int	tcp_header_len;	/* Bytes of tcp header to send		*/
+ 
+@@ -455,39 +417,25 @@
+ 	unsigned int		keepalive_intvl;  /* time interval between keep alive probes */
+ 	int			linger2;
+ 
+-	int			frto_counter; /* State of F-RTO recovery */
+-	__u32			frto_highmark; /* snd_nxt when RTO occurred */
+-	
+ 	unsigned long last_synq_overflow; 
+ 
+- /* TCP Westwood structure */
++/* TCP Westwood structure */
+ 
+ #ifdef CONFIG_TCP_WESTWOOD
+-	struct {
+-                 __u32    bw_sample;        /* bandwidth sample */
+-                 __u32    bw_ns_est;        /* first bandwidth estimation..not too smoothed 8) */
+-                 __u32    bw_est;           /* bandwidth estimate */
+-                 __u32    rtt_win_sx;       /* here starts a new evaluation... */
+-                 __u32    bk;
+-                 __u32    snd_una;          /* used for evaluating the number of acked bytes */
+-                 __u32    cumul_ack;
+-                 __u32    accounted;
+-                 __u32    rtt;
+-                 __u32    rtt_min;          /* minimum observed RTT */
+-                 rwlock_t lock;
+-		} westwood;
++        struct {
++                __u32    bw_sample;        /* bandwidth sample */
++                __u32    bw_ns_est;        /* first bandwidth estimation..not too smoothed 8) */
++                __u32    bw_est;           /* bandwidth estimate */
++                __u32    rtt_win_sx;       /* here starts a new evaluation... */
++                __u32    bk;
++                __u32    snd_una;          /* used for evaluating the number of acked bytes */
++                __u32    cumul_ack;
++                __u32    accounted;
++                __u32    rtt;
++                __u32    rtt_min;          /* minimum observed RTT */
++                rwlock_t lock;
++        } westwood;
+ #endif /* CONFIG_TCP_WESTWOOD */
+-
+-  	/*
+-	* Receiver window right-sizing
+-	*/
+-	__u32   art_cts;        /* next packet wanted                    */
+-	__u32   art_seq;        /* next packet wanted                    */
+-	__u32   art_time;       /* when we sent ack that cleared art_seq */
+-	__u32   art_low;        /* when we sent ack that cleared art_seq */
+-	__u32   bpw_seq;
+-	__u32   bpw_time;
+-       
+ };
+ 
+  	
+@@ -554,7 +502,7 @@
+ do {	spin_lock_init(&((__sk)->lock.slock)); \
+ 	(__sk)->lock.users = 0; \
+ 	init_waitqueue_head(&((__sk)->lock.wq)); \
+-} while(0);
++} while(0)
+ 
+ struct sock {
+ 	/* Socket demultiplex comparisons on incoming packets. */
+@@ -654,9 +602,6 @@
+ #if defined(CONFIG_SPX) || defined (CONFIG_SPX_MODULE)
+ 		struct spx_opt		af_spx;
+ #endif /* CONFIG_SPX */
+-#ifdef CONFIG_RTL_IPSEC
+-		struct udp_opt 		af_udp;
+-#endif
+ 
+ 	} tp_pinfo;
+ 
+@@ -713,7 +658,7 @@
+ #if defined(CONFIG_ROSE) || defined(CONFIG_ROSE_MODULE)
+ 		rose_cb			*rose;
+ #endif
+-#if defined(CONFIG_PPPOE) || defined(CONFIG_PPPOE_MODULE) || defined(CONFIG_PPTP) || defined(CONFIG_PPTP_MODULE)  || defined(CONFIG_L2TP) || defined(CONFIG_L2TP_MODULE)
++#if defined(CONFIG_PPPOE) || defined(CONFIG_PPPOE_MODULE)
+ 		struct pppox_opt	*pppox;
+ #endif
+ 		struct netlink_opt	*af_netlink;
+@@ -1294,16 +1239,13 @@
+ 
+ #define SOCK_MIN_SNDBUF 2048
+ #define SOCK_MIN_RCVBUF 256
+-/* Must be less or equal SOCK_MIN_SNDBUF */
+-#define SOCK_MIN_WRITE_SPACE	SOCK_MIN_SNDBUF
+ 
+ /*
+  *	Default write policy as shown to user space via poll/select/SIGIO
+- *	Kernel internally doesn't use the MIN_WRITE_SPACE threshold.
+  */
+ static inline int sock_writeable(struct sock *sk) 
+ {
+-	return sock_wspace(sk) >= SOCK_MIN_WRITE_SPACE;
++	return atomic_read(&sk->wmem_alloc) < (sk->sndbuf / 2);
+ }
+ 
+ static inline int gfp_any(void)
