@@ -342,6 +342,9 @@ void br_handle_frame(struct sk_buff *skb)
 	if (br_mac_clone_handle_frame(br, p, skb) == -1)
 		goto err;
 #endif
+	/* Pause frames shouldn't be passed up by driver anyway */
+	if (skb->protocol == htons(ETH_P_PAUSE))
+                       goto err_nolock;
 
 	if (p->state == BR_STATE_LEARNING ||
 	    p->state == BR_STATE_FORWARDING)
