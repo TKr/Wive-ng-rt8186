@@ -21,3 +21,6 @@ iwpriv wlan0 set_mib zebraVersion=2
 iwpriv wlan0 set_mib bias=30
 iwpriv wlan0 set_mib hith_h=100
 iwpriv wlan0 set_mib hith_l=90
+
+#WPS pin ?
+iwpriv wlan0 set_mib pin=

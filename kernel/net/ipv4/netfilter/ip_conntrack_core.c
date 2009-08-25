@@ -1939,8 +1939,11 @@ int __init ip_conntrack_init(void)
 		if (ip_conntrack_htable_size < 16)
 			ip_conntrack_htable_size = 16;
 	}
-	ip_conntrack_max = ip_conntrack_htable_size;
-
+#ifdef CONFIG_RTL8186_AP
+	ip_conntrack_max = 4 * ip_conntrack_htable_size;
+#else
+	ip_conntrack_max = 8 * ip_conntrack_htable_size;
+#endif
 	printk("ip_conntrack version %s (%u buckets, %d max)"
 	       " - %Zd bytes per conntrack\n", IP_CONNTRACK_VERSION,
 	       ip_conntrack_htable_size, ip_conntrack_max,
