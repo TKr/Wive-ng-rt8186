@@ -8,6 +8,8 @@ all:
 	make split
 
 clean:
+	PWD=`pwd`
+	echo "Clean temporary files..."
 	make -C APP clean
 	rm -rf ./images/*
 	rm -rf ./ro_root/*
@@ -15,6 +17,9 @@ clean:
 	make -C kernel clean
 	rm -rf ./kernel/modules_installmake/*
 	make -C tools clean
+	find ${PWD} -name '*.o' | xargs rm -f
+	find ${PWD} -name '*.log' | xargs rm -f
+	find ${PWD} -name '*.old' | xargs rm -f
 
 linux:
 	make tools
