@@ -30,12 +30,9 @@
  * [2009-03]
  * ls sorts listing now, and supports almost all options.
  */
-
 #include "libbb.h"
+#include "unicode.h"
 
-#if ENABLE_FEATURE_ASSUME_UNICODE
-#include <wchar.h>
-#endif
 
 /* This is a NOEXEC applet. Be very careful! */
 
@@ -46,12 +43,12 @@
  */
 # undef CONFIG_FEATURE_LS_TIMESTAMPS
 # undef ENABLE_FEATURE_LS_TIMESTAMPS
-# undef USE_FEATURE_LS_TIMESTAMPS
-# undef SKIP_FEATURE_LS_TIMESTAMPS
+# undef IF_FEATURE_LS_TIMESTAMPS
+# undef IF_NOT_FEATURE_LS_TIMESTAMPS
 # define CONFIG_FEATURE_LS_TIMESTAMPS 1
 # define ENABLE_FEATURE_LS_TIMESTAMPS 1
-# define USE_FEATURE_LS_TIMESTAMPS(...) __VA_ARGS__
-# define SKIP_FEATURE_LS_TIMESTAMPS(...)
+# define IF_FEATURE_LS_TIMESTAMPS(...) __VA_ARGS__
+# define IF_NOT_FEATURE_LS_TIMESTAMPS(...)
 #endif
 
 
@@ -138,14 +135,14 @@ SPLIT_SUBDIR    = 2,
 /* "[-]e", I think we made this one up */
 static const char ls_options[] ALIGN1 =
 	"Cadil1gnsxQAk" /* 13 opts, total 13 */
-	USE_FEATURE_LS_TIMESTAMPS("cetu") /* 4, 17 */
-	USE_FEATURE_LS_SORTFILES("SXrv")  /* 4, 21 */
-	USE_FEATURE_LS_FILETYPES("Fp")    /* 2, 23 */
-	USE_FEATURE_LS_FOLLOWLINKS("L")   /* 1, 24 */
-	USE_FEATURE_LS_RECURSIVE("R")     /* 1, 25 */
-	USE_FEATURE_HUMAN_READABLE("h")   /* 1, 26 */
-	USE_SELINUX("KZ") /* 2, 28 */
-	USE_FEATURE_AUTOWIDTH("T:w:") /* 2, 30 */
+	IF_FEATURE_LS_TIMESTAMPS("cetu") /* 4, 17 */
+	IF_FEATURE_LS_SORTFILES("SXrv")  /* 4, 21 */
+	IF_FEATURE_LS_FILETYPES("Fp")    /* 2, 23 */
+	IF_FEATURE_LS_FOLLOWLINKS("L")   /* 1, 24 */
+	IF_FEATURE_LS_RECURSIVE("R")     /* 1, 25 */
+	IF_FEATURE_HUMAN_READABLE("h")   /* 1, 26 */
+	IF_SELINUX("KZ") /* 2, 28 */
+	IF_FEATURE_AUTOWIDTH("T:w:") /* 2, 30 */
 	;
 enum {
 	//OPT_C = (1 << 0),
@@ -241,7 +238,7 @@ struct dnode {                  /* the basic node */
 	const char *fullname;         /* the dir entry name */
 	int   allocated;
 	struct stat dstat;      /* the file stat info */
-	USE_SELINUX(security_context_t sid;)
+	IF_SELINUX(security_context_t sid;)
 	struct dnode *next;     /* point at the next node */
 };
 
@@ -286,32 +283,17 @@ enum {
 /* memset: we have to zero it out because of NOEXEC */
 #define INIT_G() do { \
 	memset(&G, 0, sizeof(G)); \
-	USE_FEATURE_AUTOWIDTH(tabstops = COLUMN_GAP;) \
-	USE_FEATURE_AUTOWIDTH(terminal_width = TERMINAL_WIDTH;) \
-	USE_FEATURE_LS_TIMESTAMPS(time(&current_time_t);) \
+	IF_FEATURE_AUTOWIDTH(tabstops = COLUMN_GAP;) \
+	IF_FEATURE_AUTOWIDTH(terminal_width = TERMINAL_WIDTH;) \
+	IF_FEATURE_LS_TIMESTAMPS(time(&current_time_t);) \
 } while (0)
-
-
-#if ENABLE_FEATURE_ASSUME_UNICODE
-/* libbb candidate */
-static size_t mbstrlen(const char *string)
-{
-	size_t width = mbsrtowcs(NULL /*dest*/, &string,
-				MAXINT(size_t) /*len*/, NULL /*state*/);
-	if (width == (size_t)-1)
-		return strlen(string);
-	return width;
-}
-#else
-#define mbstrlen(string) strlen(string)
-#endif
 
 
 static struct dnode *my_stat(const char *fullname, const char *name, int force_follow)
 {
 	struct stat dstat;
 	struct dnode *cur;
-	USE_SELINUX(security_context_t sid = NULL;)
+	IF_SELINUX(security_context_t sid = NULL;)
 
 	if ((all_fmt & FOLLOW_LINKS) || force_follow) {
 #if ENABLE_SELINUX
@@ -341,7 +323,7 @@ static struct dnode *my_stat(const char *fullname, const char *name, int force_f
 	cur->fullname = fullname;
 	cur->name = name;
 	cur->dstat = dstat;
-	USE_SELINUX(cur->sid = sid;)
+	IF_SELINUX(cur->sid = sid;)
 	return cur;
 }
 
@@ -574,12 +556,12 @@ static void showfiles(struct dnode **dn, int nfiles)
 	} else {
 		/* find the longest file name, use that as the column width */
 		for (i = 0; i < nfiles; i++) {
-			int len = mbstrlen(dn[i]->name);
+			int len = bb_mbstrlen(dn[i]->name);
 			if (column_width < len)
 				column_width = len;
 		}
 		column_width += tabstops +
-			USE_SELINUX( ((all_fmt & LIST_CONTEXT) ? 33 : 0) + )
+			IF_SELINUX( ((all_fmt & LIST_CONTEXT) ? 33 : 0) + )
 			             ((all_fmt & LIST_INO) ? 8 : 0) +
 			             ((all_fmt & LIST_BLOCKS) ? 5 : 0);
 		ncols = (int) (terminal_width / column_width);
@@ -721,7 +703,7 @@ static int print_name(const char *name)
 {
 	if (option_mask32 & OPT_Q) {
 #if ENABLE_FEATURE_ASSUME_UNICODE
-		int len = 2 + mbstrlen(name);
+		int len = 2 + bb_mbstrlen(name);
 #else
 		int len = 2;
 #endif
@@ -741,7 +723,7 @@ static int print_name(const char *name)
 	/* No -Q: */
 #if ENABLE_FEATURE_ASSUME_UNICODE
 	fputs(name, stdout);
-	return mbstrlen(name);
+	return bb_mbstrlen(name);
 #else
 	return printf("%s", name);
 #endif
@@ -932,24 +914,26 @@ int ls_main(int argc UNUSED_PARAM, char **argv)
 
 	INIT_G();
 
+	check_unicode_in_env();
+
 	all_fmt = LIST_SHORT |
 		(ENABLE_FEATURE_LS_SORTFILES * (SORT_NAME | SORT_FORWARD));
 
 #if ENABLE_FEATURE_AUTOWIDTH
-	/* Obtain the terminal width */
+	/* obtain the terminal width */
 	get_terminal_width_height(STDIN_FILENO, &terminal_width, NULL);
-	/* Go one less... */
+	/* go one less... */
 	terminal_width--;
 #endif
 
 	/* process options */
-	USE_FEATURE_LS_COLOR(applet_long_options = ls_longopts;)
+	IF_FEATURE_LS_COLOR(applet_long_options = ls_longopts;)
 #if ENABLE_FEATURE_AUTOWIDTH
 	opt_complementary = "T+:w+"; /* -T N, -w N */
 	opt = getopt32(argv, ls_options, &tabstops, &terminal_width
-				USE_FEATURE_LS_COLOR(, &color_opt));
+				IF_FEATURE_LS_COLOR(, &color_opt));
 #else
-	opt = getopt32(argv, ls_options USE_FEATURE_LS_COLOR(, &color_opt));
+	opt = getopt32(argv, ls_options IF_FEATURE_LS_COLOR(, &color_opt));
 #endif
 	for (i = 0; opt_flags[i] != (1U<<31); i++) {
 		if (opt & (1 << i)) {

@@ -8,11 +8,15 @@
  * Licensed under GPLv2, see file LICENSE in this tarball for details.
  */
 #include "libbb.h"
-#include "volume_id/volume_id_internal.h"
 
 #include <linux/hdreg.h> /* HDIO_GETGEO */
 #include <linux/fd.h>    /* FDGETPRM */
+#include <sys/mount.h>   /* BLKSSZGET */
+#if !defined(BLKSSZGET)
+# define BLKSSZGET _IO(0x12, 104)
+#endif
 //#include <linux/msdos_fs.h>
+#include "volume_id/volume_id_internal.h"
 
 #define SECTOR_SIZE             512
 
@@ -275,7 +279,7 @@ int mkfs_vfat_main(int argc UNUSED_PARAM, char **argv)
 		)
 			bb_error_msg_and_die("will not try to make filesystem on full-disk device (use -I if wanted)");
 		// can't work on mounted filesystems
-		if (find_mount_point(device_name))
+		if (find_mount_point(device_name, 0))
 			bb_error_msg_and_die("can't format mounted filesystem");
 #endif
 		// get true sector size
@@ -562,7 +566,7 @@ int mkfs_vfat_main(int argc UNUSED_PARAM, char **argv)
 		start_data_sector = (reserved_sect + NUM_FATS * sect_per_fat) * (bytes_per_sect / SECTOR_SIZE);
 		start_data_block = (start_data_sector + SECTORS_PER_BLOCK - 1) / SECTORS_PER_BLOCK;
 
-		bb_info_msg("Searching for bad blocks ");
+		bb_info_msg("searching for bad blocks ");
 		currently_testing = 0;
 		try = TEST_BUFFER_BLOCKS;
 		while (currently_testing < volume_size_blocks) {
@@ -577,7 +581,7 @@ int mkfs_vfat_main(int argc UNUSED_PARAM, char **argv)
 			if (got < 0)
 				got = 0;
 			if (got & (BLOCK_SIZE - 1))
-				bb_error_msg("Unexpected values in do_check: probably bugs");
+				bb_error_msg("unexpected values in do_check: probably bugs");
 			got /= BLOCK_SIZE;
 			currently_testing += got;
 			if (got == try) {
@@ -592,7 +596,7 @@ int mkfs_vfat_main(int argc UNUSED_PARAM, char **argv)
 			for (i = 0; i < SECTORS_PER_BLOCK; i++) {
 				int cluster = (currently_testing * SECTORS_PER_BLOCK + i - start_data_sector) / (int) (sect_per_clust) / (bytes_per_sect / SECTOR_SIZE);
 				if (cluster < 0)
-					bb_error_msg_and_die("Invalid cluster number in mark_sector: probably bug!");
+					bb_error_msg_and_die("invalid cluster number in mark_sector: probably bug!");
 				MARK_CLUSTER(cluster, BAD_FAT32);
 			}
 			badblocks++;

@@ -72,6 +72,9 @@ getopt32(char **argv, const char *applet_opts, ...)
         env -i ls -d /
         Here we want env to process just the '-i', not the '-d'.
 
+ "!"    Report bad option, missing required options,
+        inconsistent options with all-ones return value (instead of abort).
+
 const char *applet_long_options
 
         This struct allows you to define long options:
@@ -311,7 +314,7 @@ typedef struct {
 } t_complementary;
 
 /* You can set applet_long_options for parse called long options */
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG
 static const struct option bb_null_long_options[1] = {
 	{ 0, 0, 0, 0 }
 };
@@ -327,11 +330,12 @@ getopt32(char **argv, const char *applet_opts, ...)
 	unsigned flags = 0;
 	unsigned requires = 0;
 	t_complementary complementary[33]; /* last stays zero-filled */
+	char first_char;
 	int c;
 	const unsigned char *s;
 	t_complementary *on_off;
 	va_list p;
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG
 	const struct option *l_o;
 	struct option *long_options = (struct option *) &bb_null_long_options;
 #endif
@@ -357,6 +361,11 @@ getopt32(char **argv, const char *applet_opts, ...)
 	on_off = complementary;
 	memset(on_off, 0, sizeof(complementary));
 
+	/* skip bbox extension */
+	first_char = applet_opts[0];
+	if (first_char == '!')
+		applet_opts++;
+
 	/* skip GNU extension */
 	s = (const unsigned char *)applet_opts;
 	if (*s == '+' || *s == '-')
@@ -375,7 +384,7 @@ getopt32(char **argv, const char *applet_opts, ...)
 		c++;
 	}
 
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG
 	if (applet_long_options) {
 		const char *optstr;
 		unsigned i, count;
@@ -415,7 +424,7 @@ getopt32(char **argv, const char *applet_opts, ...)
  next_long: ;
 		}
 	}
-#endif /* ENABLE_GETOPT_LONG */
+#endif /* ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG */
 	for (s = (const unsigned char *)opt_complementary; s && *s; s++) {
 		t_complementary *pair;
 		unsigned *pair_switch;
@@ -534,7 +543,7 @@ getopt32(char **argv, const char *applet_opts, ...)
 	 * "fake" short options, like this one:
 	 * wget $'-\203' "Test: test" http://kernel.org/
 	 * (supposed to act as --header, but doesn't) */
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG
 	while ((c = getopt_long(argc, argv, applet_opts,
 			long_options, NULL)) != -1) {
 #else
@@ -549,11 +558,11 @@ getopt32(char **argv, const char *applet_opts, ...)
 			 * is always NULL (see above) */
 			if (on_off->opt_char == '\0' /* && c != '\0' */) {
 				/* c is probably '?' - "bad option" */
-				bb_show_usage();
+				goto error;
 			}
 		}
 		if (flags & on_off->incongruously)
-			bb_show_usage();
+			goto error;
 		trigger = on_off->switch_on & on_off->switch_off;
 		flags &= ~(on_off->switch_off ^ trigger);
 		flags |= on_off->switch_on ^ trigger;
@@ -577,16 +586,24 @@ getopt32(char **argv, const char *applet_opts, ...)
 
 	/* check depending requires for given options */
 	for (on_off = complementary; on_off->opt_char; on_off++) {
-		if (on_off->requires && (flags & on_off->switch_on) &&
-					(flags & on_off->requires) == 0)
-			bb_show_usage();
+		if (on_off->requires
+		 && (flags & on_off->switch_on)
+		 && (flags & on_off->requires) == 0
+		) {
+			goto error;
+		}
 	}
 	if (requires && (flags & requires) == 0)
-		bb_show_usage();
+		goto error;
 	argc -= optind;
 	if (argc < min_arg || (max_arg >= 0 && argc > max_arg))
-		bb_show_usage();
+		goto error;
 
 	option_mask32 = flags;
 	return flags;
+
+ error:
+	if (first_char != '!')
+		bb_show_usage();
+	return (int32_t)-1;
 }

@@ -12,6 +12,17 @@ config FEATURE_IPV6
 	  Enable IPv6 support in busybox.
 	  This adds IPv6 support in the networking applets.
 
+config FEATURE_UNIX_LOCAL
+	bool "Enable Unix domain socket support (usually not needed)"
+	default n
+	help
+	  Enable Unix domain socket support in all busybox networking
+	  applets.  Address of the form local:/path/to/unix/socket
+	  will be recognized.
+
+	  This extension is almost never used in real world usage.
+	  You most likely want to say N.
+
 config FEATURE_PREFER_IPV4_ADDRESS
 	bool "Prefer IPv4 addresses from DNS queries"
 	default y
@@ -121,7 +132,7 @@ config FTPPUT
 config FEATURE_FTPGETPUT_LONG_OPTIONS
 	bool "Enable long options in ftpget/ftpput"
 	default n
-	depends on GETOPT_LONG && (FTPGET || FTPPUT)
+	depends on LONG_OPTS && (FTPGET || FTPPUT)
 	help
 	  Support long options for the ftpget/ftpput applet.
 
@@ -295,6 +306,12 @@ config IFENSLAVE
 	help
 	  Userspace application to bind several interfaces
 	  to a logical interface (use with kernel bonding driver).
+
+config IFPLUGD
+	bool "ifplugd"
+	default n
+	help
+	  Network interface plug detection daemon.
 
 config IFUPDOWN
 	bool "ifupdown"
@@ -561,7 +578,7 @@ config FEATURE_IPCALC_FANCY
 config FEATURE_IPCALC_LONG_OPTIONS
 	bool "Enable long options"
 	default n
-	depends on IPCALC && GETOPT_LONG
+	depends on IPCALC && LONG_OPTS
 	help
 	  Support long options for the ipcalc applet.
 
@@ -820,15 +837,14 @@ config TFTP_DEBUG
 	default n
 	depends on TFTP || TFTPD
 	help
-	  Enable debug settings for tftp. This is useful if you're running
-	  into problems with tftp as the protocol doesn't help you much when
-	  you run into problems.
+	  Make tftp[d] print debugging messages on stderr.
+	  This is useful if you are diagnosing a bug in tftp[d].
 
 config TRACEROUTE
 	bool "traceroute"
 	default n
 	help
-	  Utility to trace the route of IP packets
+	  Utility to trace the route of IP packets.
 
 config FEATURE_TRACEROUTE_VERBOSE
 	bool "Enable verbose output"
@@ -894,7 +910,7 @@ config FEATURE_WGET_AUTHENTICATION
 config FEATURE_WGET_LONG_OPTIONS
 	bool "Enable long options"
 	default n
-	depends on WGET && GETOPT_LONG
+	depends on WGET && LONG_OPTS
 	help
 	  Support long options for the wget applet.
 

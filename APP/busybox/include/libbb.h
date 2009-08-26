@@ -29,6 +29,10 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#if defined __FreeBSD__
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -72,7 +76,12 @@
 #include <pwd.h>
 #include <grp.h>
 #if ENABLE_FEATURE_SHADOWPASSWDS
-# include <shadow.h>
+# if !ENABLE_USE_BB_SHADOW
+/* If using busybox's shadow implementation, do not include the shadow.h
+ * header as the toolchain may not provide it at all.
+ */
+#  include <shadow.h>
+# endif
 #endif
 
 /* Some libc's forget to declare these, do it ourself */
@@ -86,7 +95,9 @@ int klogctl(int type, char *b, int len);
 /* This is declared here rather than #including <libgen.h> in order to avoid
  * confusing the two versions of basename.  See the dirname/basename man page
  * for details. */
+#if !defined __FreeBSD__
 char *dirname(char *path);
+#endif
 /* Include our own copy of struct sysinfo to avoid binary compatibility
  * problems with Linux 2.4, which changed things.  Grumble, grumble. */
 struct sysinfo {
@@ -260,7 +271,7 @@ enum {	/* DO NOT CHANGE THESE VALUES!  cp.c, mv.c, install.c depend on them. */
 	FILEUTILS_SET_SECURITY_CONTEXT = 0x200
 #endif
 };
-#define FILEUTILS_CP_OPTSTR "pdRfilsL" USE_SELINUX("c")
+#define FILEUTILS_CP_OPTSTR "pdRfilsL" IF_SELINUX("c")
 extern int remove_file(const char *path, int flags) FAST_FUNC;
 /* NB: without FILEUTILS_RECUR in flags, it will basically "cat"
  * the source, not copy (unless "source" is a directory).
@@ -382,7 +393,7 @@ void xsetenv(const char *key, const char *value) FAST_FUNC;
 void bb_unsetenv(const char *key) FAST_FUNC;
 void xunlink(const char *pathname) FAST_FUNC;
 void xstat(const char *pathname, struct stat *buf) FAST_FUNC;
-int xopen(const char *pathname, int flags) FAST_FUNC FAST_FUNC;
+int xopen(const char *pathname, int flags) FAST_FUNC;
 int xopen3(const char *pathname, int flags, int mode) FAST_FUNC;
 int open_or_warn(const char *pathname, int flags) FAST_FUNC;
 int open3_or_warn(const char *pathname, int flags, int mode) FAST_FUNC;
@@ -424,6 +435,10 @@ struct BUG_too_small {
 			/* | AF_IPX */
 			) <= 127 ? 1 : -1];
 };
+
+
+void parse_datestr(const char *date_str, struct tm *tm_time) FAST_FUNC;
+time_t validate_tm_time(const char *date_str, struct tm *tm_time) FAST_FUNC;
 
 
 int xsocket(int domain, int type, int protocol) FAST_FUNC;
@@ -765,12 +780,8 @@ pid_t safe_waitpid(pid_t pid, int *wstat, int options) FAST_FUNC;
  */
 int wait4pid(pid_t pid) FAST_FUNC;
 pid_t wait_any_nohang(int *wstat) FAST_FUNC;
-#define wait_crashed(w) ((w) & 127)
-#define wait_exitcode(w) ((w) >> 8)
-#define wait_stopsig(w) ((w) >> 8)
-#define wait_stopped(w) (((w) & 127) == 127)
 /* wait4pid(spawn(argv)) + NOFORK/NOEXEC (if configured) */
-pid_t spawn_and_wait(char **argv) FAST_FUNC;
+int spawn_and_wait(char **argv) FAST_FUNC;
 struct nofork_save_area {
 	jmp_buf die_jmp;
 	const char *applet_name;
@@ -839,7 +850,7 @@ int sanitize_env_if_suid(void) FAST_FUNC;
 
 extern const char *const bb_argv_dash[]; /* "-", NULL */
 extern const char *opt_complementary;
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS || ENABLE_FEATURE_GETOPT_LONG
 #define No_argument "\0"
 #define Required_argument "\001"
 #define Optional_argument "\002"
@@ -916,62 +927,21 @@ extern void bb_verror_msg(const char *s, va_list p, const char *strerr) FAST_FUN
 /* Applets which are useful from another applets */
 int bb_cat(char** argv);
 /* If shell needs them, they exist even if not enabled as applets */
-int echo_main(int argc, char** argv) USE_ECHO(MAIN_EXTERNALLY_VISIBLE);
-int printf_main(int argc, char **argv) USE_PRINTF(MAIN_EXTERNALLY_VISIBLE);
-int test_main(int argc, char **argv) USE_TEST(MAIN_EXTERNALLY_VISIBLE);
-int kill_main(int argc, char **argv) USE_KILL(MAIN_EXTERNALLY_VISIBLE);
+int echo_main(int argc, char** argv) IF_ECHO(MAIN_EXTERNALLY_VISIBLE);
+int printf_main(int argc, char **argv) IF_PRINTF(MAIN_EXTERNALLY_VISIBLE);
+int test_main(int argc, char **argv) IF_TEST(MAIN_EXTERNALLY_VISIBLE);
+int kill_main(int argc, char **argv) IF_KILL(MAIN_EXTERNALLY_VISIBLE);
 /* Similar, but used by chgrp, not shell */
-int chown_main(int argc, char **argv) USE_CHOWN(MAIN_EXTERNALLY_VISIBLE);
+int chown_main(int argc, char **argv) IF_CHOWN(MAIN_EXTERNALLY_VISIBLE);
 /* Used by ftpd */
-int ls_main(int argc, char **argv) USE_LS(MAIN_EXTERNALLY_VISIBLE);
-/* Don't need USE_xxx() guard for these */
+int ls_main(int argc, char **argv) IF_LS(MAIN_EXTERNALLY_VISIBLE);
+/* Don't need IF_xxx() guard for these */
 int gunzip_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 int bunzip2_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 
 #if ENABLE_ROUTE
 void bb_displayroutes(int noresolve, int netstatfmt) FAST_FUNC;
 #endif
-
-
-/* "Keycodes" that report an escape sequence.
- * We use something which fits into signed char,
- * yet doesn't represent any valid Unicode characher.
- * Also, -1 is reserved for error indication and we don't use it. */
-enum {
-	KEYCODE_UP       =  -2,
-	KEYCODE_DOWN     =  -3,
-	KEYCODE_RIGHT    =  -4,
-	KEYCODE_LEFT     =  -5,
-	KEYCODE_HOME     =  -6,
-	KEYCODE_END      =  -7,
-	KEYCODE_INSERT   =  -8,
-	KEYCODE_DELETE   =  -9,
-	KEYCODE_PAGEUP   = -10,
-	KEYCODE_PAGEDOWN = -11,
-#if 0
-	KEYCODE_FUN1     = -12,
-	KEYCODE_FUN2     = -13,
-	KEYCODE_FUN3     = -14,
-	KEYCODE_FUN4     = -15,
-	KEYCODE_FUN5     = -16,
-	KEYCODE_FUN6     = -17,
-	KEYCODE_FUN7     = -18,
-	KEYCODE_FUN8     = -19,
-	KEYCODE_FUN9     = -20,
-	KEYCODE_FUN10    = -21,
-	KEYCODE_FUN11    = -22,
-	KEYCODE_FUN12    = -23,
-#endif
-	/* How long the longest ESC sequence we know? */
-	KEYCODE_BUFFER_SIZE = 4
-};
-/* Note: fd may be in blocking or non-blocking mode, both make sense.
- * For one, less uses non-blocking mode.
- * Only the first read syscall inside read_key may block indefinitely
- * (unless fd is in non-blocking mode),
- * subsequent reads will time out after a few milliseconds.
- */
-int read_key(int fd, smalluint *nbuffered, char *buffer) FAST_FUNC;
 
 
 /* Networking */
@@ -1025,7 +995,7 @@ extern void run_applet_no_and_exit(int a, char **argv) NORETURN FAST_FUNC;
 
 #ifdef HAVE_MNTENT_H
 extern int match_fstype(const struct mntent *mt, const char *fstypes) FAST_FUNC;
-extern struct mntent *find_mount_point(const char *name) FAST_FUNC;
+extern struct mntent *find_mount_point(const char *name, int subdir_too) FAST_FUNC;
 #endif
 extern void erase_mtab(const char * name) FAST_FUNC;
 extern unsigned int tty_baud_to_value(speed_t speed) FAST_FUNC;
@@ -1202,25 +1172,73 @@ unsigned long long bb_makedev(unsigned int major, unsigned int minor) FAST_FUNC;
 #endif
 
 
+/* "Keycodes" that report an escape sequence.
+ * We use something which fits into signed char,
+ * yet doesn't represent any valid Unicode characher.
+ * Also, -1 is reserved for error indication and we don't use it. */
+enum {
+	KEYCODE_UP       =  -2,
+	KEYCODE_DOWN     =  -3,
+	KEYCODE_RIGHT    =  -4,
+	KEYCODE_LEFT     =  -5,
+	KEYCODE_HOME     =  -6,
+	KEYCODE_END      =  -7,
+	KEYCODE_INSERT   =  -8,
+	KEYCODE_DELETE   =  -9,
+	KEYCODE_PAGEUP   = -10,
+	KEYCODE_PAGEDOWN = -11,
+#if 0
+	KEYCODE_FUN1     = -12,
+	KEYCODE_FUN2     = -13,
+	KEYCODE_FUN3     = -14,
+	KEYCODE_FUN4     = -15,
+	KEYCODE_FUN5     = -16,
+	KEYCODE_FUN6     = -17,
+	KEYCODE_FUN7     = -18,
+	KEYCODE_FUN8     = -19,
+	KEYCODE_FUN9     = -20,
+	KEYCODE_FUN10    = -21,
+	KEYCODE_FUN11    = -22,
+	KEYCODE_FUN12    = -23,
+#endif
+	KEYCODE_CURSOR_POS = -0x100,
+	/* How long is the longest ESC sequence we know?
+	 * We want it big enough to be able to contain
+	 * cursor position sequence "ESC [ 9999 ; 9999 R"
+	 */
+	KEYCODE_BUFFER_SIZE = 16
+};
+/* Note: fd may be in blocking or non-blocking mode, both make sense.
+ * For one, less uses non-blocking mode.
+ * Only the first read syscall inside read_key may block indefinitely
+ * (unless fd is in non-blocking mode),
+ * subsequent reads will time out after a few milliseconds.
+ * Return of -1 means EOF or error (errno == 0 on EOF).
+ * buffer[0] is used as a counter of buffered chars and must be 0
+ * on first call.
+ */
+int64_t read_key(int fd, char *buffer) FAST_FUNC;
+
+
 #if ENABLE_FEATURE_EDITING
 /* It's NOT just ENABLEd or disabled. It's a number: */
-#ifdef CONFIG_FEATURE_EDITING_HISTORY
-# define MAX_HISTORY (CONFIG_FEATURE_EDITING_HISTORY + 0)
-#else
-# define MAX_HISTORY 0
-#endif
+# ifdef CONFIG_FEATURE_EDITING_HISTORY
+#  define MAX_HISTORY (CONFIG_FEATURE_EDITING_HISTORY + 0)
+# else
+#  define MAX_HISTORY 0
+# endif
 typedef struct line_input_t {
 	int flags;
 	const char *path_lookup;
-#if MAX_HISTORY
+# if MAX_HISTORY
 	int cnt_history;
 	int cur_history;
-#if ENABLE_FEATURE_EDITING_SAVEHISTORY
+#  if ENABLE_FEATURE_EDITING_SAVEHISTORY
 	unsigned cnt_history_in_file;
 	const char *hist_file;
-#endif
+#  endif
 	char *history[MAX_HISTORY + 1];
-#endif
+# endif
 } line_input_t;
 enum {
 	DO_HISTORY = 1 * (MAX_HISTORY > 0),
@@ -1232,8 +1250,9 @@ enum {
 	FOR_SHELL = DO_HISTORY | SAVE_HISTORY | TAB_COMPLETION | USERNAME_COMPLETION,
 };
 line_input_t *new_line_input_t(int flags) FAST_FUNC;
-/* so far static: void free_line_input_t(line_input_t *n) FAST_FUNC; */
-/* Returns:
+/* So far static: void free_line_input_t(line_input_t *n) FAST_FUNC; */
+/* maxsize must be >= 2.
+ * Returns:
  * -1 on read errors or EOF, or on bare Ctrl-D,
  * 0  on ctrl-C (the line entered is still returned in 'command'),
  * >0 length of input string, including terminating '\n'
@@ -1247,12 +1266,12 @@ int read_line_input(const char* prompt, char* command, int maxsize) FAST_FUNC;
 
 
 #ifndef COMM_LEN
-#ifdef TASK_COMM_LEN
+# ifdef TASK_COMM_LEN
 enum { COMM_LEN = TASK_COMM_LEN };
-#else
+# else
 /* synchronize with sizeof(task_struct.comm) in /usr/include/linux/sched.h */
 enum { COMM_LEN = 16 };
-#endif
+# endif
 #endif
 typedef struct procps_status_t {
 	DIR *dir;
@@ -1261,7 +1280,8 @@ typedef struct procps_status_t {
 /* Fields are set to 0/NULL if failed to determine (or not requested) */
 	uint16_t argv_len;
 	char *argv0;
-	USE_SELINUX(char *context;)
+	char *exe;
+	IF_SELINUX(char *context;)
 	/* Everything below must contain no ptrs to malloc'ed data:
 	 * it is memset(0) for each process in procps_scan() */
 	unsigned long vsz, rss; /* we round it to kbytes */
@@ -1273,6 +1293,11 @@ typedef struct procps_status_t {
 	unsigned sid;
 	unsigned uid;
 	unsigned gid;
+#if ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS
+	unsigned ruid;
+	unsigned rgid;
+	int niceness;
+#endif
 	unsigned tty_major,tty_minor;
 #if ENABLE_FEATURE_TOPMEM
 	unsigned long mapped_rw;
@@ -1293,6 +1318,7 @@ typedef struct procps_status_t {
 	int last_seen_on_cpu;
 #endif
 } procps_status_t;
+/* flag bits for procps_scan(xx, flags) calls */
 enum {
 	PSSCAN_PID      = 1 << 0,
 	PSSCAN_PPID     = 1 << 1,
@@ -1302,7 +1328,7 @@ enum {
 	PSSCAN_COMM     = 1 << 5,
 	/* PSSCAN_CMD      = 1 << 6, - use read_cmdline instead */
 	PSSCAN_ARGV0    = 1 << 7,
-	/* PSSCAN_EXE      = 1 << 8, - not implemented */
+	PSSCAN_EXE      = 1 << 8,
 	PSSCAN_STATE    = 1 << 9,
 	PSSCAN_VSZ      = 1 << 10,
 	PSSCAN_RSS      = 1 << 11,
@@ -1317,18 +1343,18 @@ enum {
 				|| ENABLE_PIDOF
 				|| ENABLE_SESTATUS
 				),
-	USE_SELINUX(PSSCAN_CONTEXT = 1 << 17,)
+	IF_SELINUX(PSSCAN_CONTEXT = 1 << 17,)
 	PSSCAN_START_TIME = 1 << 18,
-	PSSCAN_CPU      = 1 << 19,
+	PSSCAN_CPU      = (1 << 19) * ENABLE_FEATURE_TOP_SMP_PROCESS,
+	PSSCAN_NICE     = (1 << 20) * ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS,
+	PSSCAN_RUIDGID  = (1 << 21) * ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS,
 	/* These are all retrieved from proc/NN/stat in one go: */
 	PSSCAN_STAT     = PSSCAN_PPID | PSSCAN_PGID | PSSCAN_SID
 	/**/            | PSSCAN_COMM | PSSCAN_STATE
 	/**/            | PSSCAN_VSZ | PSSCAN_RSS
 	/**/            | PSSCAN_STIME | PSSCAN_UTIME | PSSCAN_START_TIME
-	/**/            | PSSCAN_TTY
-#if ENABLE_FEATURE_TOP_SMP_PROCESS
+	/**/            | PSSCAN_TTY | PSSCAN_NICE
 	/**/            | PSSCAN_CPU
-#endif
 };
 //procps_status_t* alloc_procps_scan(void) FAST_FUNC;
 void free_procps_scan(procps_status_t* sp) FAST_FUNC;

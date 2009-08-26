@@ -88,9 +88,17 @@ enum {
 	CPIO_OPT_PRESERVE_MTIME     = (1 << 6),
 	CPIO_OPT_DEREF              = (1 << 7),
 	CPIO_OPT_FILE               = (1 << 8),
-	CPIO_OPT_CREATE             = (1 << 9) * ENABLE_FEATURE_CPIO_O,
-	CPIO_OPT_FORMAT             = (1 << 10) * ENABLE_FEATURE_CPIO_O,
-	CPIO_OPT_PASSTHROUGH        = (1 << 11) * ENABLE_FEATURE_CPIO_P,
+	OPTBIT_FILE = 8,
+	IF_FEATURE_CPIO_O(OPTBIT_CREATE     ,)
+	IF_FEATURE_CPIO_O(OPTBIT_FORMAT     ,)
+	IF_FEATURE_CPIO_P(OPTBIT_PASSTHROUGH,)
+	IF_LONG_OPTS(     OPTBIT_QUIET      ,)
+	IF_LONG_OPTS(     OPTBIT_2STDOUT    ,)
+	CPIO_OPT_CREATE             = IF_FEATURE_CPIO_O((1 << OPTBIT_CREATE     )) + 0,
+	CPIO_OPT_FORMAT             = IF_FEATURE_CPIO_O((1 << OPTBIT_FORMAT     )) + 0,
+	CPIO_OPT_PASSTHROUGH        = IF_FEATURE_CPIO_P((1 << OPTBIT_PASSTHROUGH)) + 0,
+	CPIO_OPT_QUIET              = IF_LONG_OPTS(     (1 << OPTBIT_QUIET      )) + 0,
+	CPIO_OPT_2STDOUT            = IF_LONG_OPTS(     (1 << OPTBIT_2STDOUT    )) + 0,
 };
 
 #define OPTION_STR "it0uvdmLF:"
@@ -270,10 +278,10 @@ int cpio_main(int argc UNUSED_PARAM, char **argv)
 {
 	archive_handle_t *archive_handle;
 	char *cpio_filename;
-	USE_FEATURE_CPIO_O(const char *cpio_fmt = "";)
+	IF_FEATURE_CPIO_O(const char *cpio_fmt = "";)
 	unsigned opt;
 
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS
 	applet_long_options =
 		"extract\0"      No_argument       "i"
 		"list\0"         No_argument       "t"
@@ -284,6 +292,9 @@ int cpio_main(int argc UNUSED_PARAM, char **argv)
 		"pass-through\0" No_argument       "p"
 #endif
 #endif
+		"verbose\0"      No_argument       "v"
+		"quiet\0"        No_argument       "\xff"
+		"to-stdout\0"    No_argument       "\xfe"
 		;
 #endif
 
@@ -295,7 +306,7 @@ int cpio_main(int argc UNUSED_PARAM, char **argv)
 #if !ENABLE_FEATURE_CPIO_O
 	opt = getopt32(argv, OPTION_STR, &cpio_filename);
 #else
-	opt = getopt32(argv, OPTION_STR "oH:" USE_FEATURE_CPIO_P("p"), &cpio_filename, &cpio_fmt);
+	opt = getopt32(argv, OPTION_STR "oH:" IF_FEATURE_CPIO_P("p"), &cpio_filename, &cpio_fmt);
 	if (opt & CPIO_OPT_PASSTHROUGH) {
 		pid_t pid;
 		struct fd_pair pp;
@@ -372,6 +383,8 @@ int cpio_main(int argc UNUSED_PARAM, char **argv)
 	}
 	if (opt & CPIO_OPT_EXTRACT) {
 		archive_handle->action_data = data_extract_all;
+		if (opt & CPIO_OPT_2STDOUT)
+			archive_handle->action_data = data_extract_to_stdout;
 	}
 	if (opt & CPIO_OPT_UNCONDITIONAL) {
 		archive_handle->ah_flags |= ARCHIVE_EXTRACT_UNCONDITIONAL;
@@ -406,7 +419,9 @@ int cpio_main(int argc UNUSED_PARAM, char **argv)
 	while (get_header_cpio(archive_handle) == EXIT_SUCCESS)
 		continue;
 
-	if (archive_handle->ah_priv[2] != (void*) ~(ptrdiff_t)0)
+	if (archive_handle->ah_priv[2] != (void*) ~(ptrdiff_t)0
+	 && !(opt & CPIO_OPT_QUIET)
+	)
 		printf("%lu blocks\n", (unsigned long)(ptrdiff_t)(archive_handle->ah_priv[2]));
 
 	return EXIT_SUCCESS;

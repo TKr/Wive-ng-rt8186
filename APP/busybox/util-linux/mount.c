@@ -8,7 +8,6 @@
  *
  * Licensed under GPLv2 or later, see file LICENSE in this tarball for details.
  */
-
 // Design notes: There is no spec for mount.  Remind me to write one.
 //
 // mount_main() calls singlemount() which calls mount_it_now().
@@ -17,9 +16,37 @@
 // singlemount() can loop through /etc/filesystems for fstype detection.
 // mount_it_now() does the actual mount.
 //
-
 #include <mntent.h>
 #include <syslog.h>
+#include <sys/mount.h>
+#ifndef MS_BIND
+# define MS_BIND        (1 << 12)
+#endif
+#ifndef MS_MOVE
+# define MS_MOVE        (1 << 13)
+#endif
+#ifndef MS_RECURSIVE
+# define MS_RECURSIVE   (1 << 14)
+#endif
+#ifndef MS_SILENT
+# define MS_SILENT      (1 << 15)
+#endif
+/* The shared subtree stuff, which went in around 2.6.15. */
+#ifndef MS_UNBINDABLE
+# define MS_UNBINDABLE  (1 << 17)
+#endif
+#ifndef MS_PRIVATE
+# define MS_PRIVATE     (1 << 18)
+#endif
+#ifndef MS_SLAVE
+# define MS_SLAVE       (1 << 19)
+#endif
+#ifndef MS_SHARED
+# define MS_SHARED      (1 << 20)
+#endif
+#ifndef MS_RELATIME
+# define MS_RELATIME    (1 << 21)
+#endif
 #include "libbb.h"
 
 #if ENABLE_FEATURE_MOUNT_LABEL
@@ -79,15 +106,21 @@ enum {
 };
 
 #if ENABLE_FEATURE_MTAB_SUPPORT
-#define useMtab (!(option_mask32 & OPT_n))
+#define USE_MTAB (!(option_mask32 & OPT_n))
 #else
-#define useMtab 0
+#define USE_MTAB 0
 #endif
 
 #if ENABLE_FEATURE_MOUNT_FAKE
-#define fakeIt (option_mask32 & OPT_f)
+#define FAKE_IT (option_mask32 & OPT_f)
 #else
-#define fakeIt 0
+#define FAKE_IT 0
+#endif
+
+#if ENABLE_FEATURE_MOUNT_HELPERS
+#define HELPERS_ALLOWED (!(option_mask32 & OPT_i))
+#else
+#define HELPERS_ALLOWED 0
 #endif
 
 
@@ -105,22 +138,22 @@ enum {
 static const int32_t mount_options[] = {
 	// MS_FLAGS set a bit.  ~MS_FLAGS disable that bit.  0 flags are NOPs.
 
-	USE_FEATURE_MOUNT_LOOP(
+	IF_FEATURE_MOUNT_LOOP(
 		/* "loop" */ 0,
 	)
 
-	USE_FEATURE_MOUNT_FSTAB(
+	IF_FEATURE_MOUNT_FSTAB(
 		/* "defaults" */ 0,
 		/* "quiet" 0 - do not filter out, vfat wants to see it */
 		/* "noauto" */ MOUNT_NOAUTO,
 		/* "sw"     */ MOUNT_SWAP,
 		/* "swap"   */ MOUNT_SWAP,
-		USE_DESKTOP(/* "user"  */ MOUNT_USERS,)
-		USE_DESKTOP(/* "users" */ MOUNT_USERS,)
+		IF_DESKTOP(/* "user"  */ MOUNT_USERS,)
+		IF_DESKTOP(/* "users" */ MOUNT_USERS,)
 		/* "_netdev" */ 0,
 	)
 
-	USE_FEATURE_MOUNT_FLAGS(
+	IF_FEATURE_MOUNT_FLAGS(
 		// vfs flags
 		/* "nosuid"      */ MS_NOSUID,
 		/* "suid"        */ ~MS_NOSUID,
@@ -161,20 +194,20 @@ static const int32_t mount_options[] = {
 };
 
 static const char mount_option_str[] =
-	USE_FEATURE_MOUNT_LOOP(
+	IF_FEATURE_MOUNT_LOOP(
 		"loop\0"
 	)
-	USE_FEATURE_MOUNT_FSTAB(
+	IF_FEATURE_MOUNT_FSTAB(
 		"defaults\0"
 		// "quiet\0" - do not filter out, vfat wants to see it
 		"noauto\0"
 		"sw\0"
 		"swap\0"
-		USE_DESKTOP("user\0")
-		USE_DESKTOP("users\0")
+		IF_DESKTOP("user\0")
+		IF_DESKTOP("users\0")
 		"_netdev\0"
 	)
-	USE_FEATURE_MOUNT_FLAGS(
+	IF_FEATURE_MOUNT_FLAGS(
 		// vfs flags
 		"nosuid\0"
 		"suid\0"
@@ -360,7 +393,7 @@ static llist_t *get_block_backed_filesystems(void)
 		"/proc/filesystems",
 	};
 	char *fs, *buf;
-	llist_t *list = 0;
+	llist_t *list = NULL;
 	int i;
 	FILE *f;
 
@@ -369,10 +402,11 @@ static llist_t *get_block_backed_filesystems(void)
 		if (!f) continue;
 
 		while ((buf = xmalloc_fgetline(f)) != NULL) {
-			if (!strncmp(buf, "nodev", 5) && isspace(buf[5]))
+			if (strncmp(buf, "nodev", 5) == 0 && isspace(buf[5]))
 				continue;
 			fs = skip_whitespace(buf);
-			if (*fs=='#' || *fs=='*' || !*fs) continue;
+			if (*fs == '#' || *fs == '*' || !*fs)
+				continue;
 
 			llist_add_to_end(&list, xstrdup(fs));
 			free(buf);
@@ -398,7 +432,7 @@ static int mount_it_now(struct mntent *mp, long vfsflags, char *filteropts)
 {
 	int rc = 0;
 
-	if (fakeIt) {
+	if (FAKE_IT) {
 		if (verbose >= 2)
 			bb_error_msg("would do mount('%s','%s','%s',0x%08lx,'%s')",
 				mp->mnt_fsname, mp->mnt_dir, mp->mnt_type,
@@ -414,11 +448,15 @@ static int mount_it_now(struct mntent *mp, long vfsflags, char *filteropts)
 
 		// If mount failed, try
 		// helper program mount.<mnt_type>
-		if (ENABLE_FEATURE_MOUNT_HELPERS && rc) {
-			char *args[6];
+		if (HELPERS_ALLOWED && rc) {
+			char *args[8];
 			int errno_save = errno;
 			args[0] = xasprintf("mount.%s", mp->mnt_type);
 			rc = 1;
+			if (FAKE_IT)
+				args[rc++] = (char *)"-f";
+			if (ENABLE_FEATURE_MTAB_SUPPORT && !USE_MTAB)
+				args[rc++] = (char *)"-n";
 			args[rc++] = mp->mnt_fsname;
 			args[rc++] = mp->mnt_dir;
 			if (filteropts) {
@@ -449,7 +487,7 @@ static int mount_it_now(struct mntent *mp, long vfsflags, char *filteropts)
 	// If the mount was successful, and we're maintaining an old-style
 	// mtab file by hand, add the new entry to it now.
  mtab:
-	if (useMtab && !rc && !(vfsflags & MS_REMOUNT)) {
+	if (USE_MTAB && !rc && !(vfsflags & MS_REMOUNT)) {
 		char *fsname;
 		FILE *mountTable = setmntent(bb_path_mtab_file, "a+");
 		const char *option_str = mount_option_str;
@@ -783,7 +821,7 @@ static bool_t xdr_mountres3_ok(XDR *xdrs, mountres3_ok *objp)
 	if (!xdr_fhandle3(xdrs, &objp->fhandle))
 		return FALSE;
 	if (!xdr_array(xdrs, &(objp->auth_flavours.auth_flavours_val), &(objp->auth_flavours.auth_flavours_len), ~0,
-				sizeof (int), (xdrproc_t) xdr_int))
+				sizeof(int), (xdrproc_t) xdr_int))
 		return FALSE;
 	return TRUE;
 }
@@ -936,12 +974,15 @@ static void error_msg_rpc(const char *msg)
 }
 
 /* NB: mp->xxx fields may be trashed on exit */
-static int nfsmount(struct mntent *mp, long vfsflags, char *filteropts)
+static NOINLINE int nfsmount(struct mntent *mp, long vfsflags, char *filteropts)
 {
 	CLIENT *mclient;
 	char *hostname;
 	char *pathname;
 	char *mounthost;
+	/* prior to 2.6.23, kernel took NFS options in a form of this struct
+	 * only. 2.6.23+ looks at data->version, and if it's not 1..6,
+	 * then data pointer is interpreted as a string. */
 	struct nfs_mount_data data;
 	char *opt;
 	struct hostent *hp;
@@ -968,7 +1009,7 @@ static int nfsmount(struct mntent *mp, long vfsflags, char *filteropts)
 	int nfsprog;
 	int nfsvers;
 	int retval;
-	/* these all are one-bit really. 4.3.1 likes this combination: */
+	/* these all are one-bit really. gcc 4.3.1 likes this combination: */
 	smallint tcp;
 	smallint soft;
 	int intr;
@@ -1567,8 +1608,8 @@ static int singlemount(struct mntent *mp, int ignore_busy)
 {
 	int rc = -1;
 	long vfsflags;
-	char *loopFile = 0, *filteropts = 0;
-	llist_t *fl = 0;
+	char *loopFile = NULL, *filteropts = NULL;
+	llist_t *fl = NULL;
 	struct stat st;
 
 	vfsflags = parse_mount_options(mp->mnt_opts, &filteropts);
@@ -1578,21 +1619,28 @@ static int singlemount(struct mntent *mp, int ignore_busy)
 		mp->mnt_type = NULL;
 
 	// Might this be a virtual filesystem?
-	if (ENABLE_FEATURE_MOUNT_HELPERS
-	 && (strchr(mp->mnt_fsname, '#'))
-	) {
-		char *s, *p, *args[35];
-		int n = 0;
-// FIXME: does it allow execution of arbitrary commands?!
-// What args[0] can end up with?
-		for (s = p = mp->mnt_fsname; *s && n < 35-3; ++s) {
-			if (s[0] == '#' && s[1] != '#') {
-				*s = '\0';
-				args[n++] = p;
-				p = s + 1;
+	if (ENABLE_FEATURE_MOUNT_HELPERS && strchr(mp->mnt_fsname, '#')) {
+		char *args[35];
+		char *s;
+		int n;
+		// fsname: "cmd#arg1#arg2..."
+		// WARNING: allows execution of arbitrary commands!
+		// Try "mount 'sh#-c#sh' bogus_dir".
+		// It is safe ONLY because non-root
+		// cannot use two-argument mount command
+		// and using one-argument "mount 'sh#-c#sh'" doesn't work:
+		// "mount: can't find sh#-c#sh in /etc/fstab"
+		// (if /etc/fstab has it, it's ok: root sets up /etc/fstab).
+
+		s = mp->mnt_fsname;
+		n = 0;
+		args[n++] = s;
+		while (*s && n < 35 - 2) {
+			if (*s++ == '#' && *s != '#') {
+				s[-1] = '\0';
+				args[n++] = s;
 			}
 		}
-		args[n++] = p;
 		args[n++] = mp->mnt_dir;
 		args[n] = NULL;
 		rc = wait4pid(xspawn(args));
@@ -1701,7 +1749,8 @@ static int singlemount(struct mntent *mp, int ignore_busy)
 		for (fl = fslist; fl; fl = fl->link) {
 			mp->mnt_type = fl->data;
 			rc = mount_it_now(mp, vfsflags, filteropts);
-			if (!rc) break;
+			if (!rc)
+				break;
 		}
 	}
 
@@ -1781,9 +1830,9 @@ int mount_main(int argc UNUSED_PARAM, char **argv)
 	int i, j, rc = 0;
 	unsigned opt;
 	struct mntent mtpair[2], *mtcur = mtpair;
-	SKIP_DESKTOP(const int nonroot = 0;)
+	IF_NOT_DESKTOP(const int nonroot = 0;)
 
-	USE_DESKTOP(int nonroot = ) sanitize_env_if_suid();
+	IF_DESKTOP(int nonroot = ) sanitize_env_if_suid();
 
 	// Parse long options, like --bind and --move.  Note that -o option
 	// and --option are synonymous.  Yes, this means --remount,rw works.
@@ -1797,9 +1846,9 @@ int mount_main(int argc UNUSED_PARAM, char **argv)
 
 	// Parse remaining options
 	// Max 2 params; -o is a list, -v is a counter
-	opt_complementary = "?2o::" USE_FEATURE_MOUNT_VERBOSE("vv");
+	opt_complementary = "?2o::" IF_FEATURE_MOUNT_VERBOSE("vv");
 	opt = getopt32(argv, OPTION_STR, &lst_o, &fstype, &O_optmatch
-			USE_FEATURE_MOUNT_VERBOSE(, &verbose));
+			IF_FEATURE_MOUNT_VERBOSE(, &verbose));
 	while (lst_o) append_mount_options(&cmdopts, llist_pop(&lst_o)); // -o
 	if (opt & OPT_r) append_mount_options(&cmdopts, "ro"); // -r
 	if (opt & OPT_w) append_mount_options(&cmdopts, "rw"); // -w

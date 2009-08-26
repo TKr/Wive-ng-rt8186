@@ -41,31 +41,38 @@ int touch_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 int touch_main(int argc UNUSED_PARAM, char **argv)
 {
 #if ENABLE_DESKTOP
-#if ENABLE_GETOPT_LONG
-	static const char longopts[] ALIGN1 =
+# if ENABLE_LONG_OPTS
+	static const char touch_longopts[] ALIGN1 =
 		/* name, has_arg, val */
 		"no-create\0"         No_argument       "c"
 		"reference\0"         Required_argument "r"
+		"date\0"              Required_argument "d"
 	;
-#endif
+# endif
 	struct utimbuf timebuf;
 	char *reference_file = NULL;
+	char *date_str = NULL;
 #else
-#define reference_file NULL
-#define timebuf        (*(struct utimbuf*)NULL)
+# define reference_file NULL
+# define date_str       NULL
+# define timebuf        (*(struct utimbuf*)NULL)
 #endif
 	int fd;
 	int status = EXIT_SUCCESS;
 	int opts;
 
-#if ENABLE_DESKTOP
-#if ENABLE_GETOPT_LONG
-	applet_long_options = longopts;
+#if ENABLE_DESKTOP && ENABLE_LONG_OPTS
+	applet_long_options = touch_longopts;
 #endif
-#endif
-	opts = getopt32(argv, "c" USE_DESKTOP("r:")
+	/* -d and -t both set time. In coreutils,
+	 * accepted data format differs a bit between -d and -t.
+	 * We accept the same formats for both */
+	opts = getopt32(argv, "c" IF_DESKTOP("r:d:t:")
 				/*ignored:*/ "fma"
-				USE_DESKTOP(, &reference_file));
+				IF_DESKTOP(, &reference_file)
+				IF_DESKTOP(, &date_str)
+				IF_DESKTOP(, &date_str)
+	);
 
 	opts &= 1; /* only -c bit is left */
 	argv += optind;
@@ -78,6 +85,23 @@ int touch_main(int argc UNUSED_PARAM, char **argv)
 		xstat(reference_file, &stbuf);
 		timebuf.actime = stbuf.st_atime;
 		timebuf.modtime = stbuf.st_mtime;
+	}
+
+	if (date_str) {
+		struct tm tm_time;
+		time_t t;
+
+		//time(&t);
+		//localtime_r(&t, &tm_time);
+		memset(&tm_time, 0, sizeof(tm_time));
+		parse_datestr(date_str, &tm_time);
+
+		/* Correct any day of week and day of year etc. fields */
+		tm_time.tm_isdst = -1;	/* Be sure to recheck dst */
+		t = validate_tm_time(date_str, &tm_time);
+
+		timebuf.actime = t;
+		timebuf.modtime = t;
 	}
 
 	do {

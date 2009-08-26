@@ -25,7 +25,7 @@ int dumpleases_main(int argc UNUSED_PARAM, char **argv)
 	unsigned opt;
 	int64_t written_at, curr, expires_abs;
 	const char *file = LEASES_FILE;
-	struct dhcpOfferedAddr lease;
+	struct dyn_lease lease;
 	struct in_addr addr;
 
 	enum {
@@ -33,7 +33,7 @@ int dumpleases_main(int argc UNUSED_PARAM, char **argv)
 		OPT_r	= 0x2,	// -r
 		OPT_f	= 0x4,	// -f
 	};
-#if ENABLE_GETOPT_LONG
+#if ENABLE_LONG_OPTS
 	static const char dumpleases_longopts[] ALIGN1 =
 		"absolute\0"  No_argument       "a"
 		"remaining\0" No_argument       "r"
@@ -61,10 +61,10 @@ int dumpleases_main(int argc UNUSED_PARAM, char **argv)
 	while (full_read(fd, &lease, sizeof(lease)) == sizeof(lease)) {
 		const char *fmt = ":%02x" + 1;
 		for (i = 0; i < 6; i++) {
-			printf(fmt, lease.chaddr[i]);
+			printf(fmt, lease.lease_mac[i]);
 			fmt = ":%02x";
 		}
-		addr.s_addr = lease.yiaddr;
+		addr.s_addr = lease.lease_nip;
 		/* actually, 15+1 and 19+1, +1 is a space between columns */
 		/* lease.hostname is char[20] and is always NUL terminated */
 		printf(" %-16s%-20s", inet_ntoa(addr), lease.hostname);

@@ -13,7 +13,11 @@
  * Most of the dirty work blatantly ripped off from cat.c =)
  */
 
+#include <sys/mount.h>
 #include "libbb.h"
+/* Must be after libbb.h: they need size_t */
+#include <scsi/sg.h>
+#include <scsi/scsi.h>
 
 /* various defines swiped from linux/cdrom.h */
 #define CDROMCLOSETRAY            0x5319  /* pendant of CDROMEJECT  */
@@ -26,9 +30,6 @@
 
 /* Code taken from the original eject (http://eject.sourceforge.net/),
  * refactored it a bit for busybox (ne-bb@nicoerfurth.de) */
-
-#include <scsi/sg.h>
-#include <scsi/scsi.h>
 
 static void eject_scsi(const char *dev)
 {
@@ -89,7 +90,7 @@ int eject_main(int argc UNUSED_PARAM, char **argv)
 	const char *device;
 
 	opt_complementary = "?1:t--T:T--t";
-	flags = getopt32(argv, "tT" USE_FEATURE_EJECT_SCSI("s"));
+	flags = getopt32(argv, "tT" IF_FEATURE_EJECT_SCSI("s"));
 	device = argv[optind] ? argv[optind] : "/dev/cdrom";
 
 	/* We used to do "umount <device>" here, but it was buggy

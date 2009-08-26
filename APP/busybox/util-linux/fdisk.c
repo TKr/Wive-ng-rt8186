@@ -12,12 +12,16 @@
 #define _LARGEFILE64_SOURCE
 #endif
 #include <assert.h>             /* assert */
+#include <sys/mount.h>
+#if !defined(BLKSSZGET)
+# define BLKSSZGET _IO(0x12, 104)
+#endif
 #include "libbb.h"
 
 /* Looks like someone forgot to add this to config system */
 #ifndef ENABLE_FEATURE_FDISK_BLKSIZE
 # define ENABLE_FEATURE_FDISK_BLKSIZE 0
-# define USE_FEATURE_FDISK_BLKSIZE(a)
+# define IF_FEATURE_FDISK_BLKSIZE(a)
 #endif
 
 #define DEFAULT_SECTOR_SIZE      512
@@ -1302,7 +1306,7 @@ static int get_boot(void)
 // or get_boot() [table is bad] -> create_sunlabel() -> get_boot(CREATE_EMPTY_SUN).
 // (just factor out re-init of ptes[0,1,2,3] in a separate fn instead?)
 // So skip opening device _again_...
-	if (what == CREATE_EMPTY_DOS  USE_FEATURE_SUN_LABEL(|| what == CREATE_EMPTY_SUN))
+	if (what == CREATE_EMPTY_DOS  IF_FEATURE_SUN_LABEL(|| what == CREATE_EMPTY_SUN))
 		goto created_table;
 
 	fd = open(disk_device, (option_mask32 & OPT_l) ? O_RDONLY : O_RDWR);
@@ -1372,7 +1376,7 @@ static int get_boot(void)
 				  "partition table, nor Sun, SGI or OSF "
 				  "disklabel\n");
 #ifdef __sparc__
-			USE_FEATURE_SUN_LABEL(create_sunlabel();)
+			IF_FEATURE_SUN_LABEL(create_sunlabel();)
 #else
 			create_doslabel();
 #endif
@@ -1385,7 +1389,7 @@ static int get_boot(void)
 #endif /* FEATURE_FDISK_WRITABLE */
 
 
-	USE_FEATURE_FDISK_WRITABLE(warn_cylinders();)
+	IF_FEATURE_FDISK_WRITABLE(warn_cylinders();)
 	warn_geometry();
 
 	for (i = 0; i < 4; i++) {
@@ -1406,7 +1410,7 @@ static int get_boot(void)
 				pe->sectorbuffer[510],
 				pe->sectorbuffer[511],
 				i + 1);
-			USE_FEATURE_FDISK_WRITABLE(pe->changed = 1;)
+			IF_FEATURE_FDISK_WRITABLE(pe->changed = 1;)
 		}
 	}
 
@@ -2797,7 +2801,7 @@ int fdisk_main(int argc, char **argv)
 	close_dev_fd(); /* needed: fd 3 must not stay closed */
 
 	opt_complementary = "b+:C+:H+:S+"; /* numeric params */
-	opt = getopt32(argv, "b:C:H:lS:u" USE_FEATURE_FDISK_BLKSIZE("s"),
+	opt = getopt32(argv, "b:C:H:lS:u" IF_FEATURE_FDISK_BLKSIZE("s"),
 				&sector_size, &user_cylinders, &user_heads, &user_sectors);
 	argc -= optind;
 	argv += optind;

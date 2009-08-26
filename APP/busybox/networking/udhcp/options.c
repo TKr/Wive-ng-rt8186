@@ -48,6 +48,7 @@ const struct dhcp_option dhcp_options[] = {
 #if ENABLE_FEATURE_UDHCP_RFC3397
 	{ OPTION_STR1035 | OPTION_LIST            , 0x77 }, /* search             */
 #endif
+	{ OPTION_STATIC_ROUTES                    , 0x79 }, /* DHCP_STATIC_ROUTES */
 	/* MSIE's "Web Proxy Autodiscovery Protocol" support */
 	{ OPTION_STRING                           , 0xfc }, /* wpad               */
 
@@ -97,6 +98,7 @@ const char dhcp_option_strings[] ALIGN1 =
 #if ENABLE_FEATURE_UDHCP_RFC3397
 	"search" "\0"
 #endif
+	"staticroutes" "\0" /* DHCP_STATIC_ROUTES  */
 	/* MSIE's "Web Proxy Autodiscovery Protocol" support */
 	"wpad" "\0"
 	;
@@ -115,12 +117,28 @@ const uint8_t dhcp_option_lengths[] ALIGN1 = {
 	[OPTION_U16] =     2,
 	[OPTION_S16] =     2,
 	[OPTION_U32] =     4,
-	[OPTION_S32] =     4
+	[OPTION_S32] =     4,
+	/* Just like OPTION_STRING, we use minimum length here */
+	[OPTION_STATIC_ROUTES] = 5,
 };
 
 
+#if defined CONFIG_UDHCP_DEBUG && CONFIG_UDHCP_DEBUG >= 2
+static void log_option(const char *pfx, const uint8_t *opt)
+{
+	if (dhcp_verbose >= 2) {
+		char buf[256 * 2 + 2];
+		*bin2hex(buf, (void*) (opt + OPT_DATA), opt[OPT_LEN]) = '\0';
+		bb_info_msg("%s: 0x%02x %s", pfx, opt[OPT_CODE], buf);
+	}
+}
+#else
+# define log_option(pfx, opt) ((void)0)
+#endif
+
+
 /* get an option with bounds checking (warning, result is not aligned). */
-uint8_t* FAST_FUNC get_option(struct dhcpMessage *packet, int code)
+uint8_t* FAST_FUNC get_option(struct dhcp_packet *packet, int code)
 {
 	uint8_t *optionptr;
 	int len;
@@ -159,15 +177,17 @@ uint8_t* FAST_FUNC get_option(struct dhcpMessage *packet, int code)
 				rem = sizeof(packet->sname);
 				continue;
 			}
-			return NULL;
+			break;
 		}
 		len = 2 + optionptr[OPT_LEN];
 		rem -= len;
 		if (rem < 0)
 			continue; /* complain and return NULL */
 
-		if (optionptr[OPT_CODE] == code)
+		if (optionptr[OPT_CODE] == code) {
+			log_option("Option found", optionptr);
 			return optionptr + OPT_DATA;
+		}
 
 		if (optionptr[OPT_CODE] == DHCP_OPTION_OVERLOAD) {
 			overload |= optionptr[OPT_DATA];
@@ -175,6 +195,9 @@ uint8_t* FAST_FUNC get_option(struct dhcpMessage *packet, int code)
 		}
 		optionptr += len;
 	}
+
+	/* log3 because udhcpc uses it a lot - very noisy */
+	log3("Option 0x%02x not found", code);
 	return NULL;
 }
 
@@ -205,7 +228,7 @@ int FAST_FUNC add_option_string(uint8_t *optionptr, uint8_t *string)
 				string[OPT_CODE]);
 		return 0;
 	}
-	DEBUG("adding option 0x%02x", string[OPT_CODE]);
+	log_option("Adding option", string);
 	memcpy(optionptr + end, string, string[OPT_LEN] + 2);
 	optionptr[end + string[OPT_LEN] + 2] = DHCP_END;
 	return string[OPT_LEN] + 2;

@@ -151,7 +151,6 @@ struct globals {
 	char erase_char;         // the users erase character
 	char last_input_char;    // last char read from user
 
-	smalluint chars_to_parse;
 #if ENABLE_FEATURE_VI_DOT_CMD
 	smallint adding2q;	 // are we currently adding user input to q
 	int lmc_len;             // length of last_modifying_cmd
@@ -235,7 +234,6 @@ struct globals {
 #define last_forward_char       (G.last_forward_char  )
 #define erase_char              (G.erase_char         )
 #define last_input_char         (G.last_input_char    )
-#define chars_to_parse          (G.chars_to_parse     )
 #if ENABLE_FEATURE_VI_READONLY
 #define readonly_mode           (G.readonly_mode      )
 #else
@@ -271,7 +269,7 @@ struct globals {
 	SET_PTR_TO_GLOBALS(xzalloc(sizeof(G))); \
 	last_file_modified = -1; \
 	/* "" but has space for 2 chars: */ \
-	USE_FEATURE_VI_SEARCH(last_search_pattern = xzalloc(2);) \
+	IF_FEATURE_VI_SEARCH(last_search_pattern = xzalloc(2);) \
 } while (0)
 
 
@@ -426,7 +424,7 @@ int vi_main(int argc, char **argv)
 			initial_cmds[0] = xstrndup(p, MAX_INPUT_LEN);
 	}
 #endif
-	while ((c = getopt(argc, argv, "hCRH" USE_FEATURE_VI_COLON("c:"))) != -1) {
+	while ((c = getopt(argc, argv, "hCRH" IF_FEATURE_VI_COLON("c:"))) != -1) {
 		switch (c) {
 #if ENABLE_FEATURE_VI_CRASHME
 		case 'C':
@@ -620,7 +618,7 @@ static void edit_file(char *fn)
 		// poll to see if there is input already waiting. if we are
 		// not able to display output fast enough to keep up, skip
 		// the display update until we catch up with input.
-		if (!chars_to_parse && mysleep(0) == 0) {
+		if (!readbuffer[0] && mysleep(0) == 0) {
 			// no input pending - so update output
 			refresh(FALSE);
 			show_status_line();
@@ -643,8 +641,8 @@ static char *get_one_address(char *p, int *addr)	// get colon addr, if present
 {
 	int st;
 	char *q;
-	USE_FEATURE_VI_YANKMARK(char c;)
-	USE_FEATURE_VI_SEARCH(char *pat;)
+	IF_FEATURE_VI_YANKMARK(char c;)
+	IF_FEATURE_VI_SEARCH(char *pat;)
 
 	*addr = -1;			// assume no addr
 	if (*p == '.') {	// the current line
@@ -689,7 +687,7 @@ static char *get_one_address(char *p, int *addr)	// get colon addr, if present
 		sscanf(p, "%d%n", addr, &st);
 		p += st;
 	} else {
-		// unrecognised address - assume -1
+		// unrecognized address - assume -1
 		*addr = -1;
 	}
 	return p;
@@ -730,6 +728,7 @@ static void setops(const char *args, const char *opname, int flg_no,
 	const char *a = args + flg_no;
 	int l = strlen(opname) - 1; /* opname have + ' ' */
 
+	// maybe strncmp? we had tons of erroneous strncasecmp's...
 	if (strncasecmp(a, opname, l) == 0
 	 || strncasecmp(a, short_opname, 2) == 0
 	) {
@@ -825,7 +824,7 @@ static void colon(char *buf)
 		}
 	}
 #if ENABLE_FEATURE_ALLOW_EXEC
-	else if (strncmp(cmd, "!", 1) == 0) {	// run a cmd
+	else if (cmd[0] == '!') {	// run a cmd
 		int retcode;
 		// :!ls   run the <cmd>
 		go_bottom_and_clear_to_eol();
@@ -837,19 +836,19 @@ static void colon(char *buf)
 		Hit_Return();			// let user see results
 	}
 #endif
-	else if (strncmp(cmd, "=", i) == 0) {	// where is the address
+	else if (cmd[0] == '=' && !cmd[1]) {	// where is the address
 		if (b < 0) {	// no addr given- use defaults
 			b = e = count_lines(text, dot);
 		}
 		status_line("%d", b);
-	} else if (strncasecmp(cmd, "delete", i) == 0) {	// delete lines
+	} else if (strncmp(cmd, "delete", i) == 0) {	// delete lines
 		if (b < 0) {	// no addr given- use defaults
 			q = begin_line(dot);	// assume .,. for the range
 			r = end_line(dot);
 		}
 		dot = yank_delete(q, r, 1, YANKDEL);	// save, then delete lines
 		dot_skip_over_ws();
-	} else if (strncasecmp(cmd, "edit", i) == 0) {	// Edit a file
+	} else if (strncmp(cmd, "edit", i) == 0) {	// Edit a file
 		// don't edit, if the current file has been modified
 		if (file_modified && !useforce) {
 			status_line_bold("No write since last change (:edit! overrides)");
@@ -883,14 +882,14 @@ static void colon(char *buf)
 		// how many lines in text[]?
 		li = count_lines(text, end - 1);
 		status_line("\"%s\"%s"
-			USE_FEATURE_VI_READONLY("%s")
+			IF_FEATURE_VI_READONLY("%s")
 			" %dL, %dC", current_filename,
 			(file_size(fn) < 0 ? " [New file]" : ""),
-			USE_FEATURE_VI_READONLY(
+			IF_FEATURE_VI_READONLY(
 				((readonly_mode) ? " [Readonly]" : ""),
 			)
 			li, ch);
-	} else if (strncasecmp(cmd, "file", i) == 0) {	// what File is this
+	} else if (strncmp(cmd, "file", i) == 0) {	// what File is this
 		if (b != -1 || e != -1) {
 			not_implemented("No address allowed on this command");
 			goto vc1;
@@ -903,14 +902,14 @@ static void colon(char *buf)
 			// user wants file status info
 			last_status_cksum = 0;	// force status update
 		}
-	} else if (strncasecmp(cmd, "features", i) == 0) {	// what features are available
+	} else if (strncmp(cmd, "features", i) == 0) {	// what features are available
 		// print out values of all features
 		go_bottom_and_clear_to_eol();
 		cookmode();
 		show_help();
 		rawmode();
 		Hit_Return();
-	} else if (strncasecmp(cmd, "list", i) == 0) {	// literal print line
+	} else if (strncmp(cmd, "list", i) == 0) {	// literal print line
 		if (b < 0) {	// no addr given- use defaults
 			q = begin_line(dot);	// assume .,. for the range
 			r = end_line(dot);
@@ -943,8 +942,8 @@ static void colon(char *buf)
  vc2:
 #endif
 		Hit_Return();
-	} else if (strncasecmp(cmd, "quit", i) == 0 // Quit
-	        || strncasecmp(cmd, "next", i) == 0 // edit next file
+	} else if (strncmp(cmd, "quit", i) == 0 // Quit
+	        || strncmp(cmd, "next", i) == 0 // edit next file
 	) {
 		if (useforce) {
 			// force end of argv list
@@ -970,7 +969,7 @@ static void colon(char *buf)
 			goto vc1;
 		}
 		editing = 0;
-	} else if (strncasecmp(cmd, "read", i) == 0) {	// read file into text[]
+	} else if (strncmp(cmd, "read", i) == 0) {	// read file into text[]
 		fn = args;
 		if (!fn[0]) {
 			status_line_bold("No filename given");
@@ -992,9 +991,9 @@ static void colon(char *buf)
 		// how many lines in text[]?
 		li = count_lines(q, q + ch - 1);
 		status_line("\"%s\""
-			USE_FEATURE_VI_READONLY("%s")
+			IF_FEATURE_VI_READONLY("%s")
 			" %dL, %dC", fn,
-			USE_FEATURE_VI_READONLY((readonly_mode ? " [Readonly]" : ""),)
+			IF_FEATURE_VI_READONLY((readonly_mode ? " [Readonly]" : ""),)
 			li, ch);
 		if (ch > 0) {
 			// if the insert is before "dot" then we need to update
@@ -1002,7 +1001,7 @@ static void colon(char *buf)
 				dot += ch;
 			/*file_modified++; - done by file_insert */
 		}
-	} else if (strncasecmp(cmd, "rewind", i) == 0) {	// rewind cmd line args
+	} else if (strncmp(cmd, "rewind", i) == 0) {	// rewind cmd line args
 		if (file_modified && !useforce) {
 			status_line_bold("No write since last change (:rewind! overrides)");
 		} else {
@@ -1011,7 +1010,7 @@ static void colon(char *buf)
 			editing = 0;
 		}
 #if ENABLE_FEATURE_VI_SET
-	} else if (strncasecmp(cmd, "set", i) == 0) {	// set or clear features
+	} else if (strncmp(cmd, "set", i) == 0) {	// set or clear features
 #if ENABLE_FEATURE_VI_SETOPTS
 		char *argp;
 #endif
@@ -1042,14 +1041,14 @@ static void colon(char *buf)
 #if ENABLE_FEATURE_VI_SETOPTS
 		argp = args;
 		while (*argp) {
-			if (strncasecmp(argp, "no", 2) == 0)
+			if (strncmp(argp, "no", 2) == 0)
 				i = 2;		// ":set noautoindent"
 			setops(argp, "autoindent ", i, "ai", VI_AUTOINDENT);
 			setops(argp, "flash ", i, "fl", VI_ERR_METHOD);
 			setops(argp, "ignorecase ", i, "ic", VI_IGNORECASE);
 			setops(argp, "showmatch ", i, "ic", VI_SHOWMATCH);
 			/* tabstopXXXX */
-			if (strncasecmp(argp + i, "tabstop=%d ", 7) == 0) {
+			if (strncmp(argp + i, "tabstop=%d ", 7) == 0) {
 				sscanf(strchr(argp + i, '='), "tabstop=%d" + 7, &ch);
 				if (ch > 0 && ch <= MAX_TABSTOP)
 					tabstop = ch;
@@ -1062,7 +1061,7 @@ static void colon(char *buf)
 #endif /* FEATURE_VI_SETOPTS */
 #endif /* FEATURE_VI_SET */
 #if ENABLE_FEATURE_VI_SEARCH
-	} else if (strncasecmp(cmd, "s", 1) == 0) {	// substitute a pattern with a replacement pattern
+	} else if (cmd[0] == 's') {	// substitute a pattern with a replacement pattern
 		char *ls, *F, *R;
 		int gflag;
 
@@ -1115,12 +1114,12 @@ static void colon(char *buf)
 			q = next_line(ls);
 		}
 #endif /* FEATURE_VI_SEARCH */
-	} else if (strncasecmp(cmd, "version", i) == 0) {  // show software version
+	} else if (strncmp(cmd, "version", i) == 0) {  // show software version
 		status_line(BB_VER " " BB_BT);
-	} else if (strncasecmp(cmd, "write", i) == 0  // write text to file
-	        || strncasecmp(cmd, "wq", i) == 0
-	        || strncasecmp(cmd, "wn", i) == 0
-	        || strncasecmp(cmd, "x", i) == 0
+	} else if (strncmp(cmd, "write", i) == 0  // write text to file
+	        || strncmp(cmd, "wq", i) == 0
+	        || strncmp(cmd, "wn", i) == 0
+	        || (cmd[0] == 'x' && !cmd[1])
 	) {
 		// is there a file name to write to?
 		if (args[0]) {
@@ -1168,7 +1167,7 @@ static void colon(char *buf)
  vc3:;
 #endif
 #if ENABLE_FEATURE_VI_YANKMARK
-	} else if (strncasecmp(cmd, "yank", i) == 0) {	// yank lines
+	} else if (strncmp(cmd, "yank", i) == 0) {	// yank lines
 		if (b < 0) {	// no addr given- use defaults
 			q = begin_line(dot);	// assume .,. for the range
 			r = end_line(dot);
@@ -1533,13 +1532,10 @@ static char *new_screen(int ro, int co)
 #if ENABLE_FEATURE_VI_SEARCH
 static int mycmp(const char *s1, const char *s2, int len)
 {
-	int i;
-
-	i = strncmp(s1, s2, len);
 	if (ENABLE_FEATURE_VI_SETOPTS && ignorecase) {
-		i = strncasecmp(s1, s2, len);
+		return strncasecmp(s1, s2, len);
 	}
-	return i;
+	return strncmp(s1, s2, len);
 }
 
 // search for pattern starting at p
@@ -2206,7 +2202,7 @@ static int readit(void) // read (maybe cursor) key from stdin
 	int c;
 
 	fflush(stdout);
-	c = read_key(STDIN_FILENO, &chars_to_parse, readbuffer);
+	c = read_key(STDIN_FILENO, readbuffer);
 	if (c == -1) { // EOF/error
 		go_bottom_and_clear_to_eol();
 		cookmode(); // terminal to "cooked"
@@ -2983,7 +2979,7 @@ static void do_cmd(int c)
 		//case '`':	// `-
 		//case 'u':	// u- FIXME- there is no undo
 		//case 'v':	// v-
-	default:			// unrecognised command
+	default:			// unrecognized command
 		buf[0] = c;
 		buf[1] = '\0';
 		if (c < ' ') {
@@ -3328,18 +3324,18 @@ static void do_cmd(int c)
 		cnt = strlen(p);
 		if (cnt <= 0)
 			break;
-		if (strncasecmp(p, "quit", cnt) == 0
-		 || strncasecmp(p, "q!", cnt) == 0   // delete lines
+		if (strncmp(p, "quit", cnt) == 0
+		 || strncmp(p, "q!", cnt) == 0   // delete lines
 		) {
 			if (file_modified && p[1] != '!') {
 				status_line_bold("No write since last change (:quit! overrides)");
 			} else {
 				editing = 0;
 			}
-		} else if (strncasecmp(p, "write", cnt) == 0
-		        || strncasecmp(p, "wq", cnt) == 0
-		        || strncasecmp(p, "wn", cnt) == 0
-		        || strncasecmp(p, "x", cnt) == 0
+		} else if (strncmp(p, "write", cnt) == 0
+		        || strncmp(p, "wq", cnt) == 0
+		        || strncmp(p, "wn", cnt) == 0
+		        || (p[0] == 'x' && !p[1])
 		) {
 			cnt = file_write(current_filename, text, end - 1);
 			if (cnt < 0) {
@@ -3355,12 +3351,12 @@ static void do_cmd(int c)
 					editing = 0;
 				}
 			}
-		} else if (strncasecmp(p, "file", cnt) == 0) {
+		} else if (strncmp(p, "file", cnt) == 0) {
 			last_status_cksum = 0;	// force status update
 		} else if (sscanf(p, "%d", &j) > 0) {
 			dot = find_line(j);		// go to line # j
 			dot_skip_over_ws();
-		} else {		// unrecognised cmd
+		} else {		// unrecognized cmd
 			not_implemented(p);
 		}
 #endif /* !FEATURE_VI_COLON */
@@ -3851,10 +3847,11 @@ static void crash_dummy()
 	cmd1 = " \n\r\002\004\005\006\025\0310^$-+wWeEbBhjklHL";
 
 	// is there already a command running?
-	if (chars_to_parse > 0)
+	if (readbuffer[0] > 0)
 		goto cd1;
  cd0:
-	startrbi = rbi = 0;
+	readbuffer[0] = 'X';
+	startrbi = rbi = 1;
 	sleeptime = 0;          // how long to pause between commands
 	memset(readbuffer, '\0', sizeof(readbuffer));
 	// generate a command by percentages
@@ -3928,7 +3925,7 @@ static void crash_dummy()
 		}
 		strcat(readbuffer, "\033");
 	}
-	chars_to_parse = strlen(readbuffer);
+	readbuffer[0] = strlen(readbuffer + 1);
  cd1:
 	totalcmds++;
 	if (sleeptime > 0)

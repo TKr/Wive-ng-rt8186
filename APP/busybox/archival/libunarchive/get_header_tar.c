@@ -144,8 +144,8 @@ char FAST_FUNC get_header_tar(archive_handle_t *archive_handle)
 //	if (!archive_handle->ah_priv_inited) {
 //		archive_handle->ah_priv_inited = 1;
 //		p_end = 0;
-//		USE_FEATURE_TAR_GNU_EXTENSIONS(p_longname = NULL;)
-//		USE_FEATURE_TAR_GNU_EXTENSIONS(p_linkname = NULL;)
+//		IF_FEATURE_TAR_GNU_EXTENSIONS(p_longname = NULL;)
+//		IF_FEATURE_TAR_GNU_EXTENSIONS(p_linkname = NULL;)
 //	}
 
 	if (sizeof(tar) != 512)
@@ -176,7 +176,7 @@ char FAST_FUNC get_header_tar(archive_handle_t *archive_handle)
 		bb_error_msg_and_die("short read");
 	}
 	if (i != 512) {
-		USE_FEATURE_TAR_AUTODETECT(goto autodetect;)
+		IF_FEATURE_TAR_AUTODETECT(goto autodetect;)
 		goto short_read;
 	}
 
@@ -265,14 +265,14 @@ char FAST_FUNC get_header_tar(archive_handle_t *archive_handle)
 #if ENABLE_FEATURE_TAR_OLDGNU_COMPATIBILITY
 	sum = strtoul(tar.chksum, &cp, 8);
 	if ((*cp && *cp != ' ')
-	 || (sum_u != sum USE_FEATURE_TAR_OLDSUN_COMPATIBILITY(&& sum_s != sum))
+	 || (sum_u != sum IF_FEATURE_TAR_OLDSUN_COMPATIBILITY(&& sum_s != sum))
 	) {
 		bb_error_msg_and_die("invalid tar header checksum");
 	}
 #else
 	/* This field does not need special treatment (getOctal) */
 	sum = xstrtoul(tar.chksum, 8);
-	if (sum_u != sum USE_FEATURE_TAR_OLDSUN_COMPATIBILITY(&& sum_s != sum)) {
+	if (sum_u != sum IF_FEATURE_TAR_OLDSUN_COMPATIBILITY(&& sum_s != sum)) {
 		bb_error_msg_and_die("invalid tar header checksum");
 	}
 #endif
@@ -301,9 +301,13 @@ char FAST_FUNC get_header_tar(archive_handle_t *archive_handle)
 	file_header->uname = tar.uname[0] ? xstrndup(tar.uname, sizeof(tar.uname)) : NULL;
 	file_header->gname = tar.gname[0] ? xstrndup(tar.gname, sizeof(tar.gname)) : NULL;
 #endif
-	file_header->mtime = GET_OCTAL(tar.mtime);
-	/* Size field: handle GNU tar's "base256 encoding" */
-	file_header->size = (*tar.size & 0xc0) == 0x80 /* positive base256? */
+	/* mtime: rudimentally handle GNU tar's "base256 encoding"
+	 * People report tarballs with NEGATIVE unix times encoded that way */
+	file_header->mtime = (tar.mtime[0] & 0x80) /* base256? */
+			? 0 /* bogus */
+			: GET_OCTAL(tar.mtime);
+	/* size: handle GNU tar's "base256 encoding" */
+	file_header->size = (tar.size[0] & 0xc0) == 0x80 /* positive base256? */
 			? getBase256_len12(tar.size)
 			: GET_OCTAL(tar.size);
 	file_header->gid = GET_OCTAL(tar.gid);
@@ -356,7 +360,7 @@ char FAST_FUNC get_header_tar(archive_handle_t *archive_handle)
 		file_header->mode |= S_IFBLK;
 		goto size0;
 	case '5':
- USE_FEATURE_TAR_OLDGNU_COMPATIBILITY(set_dir:)
+ IF_FEATURE_TAR_OLDGNU_COMPATIBILITY(set_dir:)
 		file_header->mode |= S_IFDIR;
 		goto size0;
 	case '6':

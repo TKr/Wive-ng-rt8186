@@ -24,9 +24,9 @@ config FEATURE_SH_IS_HUSH
 ####	select LASH
 ####	bool "lash"
 
-config FEATURE_SH_IS_MSH
-	select MSH
-	bool "msh"
+####config FEATURE_SH_IS_MSH
+####	select MSH
+####	bool "msh"
 
 config FEATURE_SH_IS_NONE
 	bool "none"
@@ -42,9 +42,6 @@ config ASH
 	  busybox. This shell is actually a derivative of the Debian 'dash'
 	  shell (by Herbert Xu), which was created by porting the 'ash' shell
 	  (written by Kenneth Almquist) from NetBSD.
-
-comment "Ash Shell Options"
-	depends on ASH
 
 config ASH_BASH_COMPAT
 	bool "bash-compatible extensions"
@@ -169,6 +166,13 @@ config HUSH
 	  It does not handle select, aliases, brace expansion,
 	  tilde expansion, &>file and >&file redirection of stdout+stderr.
 
+config HUSH_BASH_COMPAT
+	bool "bash-compatible extensions"
+	default y
+	depends on HUSH
+	help
+	  Enable bash-compatible extensions.
+
 config HUSH_HELP
 	bool "help builtin"
 	default n
@@ -232,6 +236,13 @@ config HUSH_FUNCTIONS
 	help
 	  Enable support for shell functions in hush. +800 bytes.
 
+config HUSH_LOCAL
+	bool "Support local builtin"
+	default n
+	depends on HUSH_FUNCTIONS
+	help
+	  Enable support for local variables in functions.
+
 config HUSH_EXPORT_N
 	bool "Support export '-n' option"
 	default n
@@ -249,6 +260,7 @@ config LASH
 config MSH
 	bool "msh (deprecated: please use hush)"
 	default n
+	select HUSH
 	help
 	  msh is deprecated and will be removed, please migrate to hush.
 	  If there is a feature msh has but hush does not, please let us know.
@@ -260,9 +272,6 @@ config MSH
 #	  on it and compare vs bash) but for most things it works quite well.
 #	  It uses only vfork, so it can be used on uClinux systems.
 
-
-comment "Bourne Shell Options"
-	depends on MSH || LASH || HUSH || ASH
 
 config SH_MATH_SUPPORT
 	bool "POSIX math support"

@@ -63,9 +63,9 @@ int df_main(int argc, char **argv)
 	opt_complementary = "k-m:m-k";
 #endif
 	opt = getopt32(argv, "kP"
-			USE_FEATURE_DF_FANCY("aiB:")
-			USE_FEATURE_HUMAN_READABLE("hm")
-			USE_FEATURE_DF_FANCY(, &chp));
+			IF_FEATURE_DF_FANCY("aiB:")
+			IF_FEATURE_HUMAN_READABLE("hm")
+			IF_FEATURE_DF_FANCY(, &chp));
 	if (opt & OPT_MEGA)
 		df_disp_hr = 1024*1024;
 
@@ -119,7 +119,7 @@ int df_main(int argc, char **argv)
 			mount_point = *argv++;
 			if (!mount_point)
 				break;
-			mount_entry = find_mount_point(mount_point);
+			mount_entry = find_mount_point(mount_point, 1);
 			if (!mount_entry) {
 				bb_error_msg("%s: can't find mount point", mount_point);
  set_error:
