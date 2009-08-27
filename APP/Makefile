@@ -17,7 +17,7 @@ SUBDIRS += iptables iproute2 ntpclient igmpproxy dnsmasq
 SUBDIRS += ppp rp-pppoe l2tpd lwins mesh
 
 all: configure
-	@set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i; done
+	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i; done
 
 configure:
 	cd ppp && ./DoConfigure.sh && cd ..
@@ -28,7 +28,7 @@ configure:
 	cd tcpdump/libpcap ./DoConfigure.sh && cd ../..
 
 clean:
-	@set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i clean; rm -rfd $$i/filesystem/*; done
+	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i clean; rm -rfd $$i/filesystem/*; done
 
 install:
-	@set -e; for i in $(SUBDIRS); do $(MAKE) -C $$i install; done
+	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i install; done
