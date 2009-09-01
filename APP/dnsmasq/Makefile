@@ -17,7 +17,7 @@ PREFIX = ./filesystem
 BINDIR = ${PREFIX}/sbin
 MANDIR = ${PREFIX}/share/man
 LOCALEDIR = ${PREFIX}/share/locale
-COPTS=-DNO_IPV6 -Os -fPIC -fomit-frame-pointer -mno-memcpy
+COPTS=-DNO_DHCP -DNO_TFTP -DNO_IPV6 -Os -fPIC -fomit-frame-pointer -mno-memcpy
 
 SRC = src
 PO = po
@@ -58,11 +58,9 @@ install-common :
 all-i18n :
 	cd $(SRC) && $(MAKE) \
  I18N=-DLOCALEDIR='\"$(LOCALEDIR)\"' \
- DBUS_MINOR=$(DBUS_MINOR) \
  DBUS_CFLAGS=$(DBUS_CFLAGS) \
  DBUS_LIBS=$(DBUS_LIBS) \
  SUNOS_LIBS=$(SUNOS_LIBS) \
- SUNOS_VER=$(SUNOS_VER) \
  -f ../bld/Makefile dnsmasq 
 	cd $(PO); for f in *.po; do \
 		cd ../$(SRC) && $(MAKE) -f ../bld/Makefile $${f%.po}.mo; \
