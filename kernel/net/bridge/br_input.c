@@ -356,6 +356,18 @@ void br_handle_frame(struct sk_buff *skb)
 		goto handle_special_frame;
 
 	if (p->state == BR_STATE_FORWARDING) {
+	
+	if (!compare_ether_addr(eth_hdr(skb)->h_dest,skb->dev->dev_addr))
+                skb->pkt_type = PACKET_HOST;
+                                        
+#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
+                if(eth_hdr(skb)->h_proto == htons(ETH_P_8021Q)) // Block vlan packet
+                    {
+                        read_unlock(p->br->lock);
+			return 0;                       // Forward to normal path
+                    }
+#endif
+                                                                                                
 		NF_HOOK(PF_BRIDGE, NF_BR_PRE_ROUTING, skb, skb->dev, NULL,
 			br_handle_frame_finish);
 		read_unlock(&br->lock);

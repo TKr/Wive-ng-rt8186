@@ -198,6 +198,9 @@ struct sysinfo {
 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
 };
 
+/* Force a compilation error if condition is true */
+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+
 #define BUG_ON(condition) do { if (unlikely((condition)!=0)) out_of_line_bug(); } while(0)
 
 #define WARN_ON(condition) do { \

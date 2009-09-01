@@ -105,4 +105,13 @@ struct ethhdr
 	unsigned short	h_proto;		/* packet type ID field	*/
 } __attribute__((packed));
 
+#ifdef __KERNEL__
+#include <linux/skbuff.h>
+
+static inline struct ethhdr *eth_hdr(const struct sk_buff *skb)
+{
+        return (struct ethhdr *)skb->mac.raw;
+}
+
+#endif /* KERNEL */
 #endif	/* _LINUX_IF_ETHER_H */
