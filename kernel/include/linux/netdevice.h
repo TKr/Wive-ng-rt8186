@@ -333,6 +333,7 @@ struct net_device
 	void                    *ip6_ptr;       /* IPv6 specific data */
 	void			*ec_ptr;	/* Econet specific data	*/
 
+//do not use this!!! wlan driver is crash
 //        struct list_head        poll_list;      /* Link to poll list    */
 //        int                     quota;
 //        int                     weight;

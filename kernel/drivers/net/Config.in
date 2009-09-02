@@ -51,8 +51,8 @@ comment 'Select switch mode'
              if [ "$CONFIG_RE8306" = "y" ]; then
                  bool 'RTL8306 Advanced API' CONFIG_RE8306_API
              fi
-	    dep_bool "RTL8305SB/RTL8306 LED control support" PATCH_8306_CTRL_LED_BY_CPU $PATCH_8306_SW
-             if [ "$PATCH_8306_CTRL_LED_BY_CPU" = "y" ]; then
+	    dep_bool "RTL8305SB/RTL8306 LED control support" CONFIG_PATCH_8306_CTRL_LED_BY_CPU $PATCH_8306_SW
+             if [ "$CONFIG_PATCH_8306_CTRL_LED_BY_CPU" = "y" ]; then
                  bool 'BI color led indicator support' CONFIG_BICOLOR_LED
              fi
         fi

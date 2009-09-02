@@ -22,19 +22,18 @@
 #endif
 
 #define DRV_NAME		"8186NIC"
-#define DRV_VERSION		"0.1.1-NG"
-#define DRV_RELDATE		"4.04.2009"
+#define DRV_VERSION		"0.1.2-NG"
+#define DRV_RELDATE		"02.09.2009"
 
 #define DYNAMIC_ADJUST_TASKLET
 
-#undef MII_EXTENTION //for future
+#undef MII_EXTENTION 	//for future
+#undef CP_VLAN_TAG_USED //for portmap (conflict with VLAN)
 
 #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
-#define CP_VLAN_TAG_USED 1
 #define CP_VLAN_TX_TAG(tx_desc,vlan_tag_value) \
 	do { (tx_desc)->opts2 = (vlan_tag_value); } while (0)
 #else
-#define CP_VLAN_TAG_USED 0
 #define CP_VLAN_TX_TAG(tx_desc,vlan_tag_value) \
 	do { (tx_desc)->opts2 = 0; } while (0)
 #endif
@@ -392,7 +391,7 @@ static int rx_pkt_thres=0;
 static int rx_cnt;
 #endif
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 #define RTL8306_MIB_CNT1			0
 #define RTL8306_MIB_CNT2			1
 #define RTL8306_MIB_CNT3			2
@@ -585,7 +584,7 @@ void disable_led_ctrl(int port)
 	if (timer_pending(&cb->LED_Timer))	
 		del_timer_sync(&cb->LED_Timer);
 }
-#endif // PATCH_8306_CTRL_LED_BY_CPU
+#endif // CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 
 
 #ifdef CONFIG_VLAN_QOS
@@ -701,7 +700,7 @@ static int write_proc_rxthres(struct file *file, const char *buffer,
 #endif
 
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 static int page, phy, reg;
 static int write_proc_mii(struct file *file, const char *buffer,
 		      unsigned long count, void *data)
@@ -772,7 +771,7 @@ static int read_proc_mib(char *pa, char **start, off_t off,
 		if (len<0) len = 0;
 		return len;
 }
-#endif // PATCH_8306_CTRL_LED_BY_CPU
+#endif // CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 
 static inline void rtl8186_set_rxbufsize(struct re_private *cp)
 {
@@ -1203,7 +1202,9 @@ dequeue_label:
 
 		len = ETH_ZLEN < skb->len ? skb->len : ETH_ZLEN;
 		eor = (entry == (RTL8186_TX_RING_SIZE - 1)) ? RingEnd : 0;
+#if CP_VLAN_TAG_USED
 		CP_VLAN_TX_TAG(txd, vlan_tag);
+#endif
 		mapping = (u32)skb->data|UNCACHE_MASK;
 		txd->addr = virt_to_bus((void *)mapping);
 		cp->tx_skb[entry].skb = skb;
@@ -1252,7 +1253,9 @@ dequeue_label:
 				ctrl |= LastFrag;
 
 			txd = &cp->tx_hqring[entry];
+#if CP_VLAN_TAG_USED
 			CP_VLAN_TX_TAG(txd, vlan_tag);
+#endif
 			txd->addr = virt_to_bus((void *)mapping);
 			txd->opts1 = (ctrl);
 			cp->tx_skb[entry].skb = skb;
@@ -1262,8 +1265,9 @@ dequeue_label:
 		}
 
 		txd = &cp->tx_hqring[first_entry];
+#if CP_VLAN_TAG_USED
 		CP_VLAN_TX_TAG(txd, vlan_tag);
-
+#endif
 		txd->addr = virt_to_bus((void *)first_mapping);
 		eor = (first_entry == (RTL8186_TX_RING_SIZE - 1)) ? RingEnd : 0;
 		txd->opts1 = (first_len | FirstFrag | DescOwn|TxCRC|eor);
@@ -1369,10 +1373,10 @@ static void rtl8186_stop_hw(struct net_device *dev, struct re_private *cp)
 	cp->rx_tail = 0;
 	cp->tx_hqhead = cp->tx_hqtail = 0;
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 	if (!memcmp(dev->name, "eth0", 4)) {
 		int port;
-		for (port=0; port<5; port++)
+		for (port=0; port<SWITCH_PORT_NUMBER; port++)
 			disable_led_ctrl(port);		
 	}
 #endif	
@@ -1465,10 +1469,10 @@ static void rtl8186_init_hw(struct re_private *cp)
 	rtl8186_start_hw(cp);
 	__rtl8186_set_rx_mode(dev);
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 	if (!memcmp(dev->name, "eth0", 4)) {
 		int port;
-		for (port=0; port<5; port++)
+		for (port=0; port<SWITCH_PORT_NUMBER; port++)
 			init_led_ctrl(port);		
 	}
 #endif	
@@ -1622,13 +1626,13 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 {
 	struct re_private *cp = ((struct net_device *)task_priv)->priv;
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 	if (((struct net_device *)task_priv)->name[3] == '0' ) {
 		int port;
 		unsigned long flags;
 		save_flags(flags);cli();
 
-		for (port=0; port<5; port++) {
+		for (port=0; port<SWITCH_PORT_NUMBER; port++) {
 			update_mib_counter(port);		
 			calculate_led_interval(port);
 			if (led_cb[port].link_status & LINK_STATE_CHANGE) 
@@ -2095,7 +2099,7 @@ static int rtl8186_probe(int ethno)
 		res1->write_proc = write_proc_rxthres;
 #endif		
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 	{  
 		struct proc_dir_entry *res2;
 		res2 = create_proc_entry("mii", 0, root_ethX_dir);
@@ -2108,7 +2112,7 @@ static int rtl8186_probe(int ethno)
 		if (res3) 
 			res3->read_proc = read_proc_mib;	
 	}
-#endif // PATCH_8306_CTRL_LED_BY_CPU
+#endif // CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 
 	if ((res_stats = create_proc_read_entry("stats", 0644, root_ethX_dir,
 				read_proc_stats, (void *)dev)) == NULL) {
@@ -2150,7 +2154,7 @@ typedef struct asicVersionPara_s
     unsigned char revision;
 } asicVersionPara_t;
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 static void MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
 #else
 void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, unsigned short int data, unsigned char eth)
@@ -2182,7 +2186,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 	return;
 }
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 static unsigned short int MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
 #else
 unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short int regaddr, unsigned char eth)
@@ -2260,7 +2264,7 @@ int __init rtl8306_getAsicVersionInfo(asicVersionPara_t *pAsicVer)
 }
 
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 int32 rtl8306_getAsicPhyReg(uint32 phyad, uint32 regad, uint32 npage, uint32 *pvalue) 
 {
 	rtl8306_page_select(npage);	
@@ -2374,7 +2378,7 @@ static int32 rtl8306_getAsicMibCounter(uint32 port, uint32 counter, uint32 *valu
 	}	
 	return SUCCESS;
 }
-#endif // PATCH_8306_CTRL_LED_BY_CPU
+#endif // CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 #endif // PATCH_8306_SW
 
 static void __exit rtl8186_exit (void)
@@ -2383,7 +2387,9 @@ static void __exit rtl8186_exit (void)
 
 static int __init rtl8186_init(void)
 {
+#ifdef PATCH_8306_SW
 	asicVersionPara_t AsicVer;
+#endif
 	unsigned int temp=0;
 	rtl8186_probe(0);
 	rtl8186_probe(1);
@@ -2429,7 +2435,7 @@ static int __init rtl8186_init(void)
        MII_write(0, 16, temp, 0);  
 #endif /* PATCH_8306_SW */
 
-#ifdef PATCH_8306_CTRL_LED_BY_CPU
+#ifdef CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 	{
 		int i;
 		rtl8306_page_select(3);
@@ -2441,7 +2447,7 @@ static int __init rtl8186_init(void)
 		for (i=0;i<5; i++)
  			rtl8306_setAsicMibCounterReset(i, RTL8306_MIB_START);
 	}
-#endif // PATCH_8306_CTRL_LED_BY_CPU
+#endif // CONFIG_PATCH_8306_CTRL_LED_BY_CPU
 
 	return 0;
 }

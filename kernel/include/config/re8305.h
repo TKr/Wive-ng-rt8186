@@ -1,1 +1,1 @@
-#undef  CONFIG_RE8305
+#define CONFIG_RE8305 1
