@@ -17,6 +17,10 @@
 #include <linux/slab.h>
 #include <linux/proc_fs.h>
 
+#if defined(CONFIG_RE8305) || defined(CONFIG_RE8306)
+#include "re830x.h"
+#endif
+
 #define DRV_NAME		"8186NIC"
 #define DRV_VERSION		"0.1.1-NG"
 #define DRV_RELDATE		"4.04.2009"
@@ -77,8 +81,6 @@ MODULE_PARM_DESC (multicast_filter_limit, "RTL8186NIC maximum number of filtered
 #define RTL8186_RXRING_BYTES	((sizeof(struct dma_desc) * (RTL8186_RX_RING_SIZE+1)) + DESC_ALIGN)
 
 #define RTL8186_TXRING_BYTES	((sizeof(struct dma_desc) * (RTL8186_TX_RING_SIZE+1)) + DESC_ALIGN)
-
-
 
 #define NEXT_TX(N)		(((N) + 1) & (RTL8186_TX_RING_SIZE - 1))
 #define NEXT_RX(N)		(((N) + 1) & (RTL8186_RX_RING_SIZE - 1))
@@ -311,7 +313,7 @@ struct cp_extra_stats {
 	unsigned long 	tx_timeouts;
 };
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 struct qos_node {
 	unsigned char	valid;
 	unsigned char	addr[6];
@@ -342,7 +344,7 @@ struct re_private {
 	unsigned		rx_buf_sz;
 	dma_addr_t		ring_dma;
 
-#ifdef CP_VLAN_TAG_USED
+#if CP_VLAN_TAG_USED
 	struct vlan_group	*vlgrp;
 #endif
 
@@ -357,7 +359,7 @@ struct re_private {
 	char*			rxdesc_buf;
 	char*			txdesc_buf;
 	struct mii_if_info	mii_if;
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 	struct qos_node	qosnode_table[8][8];
 	unsigned char	qosnode_index[8];
 #endif
@@ -585,7 +587,7 @@ void disable_led_ctrl(int port)
 #endif // PATCH_8306_CTRL_LED_BY_CPU
 
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 static __inline__ int mac_hash(unsigned char *mac)
 {
 	unsigned long x;
@@ -797,7 +799,7 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 	cp->dev->last_rx = jiffies;
 	cp->rx_byte_cnt += skb->len;
 	
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 	if (desc->opts2 & RxVlanTagged) {
 		unsigned char priority  = (desc->opts2 & 0x000000e0) >> 5;
 		unsigned char vlan_id_h = (desc->opts2 & 0x0000000f);
@@ -807,7 +809,7 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 	}
 #endif
 
-#ifdef CP_VLAN_TAG_USED
+#if CP_VLAN_TAG_USED
 	if (cp->vlgrp && (desc->opts2 & RxVlanTagged)) {
 		vlan_hwaccel_rx(skb, cp->vlgrp, desc->opts2 & 0xffff);
 	}
@@ -1125,11 +1127,11 @@ static int rtl8186_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned entry;
 
 	u32 eor;
-#if defined(CP_VLAN_TAG_USED) || defined (CONFIG_VLAN_8021Q) || defined (CONFIG_VLAN_8021Q_MODULE)
+#if CP_VLAN_TAG_USED
 	u32 vlan_tag = 0;
 #endif
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 	struct qos_node *pbuf;
 #endif
 
@@ -1178,7 +1180,7 @@ dequeue_label:
 		return 0;
 	}
 
-#ifdef CP_VLAN_TAG_USED
+#if CP_VLAN_TAG_USED
 	if (cp->vlgrp && vlan_tx_tag_present(skb))
 		vlan_tag = TxVlanTag | vlan_tx_tag_get(skb);
 #endif
@@ -1210,7 +1212,7 @@ dequeue_label:
 		txd->opts1 = (eor | len | DescOwn | FirstFrag |
 			LastFrag | TxCRC);
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 		pbuf = qosnode_lookup(cp, skb->data);
 		if ((pbuf == 0) || (pbuf->vlan_tagged == 0))
 			txd->opts2 = 0;
@@ -1407,7 +1409,7 @@ static void rtl8186_init_hw(struct re_private *cp)
 	RTL_W8(CMD, 0x2);
 #endif
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 	RTL_W8(CMD, RTL_R8(CMD)|0x4);
 #endif
 
@@ -1739,7 +1741,7 @@ static int rtl8186_open(struct net_device *dev)
 	else
 		RTL_W32(MIIAR, BIT(31)|BIT(26)|0x3300);
 
-#ifdef VLAN_QOS
+#ifdef CONFIG_VLAN_QOS
 	memset(cp->qosnode_table, 0, sizeof(cp->qosnode_table));
 	memset(cp->qosnode_index, 0, sizeof(cp->qosnode_index));
 #endif
@@ -1938,7 +1940,7 @@ static int rtl8186_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 	return rc;
 }
 
-#ifdef CP_VLAN_TAG_USED
+#if CP_VLAN_TAG_USED
 static void cp_vlan_rx_register(struct net_device *dev, struct vlan_group *grp)
 {
 	struct re_private *cp = dev->priv;
@@ -2057,7 +2059,7 @@ static int rtl8186_probe(int ethno)
 	dev->features	|= NETIF_F_SG | NETIF_F_IP_CSUM;
 #endif
 
-#ifdef CP_VLAN_TAG_USED
+#if CP_VLAN_TAG_USED
 	dev->features 	|= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
 	dev->vlan_rx_register	= cp_vlan_rx_register;
 	dev->vlan_rx_kill_vid	= cp_vlan_rx_kill_vid;

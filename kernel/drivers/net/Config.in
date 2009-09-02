@@ -35,12 +35,11 @@ comment 'Ethernet (10 or 100Mbit)'
 bool 'Ethernet (10 or 100Mbit)' CONFIG_NET_ETHERNET
 if [ "$CONFIG_NET_ETHERNET" = "y" ]; then
 #-----------------RTL8186 SOC-------------------------------------------------------------------
-comment 'Select either RTL8186'
+comment 'Select ether RTL8186'
 	bool 'RTL8186 ethernet (For RTL8186 SOC) 10/100 support' CONFIG_RTL8186
 	if [ "$CONFIG_RTL8186" == "y" ]; then
-	    dep_bool 'RTL8186 VLAN QOS support' VLAN_QOS $CONFIG_RTL8186
+	    dep_bool 'RTL8186 VLAN QOS support' CONFIG_VLAN_QOS $CONFIG_RTL8186
 	    dep_bool 'RTL8186 cheksum offload support' RTL8186_CHECKSUM_OFFLOAD $CONFIG_RTL8186
-	    bool 'Allow Net Devices to contribute to /dev/random' CONFIG_NET_RANDOM
     	fi
 comment 'Select switch mode'
 	bool 'External Ethernet Switch support' CONFIG_EXT_SWITCH
@@ -57,6 +56,7 @@ comment 'Select switch mode'
                  bool 'BI color led indicator support' CONFIG_BICOLOR_LED
              fi
         fi
+	    bool 'Allow Net Devices to contribute to /dev/random' CONFIG_NET_RANDOM
 comment 'Select SoC debug mode'
 	    dep_bool 'RTL8186 ETH interface debug' CONFIG_RTL8186_ETH_DEBUG $CONFIG_RTL8186
     	    dep_bool 'RTL8186 SWITCH (8305 or 8306) debug' CONFIG_SWITCH_DEBUG_MODE $PATCH_8306_SW

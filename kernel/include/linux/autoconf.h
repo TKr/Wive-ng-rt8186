@@ -571,12 +571,11 @@
 #define CONFIG_NET_ETHERNET 1
 
 /*
- * Select either RTL8186
+ * Select ether RTL8186
  */
 #define CONFIG_RTL8186 1
-#define VLAN_QOS 1
+#undef  CONFIG_VLAN_QOS
 #define RTL8186_CHECKSUM_OFFLOAD 1
-#define CONFIG_NET_RANDOM 1
 
 /*
  * Select switch mode
@@ -588,6 +587,7 @@
 #define CONFIG_RE8306_API 1
 #define PATCH_8306_CTRL_LED_BY_CPU 1
 #define CONFIG_BICOLOR_LED 1
+#define CONFIG_NET_RANDOM 1
 
 /*
  * Select SoC debug mode
