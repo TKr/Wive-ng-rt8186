@@ -1,4 +1,4 @@
-/*
+/* -*-linux-c-*-
  * 	NET3	Protocol independent device support routines.
  *
  *		This program is free software; you can redistribute it and/or
@@ -83,6 +83,7 @@
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
 #include <linux/netdevice.h>
+#include <linux/ethtool.h>
 #include <linux/etherdevice.h>
 #include <linux/notifier.h>
 #include <linux/skbuff.h>
@@ -111,6 +112,11 @@
 #ifdef CONFIG_PLIP
 extern int plip_init(void);
 #endif
+
+#if defined(CONFIG_NET_PKTGEN) || defined(CONFIG_NET_PKTGEN_MODULE)
+#include "pktgen.h"
+#endif
+
 
 /* This define, if set, will randomly drop a packet when congestion
  * is more than moderate.  It helps fairness in the multi-interface
@@ -1447,6 +1453,19 @@ void net_call_rx_atomic(void (*fn)(void))
 	br_write_unlock_bh(BR_NETPROTO_LOCK);
 }
 
+#if defined(CONFIG_NET_PKTGEN) || defined(CONFIG_NET_PKTGEN_MODULE)
+#warning "Compiling dev.c for pktgen.";
+
+int (*handle_pktgen_hook)(struct sk_buff *skb) = NULL;
+
+static __inline__ int handle_pktgen_rcv(struct sk_buff* skb) {
+        if (handle_pktgen_hook) {
+                return handle_pktgen_hook(skb);
+        }
+        return -1;
+}
+#endif
+
 #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
 void (*br_handle_frame_hook)(struct sk_buff *skb) = NULL;
 #endif
@@ -1469,6 +1488,20 @@ static __inline__ int handle_bridge(struct sk_buff *skb,
 	return ret;
 }
 
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+/* Returns >= 0 if we consume the packet.  Otherwise, let
+ * it fall through the rest of the packet processing.
+ */
+int (*macvlan_handle_frame_hook)(struct sk_buff *skb) = NULL;
+#endif
+
+/* Returns >= 0 if we consume the packet.  Otherwise, let
+ * it fall through the rest of the packet processing.
+ */
+static __inline__ int handle_macvlan(struct sk_buff *skb)
+{
+	return macvlan_handle_frame_hook(skb);
+}
 
 #ifdef CONFIG_NET_DIVERT
 static inline int handle_diverter(struct sk_buff *skb)
@@ -1531,6 +1564,16 @@ static void net_rx_action(struct softirq_action *h)
 				}
 			}
 
+#if defined(CONFIG_NET_PKTGEN) || defined(CONFIG_NET_PKTGEN_MODULE)
+         if ((skb->dev->priv_flags & IFF_PKTGEN_RCV) &&
+             (handle_pktgen_rcv(skb) >= 0)) {
+                 /* Pktgen may consume the packet, no need to send
+                  * to further protocols.
+                  */
+                 return 0;
+         }
+#endif
+
 #ifdef CONFIG_NET_DIVERT
 	if (skb->dev->divert && skb->dev->divert->divert)
 		ret = handle_diverter(skb);
@@ -1545,6 +1588,21 @@ static void net_rx_action(struct softirq_action *h)
 	}
 #endif
 
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+       if (skb->dev->macvlan_priv != NULL &&
+           macvlan_handle_frame_hook != NULL) {
+                 if (handle_macvlan(skb) >= 0) {
+                         /* consumed by mac-vlan...it would have been
+                          * re-sent to this method with a different
+                          * device...
+                          */
+                         return 0;
+                 }
+                 else {
+                         /* Let it fall through and be processed normally */
+                 }
+       }
+#endif
 			for (ptype=ptype_base[ntohs(type)&15];ptype;ptype=ptype->next) {
 				if (ptype->type == type &&
 				    (!ptype->dev || ptype->dev == skb->dev)) {
@@ -2277,11 +2335,70 @@ static int dev_ifsioc(struct ifreq *ifr, unsigned int cmd)
 			return dev_iwstats(dev, ifr);
 #endif	/* WIRELESS_EXT */
 
+		case SIOCSIFWEIGHT:
+			if (ifr->ifr_qlen < 0)
+				return -EINVAL;
+			dev->weight = ifr->ifr_qlen;
+			return 0;
+                        
+		case SIOCGIFWEIGHT:
+			ifr->ifr_qlen = dev->weight;
+			return 0;
+                        
+                case SIOCSACCEPTLOCALADDRS:
+                        if (ifr->ifr_flags) {
+                                dev->priv_flags |= IFF_ACCEPT_LOCAL_ADDRS;
+                        }
+                        else {
+                                dev->priv_flags &= ~IFF_ACCEPT_LOCAL_ADDRS;
+                        }
+                        return 0;
+
+                case SIOCGACCEPTLOCALADDRS:
+                        if (dev->priv_flags & IFF_ACCEPT_LOCAL_ADDRS) {
+                                ifr->ifr_flags = 1;
+                        }
+                        else {
+                                ifr->ifr_flags = 0;
+                        }
+                        return 0;
+
 		/*
 		 *	Unknown or private ioctl
 		 */
 
 		default:
+                        /* Handle some generic ethtool commands here */
+                        if (cmd == SIOCETHTOOL) {
+                                u32 cmd = 0;
+                                if (copy_from_user(&cmd, ifr->ifr_data, sizeof(cmd))) {
+                                        return -EFAULT;
+                                }
+                                
+                                if (cmd == ETHTOOL_GNDSTATS) {
+                                        
+                                        struct ethtool_ndstats* nds = (struct ethtool_ndstats*)(ifr->ifr_data);
+                                        
+                                        /* Get net-device stats struct, will save it in the space
+                                         * pointed to by the ifr->flags number.  Would like to use
+                                         * ethtool, but it seems to require specific driver support,
+                                         * when this is a general purpose netdevice request...
+                                         */
+                                        struct net_device_stats *stats = dev->get_stats(dev);
+                                        if (stats) {
+                                                if (copy_to_user(nds->data, stats, sizeof(*stats))) {
+                                                        return -EFAULT;
+                                                }
+                                        }
+                                        else {
+                                                return -EOPNOTSUPP;
+                                        }
+                                        return 0;
+                                }
+                        }
+
+                                
+                                                
 			if ((cmd >= SIOCDEVPRIVATE &&
 			    cmd <= SIOCDEVPRIVATE + 15) ||
 			    cmd == SIOCBONDENSLAVE ||
@@ -2389,6 +2506,8 @@ int dev_ioctl(unsigned int cmd, void *arg)
 		case SIOCGIFMAP:
 		case SIOCGIFINDEX:
 		case SIOCGIFTXQLEN:
+                case SIOCGIFWEIGHT:
+                case SIOCGACCEPTLOCALADDRS:
 			dev_load(ifr.ifr_name);
 			read_lock(&dev_base_lock);
 			ret = dev_ifsioc(&ifr, cmd);
@@ -2457,6 +2576,8 @@ int dev_ioctl(unsigned int cmd, void *arg)
                 case SIOCGMEDIALS:
                 case SIOCETHTEST:
                 case SIOCSIPQOS:
+                case SIOCSIFWEIGHT:
+                case SIOCSACCEPTLOCALADDRS:
 			if (!capable(CAP_NET_ADMIN))
 				return -EPERM;
 			dev_load(ifr.ifr_name);

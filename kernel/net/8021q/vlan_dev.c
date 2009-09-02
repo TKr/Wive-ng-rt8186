@@ -103,18 +103,18 @@ static inline struct sk_buff *vlan_check_reorder_header(struct sk_buff *skb)
  *  NOTE:  Should be similar to ethernet/eth.c.
  *
  *  SANITY NOTE:  This method is called when a packet is moving up the stack
- *                towards userland.  To get here, it would have already passed
- *                through the ethernet/eth.c eth_type_trans() method.
+ *		  towards userland.  To get here, it would have already passed
+ *		  through the ethernet/eth.c eth_type_trans() method.
  *  SANITY NOTE 2: We are referencing to the VLAN_HDR frields, which MAY be
- *                 stored UNALIGNED in the memory.  RISC systems don't like
- *                 such cases very much...
+ *		   stored UNALIGNED in the memory.  RISC systems don't like
+ *		   such cases very much...
  *  SANITY NOTE 2a:  According to Dave Miller & Alexey, it will always be aligned,
- *                 so there doesn't need to be any of the unaligned stuff.  It has
- *                 been commented out now...  --Ben
+ *		   so there doesn't need to be any of the unaligned stuff.  It has
+ *		   been commented out now...  --Ben
  *
  */
 int vlan_skb_recv(struct sk_buff *skb, struct net_device *dev,
-                  struct packet_type* ptype)
+		  struct packet_type* ptype)
 {
 	unsigned char *rawp = NULL;
 	struct vlan_hdr *vhdr = (struct vlan_hdr *)(skb->data);
@@ -328,8 +328,8 @@ static inline unsigned short vlan_dev_get_egress_qos_mask(struct net_device* dev
  *  physical devices.
  */
 int vlan_dev_hard_header(struct sk_buff *skb, struct net_device *dev,
-                         unsigned short type, void *daddr, void *saddr,
-                         unsigned len)
+			 unsigned short type, void *daddr, void *saddr,
+			 unsigned len)
 {
 	struct vlan_hdr *vhdr;
 	unsigned short veth_TCI = 0;
@@ -548,6 +548,22 @@ int vlan_dev_set_ingress_priority(char *dev_name, __u32 skb_prio, short vlan_pri
 	return -EINVAL;
 }
 
+/* Remove all egress_priority_map hash table entries. --redlicha */
+static void vlan_dev_destroy_egress_priority_map(struct net_device *dev)
+{
+	struct vlan_dev_info *info = VLAN_DEV_INFO(dev);
+	struct vlan_priority_tci_mapping *m;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(info->egress_priority_map); i++) {
+		while ((m = info->egress_priority_map[i])) {
+			info->egress_priority_map[i] =
+				info->egress_priority_map[i]->next;
+			kfree(m);
+		}
+	}
+}
+
 int vlan_dev_set_egress_priority(char *dev_name, __u32 skb_prio, short vlan_prio)
 {
 	struct net_device *dev = dev_get_by_name(dev_name);
@@ -604,7 +620,7 @@ int vlan_dev_set_vlan_flag(char *dev_name, __u32 flag, short flag_val)
 				dev_put(dev);
 				return 0;
 			} else {
-				printk(KERN_ERR  "%s: flag %i is not valid.\n",
+				printk(KERN_ERR	 "%s: flag %i is not valid.\n",
 					__FUNCTION__, (int)(flag));
 				dev_put(dev);
 				return -EINVAL;
@@ -676,7 +692,6 @@ int vlan_dev_get_vid(const char *dev_name, unsigned short* result)
 	return rv;
 }
 
-
 int vlan_dev_set_mac_address(struct net_device *dev, void *addr_struct_p)
 {
 	struct sockaddr *addr = (struct sockaddr *)(addr_struct_p);
@@ -716,7 +731,7 @@ int vlan_dev_set_mac_address(struct net_device *dev, void *addr_struct_p)
 }
 
 static inline int vlan_dmi_equals(struct dev_mc_list *dmi1,
-                                  struct dev_mc_list *dmi2)
+				  struct dev_mc_list *dmi2)
 {
 	return ((dmi1->dmi_addrlen == dmi2->dmi_addrlen) &&
 		(memcmp(dmi1->dmi_addr, dmi2->dmi_addr, dmi1->dmi_addrlen) == 0));
@@ -826,7 +841,11 @@ void vlan_dev_destruct(struct net_device *dev)
 		if (dev->priv) {
 			if (VLAN_DEV_INFO(dev)->dent)
 				BUG();
-
+			/*
+			 * Don't leak the hash table entries in
+			 * VLAN_DEV_INFO(dev)->egress_priority_map! --redlicha
+			 */
+			vlan_dev_destroy_egress_priority_map(dev);
 			kfree(dev->priv);
 			dev->priv = NULL;
 		}
@@ -847,7 +866,7 @@ void vlan_dev_set_multicast_list(struct net_device *vlan_dev)
 		/* compare the current promiscuity to the last promisc we had.. */
 		inc = vlan_dev->promiscuity - VLAN_DEV_INFO(vlan_dev)->old_promiscuity;
 		if (inc) {
-			printk(KERN_DEBUG "%s: dev_set_promiscuity(master, %d)\n",
+			printk(KERN_INFO "%s: dev_set_promiscuity(master, %d)\n",
 			       vlan_dev->name, inc);
 			dev_set_promiscuity(real_dev, inc); /* found in dev.c */
 			VLAN_DEV_INFO(vlan_dev)->old_promiscuity = vlan_dev->promiscuity;
@@ -855,7 +874,7 @@ void vlan_dev_set_multicast_list(struct net_device *vlan_dev)
 
 		inc = vlan_dev->allmulti - VLAN_DEV_INFO(vlan_dev)->old_allmulti;
 		if (inc) {
-			printk(KERN_DEBUG "%s: dev_set_allmulti(master, %d)\n",
+			printk(KERN_INFO "%s: dev_set_allmulti(master, %d)\n",
 			       vlan_dev->name, inc);
 			dev_set_allmulti(real_dev, inc); /* dev.c */
 			VLAN_DEV_INFO(vlan_dev)->old_allmulti = vlan_dev->allmulti;

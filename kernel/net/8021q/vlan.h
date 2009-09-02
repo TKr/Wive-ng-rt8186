@@ -6,9 +6,12 @@
 /*  Uncomment this if you want debug traces to be shown. */
 /* #define VLAN_DEBUG */
 
+//#define VLAN_DEBUG
 #define VLAN_ERR KERN_ERR
 #define VLAN_INF KERN_INFO
-#define VLAN_DBG KERN_DEBUG /* change these... to debug, having a hard time */
+#define VLAN_DBG KERN_ALERT /* change these... to debug, having a hard time
+                             * changing the log level at run-time..for some reason.
+                             */
 
 /*
 
@@ -70,6 +73,8 @@ void vlan_dev_destruct(struct net_device* dev);
 int vlan_dev_set_ingress_priority(char* dev_name, __u32 skb_prio, short vlan_prio);
 int vlan_dev_set_egress_priority(char* dev_name, __u32 skb_prio, short vlan_prio);
 int vlan_dev_set_vlan_flag(char* dev_name, __u32 flag, short flag_val);
+int vlan_dev_get_realdev_name(const char* dev_name, char* result);
+int vlan_dev_get_vid(const char* dev_name, unsigned short* result);
 void vlan_dev_set_multicast_list(struct net_device *vlan_dev);
 int vlan_dev_get_realdev_name(const char *dev_name, char* result);
 int vlan_dev_get_vid(const char *dev_name, unsigned short* result);

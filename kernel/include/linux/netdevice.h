@@ -296,7 +296,9 @@ struct net_device
 
 	unsigned short		flags;	/* interface flags (a la BSD)	*/
 	unsigned short		gflags;
-        unsigned short          priv_flags; /* Like 'flags' but invisible to userspace. */
+        unsigned short          priv_flags; /* Like 'flags' but invisible to userspace,
+                                             * see: if.h for flag definitions.
+                                             */
         unsigned short          unused_alignment_fixer; /* Because we need priv_flags,
                                                          * and we want to be 32-bit aligned.
                                                          */
@@ -330,6 +332,10 @@ struct net_device
 	void                    *dn_ptr;        /* DECnet specific data */
 	void                    *ip6_ptr;       /* IPv6 specific data */
 	void			*ec_ptr;	/* Econet specific data	*/
+
+        struct list_head        poll_list;      /* Link to poll list    */
+        int                     quota;
+        int                     weight;
 
 	struct Qdisc		*qdisc;
 	struct Qdisc		*qdisc_sleeping;
@@ -418,11 +424,19 @@ struct net_device
 	int			(*neigh_setup)(struct net_device *dev, struct neigh_parms *);
 	int			(*accept_fastpath)(struct net_device *, struct dst_entry*);
 
+#ifdef CONFIG_NET_SKB_RECYCLING
+	int			(*skb_recycle) (struct sk_buff *skb);
+	void			(*mem_reclaim) (struct net_device *dev);
+#endif
 	/* open/release and usage marking */
 	struct module *owner;
 
 	/* bridge stuff */
 	struct net_bridge_port	*br_port;
+
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+	struct macvlan_port *macvlan_priv;
+#endif
 
 #ifdef CONFIG_NET_FASTROUTE
 #define NETDEV_FASTROUTE_HMASK 0xF
@@ -434,6 +448,7 @@ struct net_device
 	/* this will get initialized at each interface type init routine */
 	struct divert_blk	*divert;
 #endif /* CONFIG_NET_DIVERT */
+
 };
 
 

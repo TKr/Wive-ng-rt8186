@@ -25,12 +25,7 @@ enum {
 /* Finally, the dynamically allocatable proc entries are reserved: */
 
 #define PROC_DYNAMIC_FIRST 4096
-#ifdef CONFIG_TINY_KERNEL
-#define PROC_NDYNAMIC      1024
-#else
-#define PROC_NDYNAMIC      4096
-#endif //CONFIG_TINY_KERNEL
-
+#define PROC_NDYNAMIC      8192
 #define PROC_SUPER_MAGIC 0x9fa0
 
 /*

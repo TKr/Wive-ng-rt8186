@@ -65,6 +65,8 @@
 #define SIOCDIFADDR	0x8936		/* delete PA address		*/
 #define	SIOCSIFHWBROADCAST	0x8937	/* set hardware broadcast addr	*/
 #define SIOCGIFCOUNT	0x8938		/* get number of devices */
+#define SIOCGIFWEIGHT	0x8939		/* get weight of device, in stones */
+#define SIOCSIFWEIGHT	0x893a		/* set weight of device, in stones */
 
 #define SIOCGIFBR	0x8940		/* Bridging support		*/
 #define SIOCSIFBR	0x8941		/* Set bridging options 	*/
@@ -97,6 +99,10 @@
 #define SIOCGRARP	0x8961		/* get RARP table entry		*/
 #define SIOCSRARP	0x8962		/* set RARP table entry		*/
 
+/* MAC address based VLAN control calls */
+#define SIOCGIFMACVLAN	0x8965		/* Mac address multiplex/demultiplex support */
+#define SIOCSIFMACVLAN	0x8966		/* Set macvlan options 	*/
+
 /* Driver configuration calls */
 
 #define SIOCGIFMAP	0x8970		/* Get device parameters	*/
@@ -118,7 +124,9 @@
 #define SIOCBONDSLAVEINFOQUERY 0x8993   /* rtn info about slave state   */
 #define SIOCBONDINFOQUERY      0x8994	/* rtn info about bond state    */
 #define SIOCBONDCHANGEACTIVE   0x8995   /* update to a new active slave */
-			
+
+
+
 // Kaohj
 #define SIOCS8305VLAN	0x89a0		/* Set RTL-8305 VLAN		*/
 #define SIOCETHTEST	0x89a1
@@ -131,6 +139,14 @@
 #define SIOCSITFGROUP	0x89a6		/* set itfgroup, jiunming	*/ //add from 2.6 by eason
 #define SIOCRESETSTAT	0x89a7		/* cathy, reset stat of every net device */
 //
+
+/* Ben's little hack land */
+#define SIOCSACCEPTLOCALADDRS  0x89a8   /*  Allow interfaces to accept pkts from
+                                          * local interfaces...use with SO_BINDTODEVICE
+                                          */
+#define SIOCGACCEPTLOCALADDRS  0x89a9   /*  Allow interfaces to accept pkts from
+                                          * local interfaces...use with SO_BINDTODEVICE
+                                          */	
 
 
 /* Device private ioctl calls */

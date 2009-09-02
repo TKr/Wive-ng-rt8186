@@ -1,4 +1,4 @@
-/* linux/net/inet/arp.c
+/* linux/net/inet/arp.c  -*-linux-c-*-
  *
  * Version:	$Id: arp.c,v 1.1.1.1 2004/07/28 06:27:37 ysc Exp $
  *
@@ -372,12 +372,22 @@ static int arp_filter(__u32 sip, __u32 tip, struct net_device *dev)
 	int flag = 0; 
 	/*unsigned long now; */
 
-	if (ip_route_output(&rt, sip, tip, 0, 0) < 0) 
+	if (ip_route_output(&rt, sip, tip, 0, 0) < 0)
 		return 1;
-	if (rt->u.dst.dev != dev) { 
-		NET_INC_STATS_BH(ArpFilter);
-		flag = 1;
-	} 
+        
+	if (rt->u.dst.dev != dev) {
+                if ((dev->priv_flags & IFF_ACCEPT_LOCAL_ADDRS) &&
+                    (rt->u.dst.dev == &loopback_dev))  {
+                        /* OK, we'll let this special case slide, so that we can arp from one
+                         * local interface to another.  This seems to work, but could use some
+                         * review. --Ben
+                         */
+                }
+                else {
+                        NET_INC_STATS_BH(ArpFilter);
+                        flag = 1;
+                }
+        }
 	ip_rt_put(rt); 
 	return flag; 
 } 

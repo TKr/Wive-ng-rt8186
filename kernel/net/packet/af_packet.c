@@ -70,6 +70,7 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/if_bridge.h>
+#include <linux/if_macvlan.h>
 
 #ifdef CONFIG_NET_DIVERT
 #include <linux/divert.h>
@@ -1518,6 +1519,20 @@ static int packet_ioctl(struct socket *sock, unsigned int cmd,
 				return br_ioctl_hook(arg);
 #endif
 #endif				
+			return -ENOPKG;
+
+		case SIOCGIFMACVLAN:
+		case SIOCSIFMACVLAN:
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+#ifdef CONFIG_INET
+#ifdef CONFIG_KMOD
+ 			if (macvlan_ioctl_hook == NULL)
+ 				request_module("macvlan");
+#endif
+			if (macvlan_ioctl_hook != NULL)
+				return macvlan_ioctl_hook(arg);
+#endif
+#endif
 			return -ENOPKG;
 
 		case SIOCGIFDIVERT:

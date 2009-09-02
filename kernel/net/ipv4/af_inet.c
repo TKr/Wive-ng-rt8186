@@ -143,6 +143,10 @@ int (*dlci_ioctl_hook)(unsigned int, void *);
 int (*br_ioctl_hook)(unsigned long);
 #endif
 
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+int (*macvlan_ioctl_hook)(unsigned long) = NULL;
+#endif
+
 #if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
 int (*vlan_ioctl_hook)(unsigned long arg);
 #endif
@@ -883,6 +887,18 @@ static int inet_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 #endif
 			if (br_ioctl_hook != NULL)
 				return br_ioctl_hook(arg);
+#endif
+			return -ENOPKG;
+
+		case SIOCGIFMACVLAN:
+		case SIOCSIFMACVLAN:
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+#ifdef CONFIG_KMOD
+			if (macvlan_ioctl_hook == NULL)
+ 				request_module("macvlan");
+#endif
+			if (macvlan_ioctl_hook != NULL)
+				return macvlan_ioctl_hook(arg);
 #endif
 			return -ENOPKG;
 

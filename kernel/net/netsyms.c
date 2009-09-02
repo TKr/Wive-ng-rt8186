@@ -30,6 +30,7 @@
 #include <net/pkt_sched.h>
 #include <net/scm.h>
 #include <linux/if_bridge.h>
+#include <linux/if_macvlan.h>
 #include <linux/if_vlan.h>
 #include <linux/random.h>
 #if defined(CONFIG_NET_DIVERT) || defined(CONFIG_NET_DIVERT_MODULE)
@@ -88,6 +89,14 @@ extern void destroy_8023_client(struct datalink_proto *);
 
 #ifdef CONFIG_SYSCTL
 extern int sysctl_max_syn_backlog;
+#endif
+
+#ifdef CONFIG_NET_PKTGEN_MODULE
+#warning "EXPORT_SYMBOL(handle_pktgen_hook);";
+extern int (*handle_pktgen_hook)(struct sk_buff *skb);
+/* Would be OK to export as EXPORT_SYMBOL_GPL, but can't get that to work for
+ * some reason. --Ben */
+EXPORT_SYMBOL(handle_pktgen_hook);
 #endif
 
 /* Skbuff symbols. */
@@ -232,6 +241,13 @@ EXPORT_SYMBOL(scm_detach_fds);
 EXPORT_SYMBOL(br_handle_frame_hook);
 #ifdef CONFIG_INET
 EXPORT_SYMBOL(br_ioctl_hook);
+#endif
+#endif
+
+#if defined(CONFIG_MACVLAN) || defined(CONFIG_MACVLAN_MODULE)
+EXPORT_SYMBOL(macvlan_handle_frame_hook);
+#ifdef CONFIG_INET
+EXPORT_SYMBOL(macvlan_ioctl_hook);
 #endif
 #endif
 

@@ -349,6 +349,12 @@ struct ethtool_ops {
 	void	(*complete)(struct net_device *);
 };
 
+/* for dumping net-device statistics */
+struct ethtool_ndstats {
+       u32     cmd;            /* ETHTOOL_GNDSTATS */
+       u8      data[0];        /* sizeof(struct net_device_stats) */
+};
+
 /* CMDs currently supported */
 #define ETHTOOL_GSET		0x00000001 /* Get settings. */
 #define ETHTOOL_SSET		0x00000002 /* Set settings. */
@@ -380,6 +386,7 @@ struct ethtool_ops {
 #define ETHTOOL_GSTRINGS	0x0000001b /* get specified string set */
 #define ETHTOOL_PHYS_ID		0x0000001c /* identify the NIC */
 #define ETHTOOL_GSTATS		0x0000001d /* get NIC-specific statistics */
+#define ETHTOOL_GNDSTATS        0x0000001e /* get standard net-device statistics */
 #define ETHTOOL_GTSO		0x0000001e /* Get TSO enable (ethtool_value) */
 #define ETHTOOL_STSO		0x0000001f /* Set TSO enable (ethtool_value) */
 

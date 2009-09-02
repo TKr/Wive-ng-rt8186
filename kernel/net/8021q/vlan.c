@@ -85,7 +85,7 @@ static int __init vlan_proto_init(void)
 
 	printk(VLAN_INF "%s v%u.%u %s\n",
 	       vlan_fullname, vlan_version, vlan_release, vlan_copyright);
-	printk(VLAN_INF "Other stuff added by %s\n",
+	printk(VLAN_INF "All bugs added by %s\n",
 	       vlan_buggyright);
 
 	/* proc file system initialization */
@@ -173,7 +173,7 @@ static void __grp_unhash(struct vlan_group *grp)
 	*pprev = grp->next;
 }
 
-/*  Find the protocol handler.  Assumes VID < VLAN_VID_MASK.
+/*  Find the protocol handler.	Assumes VID < VLAN_VID_MASK.
  *
  * Must be invoked with vlan_group_lock held.
  */
@@ -183,7 +183,7 @@ struct net_device *__find_vlan_dev(struct net_device *real_dev,
 	struct vlan_group *grp = __vlan_find_group(real_dev->ifindex);
 
 	if (grp)
-                return grp->vlan_devices[VID];
+		return grp->vlan_devices[VID];
 
 	return NULL;
 }
@@ -270,7 +270,7 @@ static int unregister_vlan_dev(struct net_device *real_dev,
 		}
 	}
 
-        return ret;
+	return ret;
 }
 
 static int unregister_vlan_device(const char *vlan_IF_name)
@@ -635,7 +635,6 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
 			ret = unregister_vlan_dev(dev,
 						  VLAN_DEV_INFO(vlandev)->vlan_id);
 
-			dev_put(vlandev);
 			unregister_netdevice(vlandev);
 
 			/* Group was destroyed? */
@@ -757,6 +756,8 @@ int vlan_ioctl_handler(unsigned long arg)
 
 	case GET_VLAN_REALDEV_NAME_CMD:
 		err = vlan_dev_get_realdev_name(args.device1, args.u.device2);
+		if (err)
+			goto out;
 		if (copy_to_user((void*)arg, &args,
 				 sizeof(struct vlan_ioctl_args))) {
 			err = -EFAULT;
@@ -765,6 +766,8 @@ int vlan_ioctl_handler(unsigned long arg)
 
 	case GET_VLAN_VID_CMD:
 		err = vlan_dev_get_vid(args.device1, &vid);
+		if (err)
+			goto out;
 		args.u.VID = vid;
 		if (copy_to_user((void*)arg, &args,
 				 sizeof(struct vlan_ioctl_args))) {
@@ -778,7 +781,7 @@ int vlan_ioctl_handler(unsigned long arg)
 			__FUNCTION__, args.cmd);
 		return -EINVAL;
 	};
-
+out:
 	return err;
 }
 

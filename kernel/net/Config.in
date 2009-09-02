@@ -44,6 +44,7 @@ if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
 	 tristate '    Multi-Protocol Over ATM (MPOA) support' CONFIG_ATM_MPOA
       fi
    fi
+   tristate 'MAC address based VLANs (EXPERIMENTAL)' CONFIG_MACVLAN
 fi
 comment 'Network options '
 if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then

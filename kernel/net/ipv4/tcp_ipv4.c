@@ -1305,7 +1305,7 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
 #define want_cookie 0 /* Argh, why doesn't gcc optimize this :( */
 #endif
 
-	/* Never answer to SYNs send to broadcast or multicast */
+	/* Never answer to SYNs sent to broadcast or multicast */
 	if (((struct rtable *)skb->dst)->rt_flags & 
 	    (RTCF_BROADCAST|RTCF_MULTICAST))
 		goto drop; 
