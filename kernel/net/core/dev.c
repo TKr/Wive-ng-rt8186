@@ -2338,11 +2338,11 @@ static int dev_ifsioc(struct ifreq *ifr, unsigned int cmd)
 		case SIOCSIFWEIGHT:
 			if (ifr->ifr_qlen < 0)
 				return -EINVAL;
-			dev->weight = ifr->ifr_qlen;
+			//dev->weight = ifr->ifr_qlen;
 			return 0;
                         
 		case SIOCGIFWEIGHT:
-			ifr->ifr_qlen = dev->weight;
+			//ifr->ifr_qlen = dev->weight;
 			return 0;
                         
                 case SIOCSACCEPTLOCALADDRS:
