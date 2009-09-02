@@ -1125,7 +1125,7 @@ static int rtl8186_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned entry;
 
 	u32 eor;
-#if defined(CP_VLAN_TAG_USED) || defined(VLAN_8021Q)
+#if defined(CP_VLAN_TAG_USED) || defined (CONFIG_VLAN_8021Q) || defined (CONFIG_VLAN_8021Q_MODULE)
 	u32 vlan_tag = 0;
 #endif
 

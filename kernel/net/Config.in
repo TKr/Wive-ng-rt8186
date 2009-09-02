@@ -59,7 +59,6 @@ if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
    tristate 'CCITT X.25 Packet Layer (EXPERIMENTAL)' CONFIG_X25
    tristate 'LAPB Data Link Driver (EXPERIMENTAL)' CONFIG_LAPB
    bool '802.2 LLC (EXPERIMENTAL)' CONFIG_LLC
-   tristate 'Frame Diverter (EXPERIMENTAL)' CONFIG_NET_DIVERT
    if [ "$CONFIG_INET" = "y" ]; then
       tristate 'Acorn Econet/AUN protocols (EXPERIMENTAL)' CONFIG_ECONET
    fi
@@ -71,6 +70,7 @@ if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
    bool 'Fast switching (read help!)' CONFIG_NET_FASTROUTE
 fi
 
+bool 'Frame Diverter' CONFIG_NET_DIVERT
 dep_tristate '802.1Q VLAN Support' CONFIG_VLAN_8021Q $CONFIG_INET
 dep_tristate '802.1d Ethernet Bridging' CONFIG_BRIDGE $CONFIG_INET
 dep_bool 'Bridge multicast filter' MULTICAST_FILTER $CONFIG_INET

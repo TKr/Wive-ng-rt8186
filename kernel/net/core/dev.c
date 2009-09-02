@@ -1471,14 +1471,14 @@ static __inline__ int handle_bridge(struct sk_buff *skb,
 
 
 #ifdef CONFIG_NET_DIVERT
-static inline void handle_diverter(struct sk_buff *skb)
+static inline int handle_diverter(struct sk_buff *skb)
 {
 	/* if diversion is supported on device, then divert */
 	if (skb->dev->divert && skb->dev->divert->divert)
 		divert_frame(skb);
+	return 0;
 }
 #endif   /* CONFIG_NET_DIVERT */
-
 
 static void net_rx_action(struct softirq_action *h)
 {
@@ -1486,6 +1486,7 @@ static void net_rx_action(struct softirq_action *h)
 	struct softnet_data *queue = &softnet_data[this_cpu];
 	unsigned long start_time = jiffies;
 	int bugdet = netdev_max_backlog;
+	int ret = NET_RX_DROP;
 
 	br_read_lock(BR_NETPROTO_LOCK);
 
@@ -1531,19 +1532,17 @@ static void net_rx_action(struct softirq_action *h)
 			}
 
 #ifdef CONFIG_NET_DIVERT
-			if (skb->dev->divert && skb->dev->divert->divert)
-				handle_diverter(skb);
+	if (skb->dev->divert && skb->dev->divert->divert)
+		ret = handle_diverter(skb);
 #endif /* CONFIG_NET_DIVERT */
-
-			
+	
 #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
-			if (skb->dev->br_port != NULL &&
-			    //skb->pkt_type != PACKET_HOST &&
-			    br_handle_frame_hook != NULL) {
-				handle_bridge(skb, pt_prev);
-				dev_put(rx_dev);
-				continue;
-			}
+	if (skb->dev->br_port != NULL && br_handle_frame_hook != NULL &&
+	    skb->pkt_type != PACKET_LOOPBACK) {
+		handle_bridge(skb, pt_prev);
+		dev_put(rx_dev);
+		continue;
+	}
 #endif
 
 			for (ptype=ptype_base[ntohs(type)&15];ptype;ptype=ptype->next) {
@@ -1904,7 +1903,7 @@ static int sprintf_wireless_stats(char *buffer, struct net_device *dev)
  * Print info for /proc/net/wireless (print all entries)
  * This is a clone of /proc/net/dev (just above)
  */
-static int dev_get_wireless_info(char * buffer, char **start, off_t offset,
+int dev_get_wireless_info(char * buffer, char **start, off_t offset,
 			  int length)
 {
 	int		len = 0;
@@ -2600,12 +2599,25 @@ int register_netdevice(struct net_device *dev)
 	for (dp=&dev_base; (d=*dp) != NULL; dp=&d->next) {
 		if (d == dev || strcmp(d->name, dev->name) == 0) {
 #ifdef CONFIG_NET_DIVERT
-			free_divert_blk(dev);
+		free_divert_blk(dev);
 #endif
 			return -EEXIST;
 		}
 	}
-	/*
+	
+	/* Fix illegal SG+CSUM combinations. */
+	if ((dev->features & NETIF_F_SG) &&
+	    !(dev->features & (NETIF_F_IP_CSUM |
+			       NETIF_F_NO_CSUM |
+			       NETIF_F_HW_CSUM))) {
+		printk("%s: Dropping NETIF_F_SG since no checksum feature.\n",
+		       dev->name);
+		dev->features &= ~NETIF_F_SG;
+	}
+
+
+
+         /*
 	 *	nil rebuild_header routine,
 	 *	that should be never called and used as just bug trap.
 	 */

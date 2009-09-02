@@ -213,6 +213,7 @@
 /*
  * Network options 
  */
+#undef  CONFIG_NET_DIVERT
 #undef  CONFIG_VLAN_8021Q
 #define CONFIG_VLAN_8021Q_MODULE 1
 #undef  CONFIG_BRIDGE

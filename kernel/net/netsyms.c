@@ -235,16 +235,11 @@ EXPORT_SYMBOL(br_ioctl_hook);
 #endif
 #endif
 
-
-#if defined(CONFIG_NET_DIVERT) || defined(CONFIG_NET_DIVERT_MODULE)
-EXPORT_SYMBOL(dv_init_hook);
-EXPORT_SYMBOL(alloc_divert_blk_hook);
-EXPORT_SYMBOL(free_divert_blk_hook);
-EXPORT_SYMBOL(divert_ioctl_hook);
-EXPORT_SYMBOL(divert_frame_hook);
-EXPORT_SYMBOL(sysctl_divert_version_hook);
+#ifdef CONFIG_NET_DIVERT
+EXPORT_SYMBOL(alloc_divert_blk);
+EXPORT_SYMBOL(free_divert_blk);
+EXPORT_SYMBOL(divert_ioctl);
 #endif /* CONFIG_NET_DIVERT */
-
 
 #ifdef CONFIG_INET
 /* Internet layer registration */

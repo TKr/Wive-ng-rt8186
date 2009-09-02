@@ -83,9 +83,9 @@ extern int sonic_probe(struct net_device *);
 extern int SK_init(struct net_device *);
 extern int seeq8005_probe(struct net_device *);
 extern int smc_init( struct net_device * );
-extern int sgiseeq_probe(struct net_device *);
 extern int atarilance_probe(struct net_device *);
 extern int sun3lance_probe(struct net_device *);
+extern int sun3_82586_probe(struct net_device *);
 extern int apne_probe(struct net_device *);
 extern int bionet_probe(struct net_device *);
 extern int pamsnet_probe(struct net_device *);
@@ -96,7 +96,7 @@ extern int bagetlance_probe(struct net_device *);
 extern int mvme147lance_probe(struct net_device *dev);
 extern int tc515_probe(struct net_device *dev);
 extern int lance_probe(struct net_device *dev);
-extern int mace68k_probe(struct net_device *dev);
+extern int mace_probe(struct net_device *dev);
 extern int macsonic_probe(struct net_device *dev);
 extern int mac8390_probe(struct net_device *dev);
 extern int mac89x0_probe(struct net_device *dev);
@@ -132,31 +132,25 @@ static int __init probe_list(struct net_device *dev, struct devprobe *plist)
 {
 	struct devprobe *p = plist;
 	unsigned long base_addr = dev->base_addr;
-#if defined(CONFIG_NET_DIVERT) || defined(CONFIG_NET_DIVERT_MODULE)
+#ifdef CONFIG_NET_DIVERT
 	int ret;
 #endif /* CONFIG_NET_DIVERT */
 
 	while (p->probe != NULL) {
 		if (base_addr && p->probe(dev) == 0) {	/* probe given addr */
-#if defined(CONFIG_NET_DIVERT) || defined(CONFIG_NET_DIVERT_MODULE)
-			if (alloc_divert_blk_hook)
-			{
-				ret = alloc_divert_blk_hook(dev);
-				if (ret)
-					return ret;
-			}
+#ifdef CONFIG_NET_DIVERT
+			ret = alloc_divert_blk(dev);
+			if (ret)
+				return ret;
 #endif /* CONFIG_NET_DIVERT */
 			return 0;
 		} else if (p->status == 0) {		/* has autoprobe failed yet? */
 			p->status = p->probe(dev);	/* no, try autoprobe */
 			if (p->status == 0) {
-#if defined(CONFIG_NET_DIVERT) || defined(CONFIG_NET_DIVERT_MODULE)
-				if (alloc_divert_blk_hook)
-				{
-					ret = alloc_divert_blk_hook(dev);
-					if (ret)
-						return ret;
-				}
+#ifdef CONFIG_NET_DIVERT
+				ret = alloc_divert_blk(dev);
+				if (ret)
+					return ret;
 #endif /* CONFIG_NET_DIVERT */
 				return 0;
 			}
@@ -338,6 +332,9 @@ static struct devprobe m68k_probes[] __initdata = {
 #ifdef CONFIG_SUN3LANCE         /* sun3 onboard Lance chip */
 	{sun3lance_probe, 0},
 #endif
+#ifdef CONFIG_SUN3_82586        /* sun3 onboard Intel 82586 chip */
+	{sun3_82586_probe, 0},
+#endif
 #ifdef CONFIG_APNE		/* A1200 PCMCIA NE2000 */
 	{apne_probe, 0},
 #endif
@@ -354,7 +351,7 @@ static struct devprobe m68k_probes[] __initdata = {
 	{mvme147lance_probe, 0},
 #endif
 #ifdef CONFIG_MACMACE		/* Mac 68k Quadra AV builtin Ethernet */
-	{mace68k_probe, 0},
+	{mace_probe, 0},
 #endif
 #ifdef CONFIG_MACSONIC		/* Mac SONIC-based Ethernet of all sorts */ 
 	{macsonic_probe, 0},
@@ -364,14 +361,6 @@ static struct devprobe m68k_probes[] __initdata = {
 #endif
 #ifdef CONFIG_MAC89x0
  	{mac89x0_probe, 0},
-#endif
-	{NULL, 0},
-};
-
-
-static struct devprobe sgi_probes[] __initdata = {
-#ifdef CONFIG_SGISEEQ
-	{sgiseeq_probe, 0},
 #endif
 	{NULL, 0},
 };
@@ -409,8 +398,6 @@ static int __init ethif_probe(struct net_device *dev)
 	if (probe_list(dev, m68k_probes) == 0)
 		return 0;
 	if (probe_list(dev, mips_probes) == 0)
-		return 0;
-	if (probe_list(dev, sgi_probes) == 0)
 		return 0;
 	if (probe_list(dev, eisa_probes) == 0)
 		return 0;

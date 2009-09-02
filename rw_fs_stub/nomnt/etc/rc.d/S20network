@@ -79,12 +79,7 @@ if [ -f /etc/devices/eth1 ]; then
     fi
 fi
 #-------------------------------------VLAN  START---------------------
-echo Vlan
 if [ "$VLAN_START" = "yes" ] && [ "$BRIDGE_START" != "yes" ] ; then
-   echo VLAN modules load
-   modtest=`uname -r`
-   moddir=/lib/modules/$modtest/kernel/net
-   /sbin/insmod $moddir/8021q/8021q.o
    echo starting VLAN
    /etc/network/vlan
 fi

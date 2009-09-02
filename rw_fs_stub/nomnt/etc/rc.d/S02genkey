@@ -37,7 +37,7 @@ fi
 }
             
 stop() {
-    Echo "OK"
+    echo "OK"
 }
 
 case "$1" in

@@ -122,13 +122,10 @@ echo AdvancedBridge options
     fi
 
 #-------------------------------------VLAN  START---------------------
-echo Vlan
 if [ "$VLAN_START" = "yes" ] ; then
-    echo VLAN modules load
-    /sbin/insmod $moddir/8021q/8021q.o
     echo starting VLAN br
     /etc/network/vlan
-    fi
+fi
 echo OK
 
 fi

@@ -14,11 +14,18 @@ echo "Starting modules.dep generate..."
     ls -1R $moddir/net/bridge/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/net/ipv4/netfilter/*	| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/net/sched/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+
+if [ "$VLAN_START" = "yes" ] ; then
+    echo VLAN modules load
+    modprobe 8021q
+fi
+
+    echo "OK"
 }
 
 stop() {
     echo "Stop modules.dep generate..."
-    Echo "OK"
+    echo "OK"
 }
 
 case "$1" in
