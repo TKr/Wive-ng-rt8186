@@ -52,7 +52,6 @@ all: linux.bin system.map
 clean:
 	rm -f *.o memload system.map rtkrom memload-partial memload-full vmlinux_img.gz target target.img strip1 linux.bin vmlinux-stripped  $(LDSCRIPT) vmlinux_img vmlinux_img.gz.out
 
-
 memload-partial: $(LOADER_FILES) $(SUPPORT_FILES) $(START_FILE) ../vmlinux
 	$(CROSSPATH)$(CROSS_LINUX)gcc -fno-pic -mno-abicalls -Os -fomit-frame-pointer -D__MIPSEB__ -D__KERNEL__ -D__BIG_ENDIAN_BITFIELD -c vmlinux_img.c -o vmlinux_img.o
 	$(CROSSPATH)$(CROSS_LINUX)objcopy --add-section .vmlinux=vmlinux_img.gz vmlinux_img.o

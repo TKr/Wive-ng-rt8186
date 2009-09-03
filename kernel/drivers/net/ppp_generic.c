@@ -73,7 +73,7 @@ int ppp_dial_pid = 0;
  */
 struct ppp_file {
 	enum {
-		INTERFACE=1, CHANNEL
+	    INTERFACE=1, CHANNEL
 	}		kind;
 	struct sk_buff_head xq;		/* pppd transmit queue */
 	struct sk_buff_head rq;		/* receive queue for pppd */

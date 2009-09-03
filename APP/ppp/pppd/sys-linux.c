@@ -199,7 +199,7 @@ static int driver_is_old       = 0;
 static int restore_term        = 0;	/* 1 => we've munged the terminal */
 static struct termios inittermios;	/* Initial TTY termios */
 
-int new_style_driver = 0;
+int new_style_driver = 1;
 
 static char loop_name[20];
 static unsigned char inbuf[512]; /* buffer for chars read from loopback */
@@ -455,6 +455,7 @@ int generic_establish_ppp (int fd)
 	
 	/* if a ppp_fd is already open, close it first debian patch*/
         if(ppp_fd > 0) {
+	  notice("Close old fd socket \n");
           close(ppp_fd);
           remove_fd(ppp_fd);
           ppp_fd = -1;

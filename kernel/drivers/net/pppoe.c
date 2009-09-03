@@ -90,7 +90,7 @@ int __pppoe_xmit(struct sock *sk, struct sk_buff *skb);
 
 struct proto_ops pppoe_ops;
 
-#if 0
+#if 1
 #define CHECKPTR(x,y) do { if (!(x) && pppoe_debug &7 ){ printk(KERN_CRIT "PPPoE Invalid pointer : %s , %p\n",#x,(x)); error=-EINVAL; goto y; }} while (0)
 #define DEBUG(s,args...) do { if( pppoe_debug & (s) ) printk(KERN_CRIT args ); } while (0)
 #else
@@ -590,9 +590,10 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 	struct pppox_opt *po = sk->protinfo.pppox;
 	int error;
 
-    	printk(KERN_ERR "PPPOE: START_PPPOX_CONNECT ");
+    	printk(KERN_ERR "PPPOE: START_PPPOX_CONNECT \n");
 	lock_sock(sk);
 
+	/* Check for protocol pppoe */
 	error = -EINVAL;
 	if (sp->sa_protocol != PX_PROTO_OE)
 		goto end;
@@ -628,6 +629,7 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 
 	/* Don't re-bind if sid==0 */
 	if (sp->sa_addr.pppoe.sid != 0) {
+		printk(KERN_INFO "PPoE: REBIND DEVICE\n");
 		dev = dev_get_by_name(sp->sa_addr.pppoe.dev);
 
 		error = -ENODEV;
@@ -657,21 +659,20 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 		po->chan.private = sk;
 		po->chan.ops = &pppoe_chan_ops;
 
-	        if( (error = ppp_register_channel(&po->chan)) ) {
-        	printk(KERN_ERR "PPPOE: failed to register PPP channel (%d)\n",error);
-			goto err_put;
+	        if( (error = ppp_register_channel(&po->chan)) ){
+        	    printk(KERN_ERR "PPPOE: failed to register PPP channel (%d)\n",error);
+		    goto err_put;
                 }
                         
-        	printk(KERN_ERR "PPPOE: PPPOX_CONNECTED ");
+        	printk(KERN_ERR "PPPOE: PPPOX_CONNECTED \n");
 		sk->state = PPPOX_CONNECTED;
 	}
 
 	sk->num = sp->sa_addr.pppoe.sid;
-
- end:
-    	printk(KERN_ERR "PPPOE: NOT_PPPOX_CONNECTED ");
+end:
 	release_sock(sk);
 	return error;
+
 err_put:
 	if (po->pppoe_dev) {
 		printk(KERN_INFO "PPoE: ERROR DEVICE\n");

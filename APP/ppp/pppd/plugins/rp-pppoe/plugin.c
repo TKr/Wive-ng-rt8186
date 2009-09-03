@@ -229,7 +229,7 @@ PPPOEConnectDevice(void)
     memcpy(sp.sa_addr.pppoe.remote, conn->peerEth, ETH_ALEN);
 
     /* Set remote_number for ServPoET */
-    sprintf(remote_number, "%02X:%02X:%02X:%02X:%02X:%02X",
+    notice(remote_number, "%02X:%02X:%02X:%02X:%02X:%02X \n",
 	    (unsigned) conn->peerEth[0],
 	    (unsigned) conn->peerEth[1],
 	    (unsigned) conn->peerEth[2],
@@ -237,7 +237,7 @@ PPPOEConnectDevice(void)
 	    (unsigned) conn->peerEth[4],
 	    (unsigned) conn->peerEth[5]);
 
-    warn("Connected to %02X:%02X:%02X:%02X:%02X:%02X via interface %s",
+    notice("Connected to %02X:%02X:%02X:%02X:%02X:%02X via interface %s \n",
 	 (unsigned) conn->peerEth[0],
 	 (unsigned) conn->peerEth[1],
 	 (unsigned) conn->peerEth[2],
@@ -248,15 +248,16 @@ PPPOEConnectDevice(void)
 
     script_setenv("MACREMOTE", remote_number, 0);
     
+    notice("connect PPPoE socket \n");
     if (connect(conn->sessionSocket, (struct sockaddr *) &sp,
     		sizeof(struct sockaddr_pppox)) < 0) {
-    	error("Failed to connect PPPoE socket: %d", errno);
+    	notice("Failed to connect PPPoE socket: %d", errno);
     	close(conn->sessionSocket);
     	goto errout;
     }
     
-    return;
     conn->sessionSocket;
+    return;
 
  errout:
     if (conn->discoverySocket >= 0) {

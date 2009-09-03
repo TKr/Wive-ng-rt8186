@@ -392,6 +392,9 @@ parsePADOTags(UINT16_t type, UINT16_t len, unsigned char *data,
 	if (conn->serviceName && len == strlen(conn->serviceName) &&
 	    !strncmp((char *) data, conn->serviceName, len)) {
 	    pc->serviceNameOK = 1;
+	    printf("       Service-Name-OK");
+	    }else{
+	    printf("       Service-Name-ERROR");
 	}
 	break;
     case TAG_AC_COOKIE:

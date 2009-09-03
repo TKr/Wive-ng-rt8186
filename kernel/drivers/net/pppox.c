@@ -94,12 +94,10 @@ static int pppox_ioctl(struct socket* sock, unsigned int cmd,
 		err = -ENOTCONN;
 		if (!(sk->state & PPPOX_CONNECTED))
 			break;
-
 		err = -EINVAL;
 		index = ppp_channel_index(&po->chan);
 		if (put_user(index , (int *) arg))
 			break;
-
 		err = 0;
 		sk->state |= PPPOX_BOUND;
 		break;
