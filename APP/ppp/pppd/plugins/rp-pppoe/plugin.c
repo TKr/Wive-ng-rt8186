@@ -118,6 +118,57 @@ PPPOEInitDevice(void)
     return 1;
 }
 
+/* from <linux/if.h> */
+#define IFF_UP          0x1
+#define IFF_RUNNING     0x40
+
+static short ifrflags_old;
+
+static int interface_change(const char* ifname, int up)
+{
+    int fd;
+    struct ifreq ifr;
+
+    if (!up && ifrflags_old != 0) {
+        return 0;
+    }
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd < 0) {
+	warn("socket(AF_INET, SOCK_DGRAM, 0): %s", strerror(errno));
+	return -1;
+    }
+
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
+	warn("%s: unknown interface: %s", ifname, strerror(errno));
+	return -1;
+    }
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    if (up) {
+        ifrflags_old = ifr.ifr_flags & (IFF_UP | IFF_RUNNING);
+	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+    } else {
+        ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+    }
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0) {
+	warn("SIOCSIFFLAGS: %s", strerror(errno));
+	return -1;
+    }
+    close(fd);
+    return 0;
+}
+
+static int interface_up (const char *ifname)
+{
+    return interface_change(ifname,1);
+}
+
+static int interface_down (const char* ifname)
+{
+    return interface_change(ifname,0);
+}
+
 /**********************************************************************
  * %FUNCTION: PPPOEConnectDevice
  * %ARGUMENTS:
@@ -159,6 +210,8 @@ PPPOEConnectDevice(void)
     } else {
         conn->discoverySocket =
             openInterface(conn->ifName, Eth_PPPOE_Discovery, conn->myEth);
+	if (interface_up(conn->ifName) < 0)
+	    return -1;
 	discovery(conn);
 	if (conn->discoveryState != STATE_SESSION) {
 	    error("Unable to complete PPPoE Discovery");
@@ -252,6 +305,9 @@ PPPOEDisconnectDevice(void)
     /* don't send PADT?? */
     if (conn->discoverySocket >= 0)
 	close(conn->discoverySocket);
+    if (interface_down(conn->ifName) < 0)
+	warn("We brought %s up but failed to take it down",conn->ifName);
+    
 }
 
 static void
