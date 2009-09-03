@@ -106,7 +106,7 @@ LONGRETRY=2
 LED_TYPE=2
 
 #Prioriry transmit maximum speed on realtek turbo mode 
-TXPRIO=yes
+TX_PRIO=yes
 
 #Enable Quality of Service
 QOS=yes
