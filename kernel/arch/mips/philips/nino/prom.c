@@ -59,7 +59,7 @@ void __init prom_init(int argc, char **argv, unsigned long magic, int *prom_vec)
 #endif
 	mips_machgroup = MACH_GROUP_PHILIPS;
 	mips_machtype = MACH_PHILIPS_NINO;
-	save_flags(flags);cli(); 
+	local_irq_save(flags);
 //Check for maximum RAM openned in MCR
 	reg_mem = (*( volatile unsigned long*) 0xbd011000) & 0x30000000; 
 	reg_mem >>=24;
@@ -110,7 +110,7 @@ void __init prom_init(int argc, char **argv, unsigned long magic, int *prom_vec)
 	detect_ram_sequence[2] = memmeg;
 	detect_ram_sequence[3] = mem_size;
 	
-       restore_flags(flags); 
+       local_irq_restore(flags);
        totall_system_memory_detected = memmeg;
        add_memory_region(0, mem_size, BOOT_MEM_RAM); 
 

@@ -45,7 +45,7 @@ static void nino_machine_restart(char *command)
 	unsigned long flags;
 	static void (*back_to_prom)(void) = (void (*)(void)) 0xbfc00000;
 	outl(0,GIMR0);  
-	save_flags(flags); cli();
+	local_irq_save(flags);
 	mdelay(100);
 	printk("Enable G700 and over bad AP workaround CPU<=>HZ registr. \n");
 	outl(0x35B60, TC0DATA);
