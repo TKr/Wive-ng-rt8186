@@ -4,6 +4,19 @@
 
 #include <asm/addrspace.h>
 
+//for rtl8186 gpio set
+#define RTL_GPIO_PABDIR         0xbd010124
+#define RTL_GPIO_PABDATA        0xbd010120
+#define RESET_PIN       	0
+
+// read/write
+#define RTL_R32(addr)   (*(volatile unsigned long *)(addr))
+#define RTL_W32(addr, l)   ((*(volatile unsigned long*)(addr)) = (l))
+#define RTL_R8(addr)   (*(volatile unsigned char*)(addr))
+#define RTL_W8(addr, l)   ((*(volatile unsigned char*)(addr)) = (l))
+
+
+
 #define Virtual2Physical(x)		(((int)x) & 0x1fffffff)
 #define Physical2Virtual(x)		(((int)x) | 0x80000000)
 #define Virtual2NonCache(x)		(((int)x) | 0x20000000)
@@ -20,12 +33,9 @@
 #define rtl_outl(offset,val)	(*(volatile unsigned long *)(RTL8181_REG_BASE+offset) = val)
 
 
-#ifdef BIT
-#error	"BIT define occurred earlier elsewhere!\n"
-#endif
-
+#ifndef BIT
 #define BIT(x)	( 1 << (x))
-
+#endif
 
 // For Uart1 Controller
 #define UART_RBR	0xC3
@@ -68,9 +78,6 @@
 #define TCIR		0x54
 #define BTDATA		0x58
 #define WDTCNR		0x5C
-
-
-
 
 // For NIC
 

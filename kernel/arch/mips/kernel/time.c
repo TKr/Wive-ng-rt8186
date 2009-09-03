@@ -27,8 +27,11 @@
 #include <asm/time.h>
 #include <asm/hardirq.h>
 #include <asm/div64.h>
-#include <asm/rtl8186.h>
 #include <asm/io.h>
+
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
 
 /* This is for machines which generate the exact clock. */
 #define USECS_PER_JIFFY         tick

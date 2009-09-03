@@ -12,8 +12,10 @@
  */
 
 #include <stdarg.h>
-#include <asm/rtl8186.h>
 
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
        
 void serial_outc(char c)
 {

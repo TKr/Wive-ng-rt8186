@@ -19,9 +19,12 @@
 #include <asm/reboot.h>
 #include <asm/time.h>
 #include <asm/param.h>
-#include <asm/rtl8186.h>
 #include <linux/netdevice.h>
 #include <linux/delay.h>
+
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
 
 #define EARLY_PRINTK_ENABLE
 static void shutdown_netdev()

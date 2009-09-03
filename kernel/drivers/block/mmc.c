@@ -19,6 +19,10 @@
 #include <linux/hdreg.h>
 #include <linux/major.h>
 
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
+
 #include <asm/uaccess.h>
 #include <asm/io.h>
 
@@ -71,12 +75,6 @@ MODULE_LICENSE("GPL");
 
 #define PRESENT 1
 #define ABSENT 0
-
-#define RTL_GPIO_PABDIR 	0xbd010124
-#define RTL_GPIO_PABDATA 	0xbd010120
-
-#define RTL_R32(addr)   (*(volatile unsigned long *)(addr))
-#define RTL_W32(addr, l)   ((*(volatile unsigned long*)(addr)) = (l))
 
 typedef unsigned int uint32;
 typedef unsigned long u32_t;

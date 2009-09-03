@@ -27,7 +27,11 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <asm/semaphore.h>
+
+#ifdef CONFIG_RTL8186_AP
 #include <asm/rtl8186.h>
+#endif
+
 //for I2C
 #define I2C_MAJOR		89
 #define ENABLE_SIO		0x0001
@@ -95,7 +99,6 @@ struct irda_client {
 };
 
 #define RTL_W32(reg,value32)	rtl_outl(reg,value32)	
-				
 #define RTL_R32(reg)		rtl_inl(reg)	
 
 /* struct file_operations changed too often in the 2.1 series for nice code */

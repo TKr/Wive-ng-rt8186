@@ -17,6 +17,10 @@
 #include <linux/bootmem.h>
 #include <linux/tty.h>
 
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
+
 #include <asm/io.h>
 #include <asm/bugs.h>
 
@@ -81,14 +85,6 @@
 #ifdef CONFIG_DS1820_PIN_10
   #define DS1820_BIT 0x400 
 #endif
-
-	#define RTL_GPIO_PABDIR 	0xbd010124
-	#define RTL_GPIO_PABDATA 	0xbd010120
-	#define RESET_PIN	0
-
-#define RTL_R32(addr)   (*(volatile unsigned long *)(addr))
-#define RTL_W32(addr, l)   ((*(volatile unsigned long*)(addr)) = (l))
-
 
 #define DS1820Low \
    {\

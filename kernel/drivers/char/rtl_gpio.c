@@ -46,26 +46,13 @@
 #include <linux/reboot.h>
 
 #ifdef CONFIG_RTL8186_AP
-	#define RTL_GPIO_PABDIR 	0xbd010124
-	#define RTL_GPIO_PABDATA 	0xbd010120
-	#define RESET_PIN	0
-#else
-	#define RTL_GPIO_PABDIR 	0xbd010040
-	#define RTL_GPIO_PABDATA 	0xbd010044
-	#define RTL_WLAN_CR9346		0xbd400050
-	#define RTL_WLAN_CONFIG0	0xbd400051
-	#define RTL_WLAN_PSR		0xbd40005e
-	#define RESET_PIN	10
+#include <asm/rtl8186.h>
 #endif
 
 #define PROBE_NULL	0
 #define PROBE_ACTIVE	1
 #define PROBE_RESET	2
 #define PROBE_RELOAD	3
-#define RTL_R32(addr)   (*(volatile unsigned long *)(addr))
-#define RTL_W32(addr, l)   ((*(volatile unsigned long*)(addr)) = (l))
-#define RTL_R8(addr)   (*(volatile unsigned char*)(addr))
-#define RTL_W8(addr, l)   ((*(volatile unsigned char*)(addr)) = (l))
 
 #ifdef GPIO_DEBUG
 /* note: prints function name for you */

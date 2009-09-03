@@ -1,4 +1,8 @@
 
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
+#endif
+
 char hexdigits[17] = "0123456789abcdef";
 
 int itox( unsigned int n, char s[])
@@ -1211,10 +1215,6 @@ void BZ2_hbCreateDecodeTables ( Int32 *limit,
    for (i = minLen + 1; i <= maxLen; i++)
       base[i] = ((limit[i-1] + 1) << 1) - base[i];
 }
-#define RTL_R32(addr)   (*(volatile unsigned long *)(addr))     //Erwin
-#define RTL_W32(addr, l)   ((*(volatile unsigned long*)(addr)) = (l))   //Erwin
-#define RTL_GPIO_PABDIR     0xbd010124      //Erwin
-#define RTL_GPIO_PABDATA    0xbd010120      //Erwin
 
 /*---------------------------------------------------*/
 Int32 BZ2_decompress ( DState* s )
