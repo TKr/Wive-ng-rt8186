@@ -50,7 +50,7 @@ SEDFLAGS	= s/LOAD_ADDR/$(LOAD_START_ADDR)/;
 all: linux.bin system.map 
 
 clean:
-	rm -f *.o memload system.map rtkrom memload-partial memload-full vmlinux_img.gz target target.img strip1 linux.bin vmlinux-stripped  $(LDSCRIPT) vmlinux_img
+	rm -f *.o memload system.map rtkrom memload-partial memload-full vmlinux_img.gz target target.img strip1 linux.bin vmlinux-stripped  $(LDSCRIPT) vmlinux_img vmlinux_img.gz.out
 
 
 memload-partial: $(LOADER_FILES) $(SUPPORT_FILES) $(START_FILE) ../vmlinux

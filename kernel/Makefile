@@ -413,7 +413,8 @@ clean:	archclean
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/wireless_ag_net.o
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/ipsec.o
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/fastpath.o
-	
+	make -C rtkload clean
+
 mrproper: clean archmrproper
 	find . \( -size 0 -o -name .depend \) -type f -print | xargs rm -f
 	rm -f $(MRPROPER_FILES)
