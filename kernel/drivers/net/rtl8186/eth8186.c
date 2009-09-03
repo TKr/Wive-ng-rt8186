@@ -470,7 +470,7 @@ static void LED_Interval_timeout(unsigned long port)
 	struct ctrl_led *cb	= &led_cb[port];
 	unsigned long flags;
 
-	save_flags(flags);cli();
+	local_irq_save(flags);
 
 	if (cb->link_status & LINK_STATE_CHANGE) {
 		cb->link_status &= ~LINK_STATE_CHANGE;	
@@ -493,7 +493,7 @@ static void LED_Interval_timeout(unsigned long port)
 			mod_timer(&cb->LED_Timer, jiffies + LED_ON_TIME);
 		cb->LED_Toggle = (cb->LED_Toggle + 1) % 2;				
 	}
-	restore_flags(flags);
+	local_irq_restore(flags);
 }
 
 void calculate_led_interval(int port)
@@ -1144,16 +1144,16 @@ dequeue_label:
 
 	if (deq_loop)
 	{
-		save_flags(flags);cli();
+		local_irq_save(flags);
 		// fetch a new skb for tx
 		if ((skb = q->dequeue(q)) == NULL)
 		{
 			// polling TX
 			RTL_W32(IO_CMD, CMD_CONFIG | TX_POLL);
-			restore_flags(flags);
+			local_irq_restore(flags);
 			return 0;
 		}
-		restore_flags(flags);
+		local_irq_restore(flags);
 #ifdef CONFIG_RTL8186_ETH_DEBUG
 		printk("next tx skb\n");
 #endif
@@ -1630,7 +1630,8 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 	if (((struct net_device *)task_priv)->name[3] == '0' ) {
 		int port;
 		unsigned long flags;
-		save_flags(flags);cli();
+		
+		local_irq_save(flags);
 
 		for (port=0; port<SWITCH_PORT_NUMBER; port++) {
 			update_mib_counter(port);		
@@ -1640,7 +1641,7 @@ static void rtk8186_1sec_timer(unsigned long task_priv)
 		}
 		MII_read(4, 0, 1); // switch to MII to wan port to fix Eth auto link issue		
 
-		restore_flags(flags);
+		local_irq_restore(flags);
 	}	
 #endif
 
@@ -1713,7 +1714,8 @@ static int rtl8186_open(struct net_device *dev)
 		if(dev->base_addr == 0xbd200000){ // LAN interface
 			unsigned long flags;
 
-			save_flags(flags);cli();
+			local_irq_save(flags);
+			
 			cp->regs = (void *)0xbd300000;
 
 			RTL_W32(MIIAR, BIT(31)|0x800|(0<<26));
@@ -1735,7 +1737,7 @@ static int rtl8186_open(struct net_device *dev)
 			RTL_W32(MIIAR, BIT(31)|0x8000|(3<<26));
 
 			cp->regs = (void *)dev->base_addr;
-			restore_flags(flags);
+			local_irq_restore(flags);
 		}
 		else {
 			RTL_W32(MIIAR, BIT(31)|0x800|(4<<26));
@@ -2163,7 +2165,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 	unsigned int phy_addr_data, MII_reg;
 	unsigned long flags;
 
-	save_flags(flags); cli();	
+	local_irq_save(flags);
 	
 	phy_addr_data = (1<<31) | (phyaddr<<26) | (regaddr<<16) | data;
 	
@@ -2182,7 +2184,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 			break;
 		}
 	}		
-	restore_flags(flags);			
+	local_irq_restore(flags);			
 	return;
 }
 
@@ -2195,7 +2197,7 @@ unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short in
 	unsigned int phy_addr, MII_reg;
 	unsigned long flags;
 
-	save_flags(flags); cli();
+	local_irq_save(flags);
 	
 	phy_addr = (0<<31) | (phyaddr<<26) | (regaddr<<16);
 	
@@ -2214,7 +2216,7 @@ unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short in
 			break;
 		}
 	}		
-	restore_flags(flags);			
+	local_irq_restore(flags);			
 	return rtl8305_inl(MII_reg)&0x0000ffff;
 }
 
@@ -2461,7 +2463,8 @@ static int rtl8186_set_hwaddr(struct net_device *dev, void *addr)
 
 	p = ((struct sockaddr *)addr)->sa_data;
 
-	save_flags(flags); cli();
+	local_irq_save(flags);
+	
 	for (i = 0; i < 6; ++i) {
 		dev->dev_addr[i] = p[i];
 #ifdef CONFIG_RTL8186_ETH_DEBUG
@@ -2474,7 +2477,7 @@ static int rtl8186_set_hwaddr(struct net_device *dev, void *addr)
 	RTL_W8(IDR3, dev->dev_addr[3]);
 	RTL_W8(IDR4, dev->dev_addr[4]);
 	RTL_W8(IDR5, dev->dev_addr[5]);
-	restore_flags(flags);
+	local_irq_restore(flags);
 	return 0;
 }
 
