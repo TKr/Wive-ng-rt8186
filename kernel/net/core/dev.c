@@ -128,7 +128,6 @@ extern int plip_init(void);
 /* Setting this will sample the queue lengths and thus congestion
  * via a timer instead of as each packet is received.
  */
-#undef OFFLINE_SAMPLE
 
 NET_PROFILE_DEFINE(dev_queue_xmit)
 NET_PROFILE_DEFINE(softnet_process)
@@ -173,11 +172,6 @@ const char *if_port_text[] = {
 
 static struct packet_type *ptype_base[16];		/* 16 way hashed list */
 static struct packet_type *ptype_all = NULL;		/* Taps */
-
-#ifdef OFFLINE_SAMPLE
-static void sample_queue(unsigned long dummy);
-static struct timer_list samp_timer = { function: sample_queue };
-#endif
 
 #ifdef CONFIG_HOTPLUG
 static int net_run_sbin_hotplug(struct net_device *dev, char *action);
@@ -1205,19 +1199,6 @@ void get_sample_stats(int cpu)
 	softnet_data[cpu].avg_blog = avg_blog;
 }
 
-#ifdef OFFLINE_SAMPLE
-static void sample_queue(unsigned long dummy)
-{
-/* 10 ms 0r 1ms -- i dont care -- JHS */
-	int next_tick = 1;
-	int cpu = smp_processor_id();
-
-	get_sample_stats(cpu);
-	next_tick += jiffies;
-	mod_timer(&samp_timer, next_tick);
-}
-#endif
-
 
 /**
  *	netif_rx	-	post buffer to the network code
@@ -1280,9 +1261,7 @@ enqueue:
 			cpu_raise_softirq(this_cpu, NET_RX_SOFTIRQ);
 			local_irq_restore(flags);
 #ifndef JACKSON_NET_WORK			
-#ifndef OFFLINE_SAMPLE
 			get_sample_stats(this_cpu);
-#endif
 			return softnet_data[this_cpu].cng_level;
 #else
 			return 	NET_RX_SUCCESS;
@@ -1322,7 +1301,6 @@ static int deliver_to_old_ones(struct packet_type *pt, struct sk_buff *skb, int 
 {
 	static spinlock_t net_bh_lock = SPIN_LOCK_UNLOCKED;
 	int ret = NET_RX_DROP;
-	//printk("deliver to old ones\n");
 #ifdef JACKSON_NET_WORK
 	//printk("deliver to old ones\n");
 #endif	
@@ -1391,7 +1369,6 @@ static void net_tx_action(struct softirq_action *h)
                netif_schedule(dev);
                }
                }
-	       //local_irq_enable();
           }
 
 #endif
@@ -2984,11 +2961,6 @@ int __init net_dev_init(void)
 	net_profile_init();
 	NET_PROFILE_REGISTER(dev_queue_xmit);
 	NET_PROFILE_REGISTER(softnet_process);
-#endif
-
-#ifdef OFFLINE_SAMPLE
-	samp_timer.expires = jiffies + (10 * HZ);
-	add_timer(&samp_timer);
 #endif
 
 	/*
