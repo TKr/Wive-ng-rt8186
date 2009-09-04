@@ -1,4 +1,3 @@
-CC=mips-linux-gcc
 #	$Id: Makefile.linux,v 1.15 2006/06/04 05:07:46 paulus Exp $
 
 DESTDIR = $(INSTROOT)/opt/Wive/APP/ppp/filesystem
@@ -11,7 +10,7 @@ CDEF3=	-UNO_SLEEP			# Use the usleep function
 CDEF4=	-DFNDELAY=O_NDELAY		# Old name value
 CDEFS=	$(CDEF1) $(CDEF2) $(CDEF3) $(CDEF4)
 
-COPTS=	-Os -fPIC -g -pipe -fomit-frame-pointer -mno-memcpy
+COPTS=	-Os -g -pipe
 CFLAGS=	$(COPTS) $(CDEFS)
 
 INSTALL= install
@@ -26,7 +25,7 @@ chat.o:	chat.c
 
 install: chat
 	mkdir -p $(BINDIR) $(MANDIR)
-	$(INSTALL)  -c chat $(BINDIR)
+	$(INSTALL) -c chat $(BINDIR)
 	$(INSTALL) -c -m 644 chat.8 $(MANDIR)
 
 clean:

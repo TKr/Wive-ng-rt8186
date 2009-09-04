@@ -1,4 +1,3 @@
-CC = mips-linux-gcc
 #
 # pppd makefile for Linux
 # $Id: Makefile.linux,v 1.70 2007/06/19 02:08:34 carlsonj Exp $
@@ -12,7 +11,7 @@ INCDIR = $(DESTDIR)/include
 
 TARGETS = pppd
 
-PPPDSRCS = main.c magic.c fsm.c lcp.c ipcp.c upap.c chap-new.c md5.c ccp.c \
+PPPDSRCS = main.c magic.c fsm.c lcp.c ipcp.c upap.c chap-new.c ccp.c \
 	   ecp.c ipxcp.c auth.c options.c sys-linux.c md4.c chap_ms.c \
 	   demand.c utils.c tty.c eap.c chap-md5.c session.c
 
@@ -21,7 +20,7 @@ HEADERS = ccp.h session.h chap-new.h ecp.h fsm.h ipcp.h \
 	upap.h eap.h
 
 MANPAGES = pppd.8
-PPPDOBJS = main.o magic.o fsm.o lcp.o ipcp.o upap.o chap-new.o md5.o ccp.o \
+PPPDOBJS = main.o magic.o fsm.o lcp.o ipcp.o upap.o chap-new.o ccp.o \
 	   ecp.o auth.o options.o demand.o utils.o sys-linux.o ipxcp.o tty.o \
 	   eap.o chap-md5.o session.o
 
@@ -33,7 +32,7 @@ endif
 
 # CC = gcc
 #
-COPTS = -Os -fPIC -Wall -g
+COPTS = -Os -pipe -Wall -g
 LIBS =
 
 # Uncomment the next 2 lines to include support for Microsoft's
@@ -49,27 +48,32 @@ MPPE=y
 # Uncomment the next line to include support for PPP packet filtering.
 # This requires that the libpcap library and headers be installed
 # and that the kernel driver support PPP packet filtering.
-#FILTER=y
+# FILTER=y
 
 # Uncomment the next line to enable multilink PPP (enabled by default)
 # Linux distributions: Please leave multilink ENABLED in your builds
 # of pppd!
-#HAVE_MULTILINK=y
+# HAVE_MULTILINK=y
 
 # Uncomment the next line to enable the TDB database (enabled by default.)
 # If you enable multilink, then TDB is automatically enabled also.
 # Linux distributions: Please leave TDB ENABLED in your builds.
-#USE_TDB=y
+# USE_TDB=y
 
-#HAS_SHADOW=y
-#USE_PAM=y
-#HAVE_INET6=y
+# HAS_SHADOW=y
+# USE_PAM=y
+# HAVE_INET6=y
+
+# persist for wive
+# EMBPERSIST=y
 
 # Enable plugins
 PLUGIN=y
 
+USE_BUILTIN_CRYPTO=y
+
 # Enable Microsoft proprietary Callback Control Protocol
-#CBCP=y
+# CBCP=y
 
 # Enable EAP SRP-SHA1 authentication (requires libsrp)
 #USE_SRP=y
@@ -87,8 +91,14 @@ CFLAGS= $(COPTS) $(COMPILE_FLAGS) $(INCLUDE_DIRS) '-DDESTDIR="/opt/Wive/APP/ppp/
 ifdef CHAPMS
 CFLAGS   += -DCHAPMS=1
 NEEDDES=y
+ifdef USE_BUILTIN_CRYPTO
 PPPDOBJS += md4.o chap_ms.o
-HEADERS	+= md4.h chap_ms.h
+HEADERS  += md4.h chap_ms.h
+else
+PPPDOBJS += chap_ms.o
+HEADERS	 += chap_ms.h
+NEED_OPENSSL=y
+endif
 ifdef MSLANMAN
 CFLAGS   += -DMSLANMAN=1
 endif
@@ -99,20 +109,36 @@ endif
 
 # EAP SRP-SHA1
 ifdef USE_SRP
-CFLAGS	+= -DUSE_SRP -DOPENSSL -I/usr/local/ssl/include
-LIBS	+= -lsrp -L/usr/local/ssl/lib -lcrypto
+CFLAGS	+= -DUSE_SRP
 TARGETS	+= srp-entry
-EXTRAINSTALL = $(INSTALL)  -c -m 555 srp-entry $(BINDIR)/srp-entry
+EXTRAINSTALL = $(INSTALL) -c -m 555 srp-entry $(BINDIR)/srp-entry
 MANPAGES += srp-entry.8
 EXTRACLEAN += srp-entry.o
 NEEDDES=y
+NEED_OPENSSL=y
 else
 # OpenSSL has an integrated version of SHA-1, and its implementation
 # is incompatible with this local SHA-1 implementation.  We must use
 # one or the other, not both.
+ifdef USE_BUILTIN_CRYPTO
 PPPDSRCS += sha1.c
 HEADERS += sha1.h
 PPPDOBJS += sha1.o
+else
+NEED_OPENSSL=y
+endif
+endif
+
+ifdef USE_BUILTIN_CRYPTO
+PPPDSRCS += md5.c
+PPPDOBJS += md5.o
+else
+NEED_OPENSSL=y
+endif
+
+ifdef NEED_OPENSSL
+CFLAGS += -DUSE_OPENSSL
+LIBS   += -lcrypto
 endif
 
 ifdef HAS_SHADOW
@@ -120,9 +146,13 @@ CFLAGS   += -DHAS_SHADOW
 #LIBS     += -lshadow $(LIBS)
 endif
 
+ifdef NO_CRYPT_HACK
+CFLAGS += -DNO_CRYPT_HACK
+else
 ifneq ($(wildcard /usr/include/crypt.h),)
 CFLAGS  += -DHAVE_CRYPT_H=1
 LIBS	+= -lcrypt
+endif
 endif
 
 ifdef NEEDDES
@@ -172,10 +202,8 @@ LIBS	+= -ldl
 endif
 
 ifdef FILTER
-ifneq ($(wildcard /usr/include/pcap-bpf.h),)
 LIBS    += -lpcap
 CFLAGS  += -DPPP_FILTER
-endif
 endif
 
 ifdef HAVE_INET6
@@ -209,7 +237,7 @@ all: $(TARGETS)
 install: pppd
 	mkdir -p $(BINDIR) $(MANDIR)
 	$(EXTRAINSTALL)
-	$(INSTALL)  -c -m 555 pppd $(BINDIR)/pppd
+	$(INSTALL) -c -m 555 pppd $(BINDIR)/pppd
 	if chgrp pppusers $(BINDIR)/pppd 2>/dev/null; then \
 	  chmod o-rx,u+s $(BINDIR)/pppd; fi
 	$(INSTALL) -c -m 444 pppd.8 $(MANDIR)

@@ -1,5 +1,3 @@
-CC=mips-linux-gcc
-
 all: pppgetpass.vt pppgetpass.gtk
 
 pppgetpass.vt: pppgetpass.vt.o

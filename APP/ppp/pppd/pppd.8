@@ -121,6 +121,11 @@ the gateway, when IPCP negotiation is successfully completed.
 This entry is removed when the PPP connection is broken.  This option
 is privileged if the \fInodefaultroute\fR option has been specified.
 .TP
+.B replacedefaultroute
+This option is a flag to the defaultroute option. If defaultroute is
+set and this flag is also set, pppd replaces an existing default route
+with the new default route.
+.TP
 .B disconnect \fIscript
 Execute the command specified by \fIscript\fR, by passing it to a
 shell, after
@@ -328,7 +333,7 @@ When this is completed, pppd will commence passing data packets
 The \fIdemand\fR option implies the \fIpersist\fR option.  If this
 behaviour is not desired, use the \fInopersist\fR option after the
 \fIdemand\fR option.  The \fIidle\fR and \fIholdoff\fR
-options are also useful in conjuction with the \fIdemand\fR option.
+options are also useful in conjunction with the \fIdemand\fR option.
 .TP
 .B domain \fId
 Append the domain name \fId\fR to the local host name for authentication
@@ -717,7 +722,12 @@ disable both forms of hardware flow control.
 .TP
 .B nodefaultroute
 Disable the \fIdefaultroute\fR option.  The system administrator who
-wishes to prevent users from creating default routes with pppd
+wishes to prevent users from adding a default route with pppd
+can do so by placing this option in the /etc/ppp/options file.
+.TP
+.B noreplacedefaultroute
+Disable the \fIreplacedefaultroute\fR option. The system administrator who
+wishes to prevent users from replacing a default route with pppd
 can do so by placing this option in the /etc/ppp/options file.
 .TP
 .B nodeflate
@@ -929,7 +939,7 @@ pseudo-tty master/slave pair and use the slave as its terminal
 device.  The \fIscript\fR will be run in a child process with the
 pseudo-tty master as its standard input and output.  An explicit
 device name may not be given if this option is used.  (Note: if the
-\fIrecord\fR option is used in conjuction with the \fIpty\fR option,
+\fIrecord\fR option is used in conjunction with the \fIpty\fR option,
 the child process will have pipes on its standard input and output.)
 .TP
 .B receive\-all
@@ -1037,7 +1047,7 @@ in the pseudonym.
 .TP
 .B srp\-use\-pseudonym
 When operating as an EAP SRP\-SHA1 client, attempt to use the pseudonym
-stored in ~/.ppp_psuedonym first as the identity, and save in this
+stored in ~/.ppp_pseudonym first as the identity, and save in this
 file any pseudonym offered by the peer during authentication.
 .TP
 .B sync
@@ -1049,12 +1059,6 @@ under Linux and FreeBSD 2.2.8 and later.
 .B unit \fInum
 Sets the ppp unit number (for a ppp0 or ppp1 etc interface name) for outbound
 connections.
-.TP
-.B minunit \fInum
-Such as unit, but always select bigger interface
-.TP
-.B minunit \fInum
-PPP interface minimal unit number. Such as unit, but always select bigger interface
 .TP
 .B updetach
 With this option, pppd will detach from its controlling terminal once
@@ -1614,6 +1618,9 @@ the connection.
 .TP
 .B LINKNAME
 The logical name of the link, set with the \fIlinkname\fR option.
+.TP
+.B CALL_FILE
+The value of the \fIcall\fR option.
 .TP
 .B DNS1
 If the peer supplies DNS server addresses, this variable is set to the

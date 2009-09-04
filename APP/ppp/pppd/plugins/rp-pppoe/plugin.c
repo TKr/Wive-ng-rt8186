@@ -213,10 +213,6 @@ PPPOERecvConfig(int mru,
 		int pcomp,
 		int accomp)
 {
-#if 0 /* broken protocol, but no point harrassing the users I guess... */
-    if (mru > MAX_PPPOE_MTU)
-	notice("Couldn't increase MRU to %d", mru);
-#endif
 }
 
 /**********************************************************************
@@ -375,7 +371,6 @@ void pppoe_check_options(void)
 
     lcp_allowoptions[0].neg_pcompression = 0;
     lcp_wantoptions[0].neg_pcompression = 0;
-
 
     if (lcp_allowoptions[0].mru > MAX_PPPOE_MTU)
 	lcp_allowoptions[0].mru = MAX_PPPOE_MTU;

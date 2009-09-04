@@ -1,4 +1,3 @@
-CC = mips-linux-gcc
 # PPP top-level Makefile for Linux.
 
 DESTDIR = $(INSTROOT)/opt/Wive/APP/ppp/filesystem

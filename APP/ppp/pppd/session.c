@@ -72,7 +72,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
+#ifndef NO_CRYPT_HACK
 #include <crypt.h>
+#endif
 #ifdef HAS_SHADOW
 #include <shadow.h>
 #endif
@@ -345,11 +347,13 @@ session_start(flags, user, passwd, ttyName, msg)
 
 #endif /* #ifdef HAS_SHADOW */
 
+#ifndef NO_CRYPT_HACK
 	/*
 	 * If no passwd, don't let them login if we're authenticating.
 	 */
         if (pw->pw_passwd == NULL || strlen(pw->pw_passwd) < 2
             || strcmp(crypt(passwd, pw->pw_passwd), pw->pw_passwd) != 0)
+#endif
             return SESSION_FAILED;
     }
 

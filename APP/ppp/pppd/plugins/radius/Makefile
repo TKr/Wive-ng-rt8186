@@ -1,4 +1,3 @@
-CC = mips-linux-gcc
 # Makefile for RADIUS plugin
 #
 # Copyright 2002 Roaring Penguin Software Inc.
@@ -13,7 +12,7 @@ VERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' ../../patchlevel.h)
 INSTALL	= install
 
 PLUGIN=radius.so radattr.so radrealms.so
-CFLAGS=-I. -I../.. -I../../../include -Os -fPIC -DRC_LOG_FACILITY=LOG_DAEMON -fomit-frame-pointer -mno-memcpy
+CFLAGS=-I. -I../.. -I../../../include -Os -fPIC -DRC_LOG_FACILITY=LOG_DAEMON
 
 # Uncomment the next line to include support for Microsoft's
 # MS-CHAP authentication protocol.
@@ -44,9 +43,9 @@ all: $(PLUGIN)
 
 install: all
 	$(INSTALL) -d -m 755 $(LIBDIR)
-	$(INSTALL)  -c -m 755 radius.so $(LIBDIR)
-	$(INSTALL)  -c -m 755 radattr.so $(LIBDIR)
-	$(INSTALL)  -c -m 755 radrealms.so $(LIBDIR)
+	$(INSTALL) -c -m 755 radius.so $(LIBDIR)
+	$(INSTALL) -c -m 755 radattr.so $(LIBDIR)
+	$(INSTALL) -c -m 755 radrealms.so $(LIBDIR)
 	$(INSTALL) -c -m 444 pppd-radius.8 $(MANDIR)
 	$(INSTALL) -c -m 444 pppd-radattr.8 $(MANDIR)
 

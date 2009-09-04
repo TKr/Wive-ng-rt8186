@@ -53,9 +53,6 @@
  *   installation script can recognize it.
  */
 
-#define PPP_MAGIC	0x5002
-#define PPP_VERSION	"2.4.2"
-
 /*
  * Supported network protocols.  These values are used for
  * indexing sc_npmode.

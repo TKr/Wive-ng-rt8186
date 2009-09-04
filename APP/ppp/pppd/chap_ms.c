@@ -89,8 +89,21 @@
 #include "pppd.h"
 #include "chap-new.h"
 #include "chap_ms.h"
+#ifdef USE_OPENSSL
+#include <openssl/md4.h>
+#define MD4Init MD4_Init
+#define MD4Update MD4_Update
+#define MD4Final MD4_Final
+#else
 #include "md4.h"
+#endif
+#ifdef USE_OPENSSL
+#include <openssl/sha.h>
+#define SHA1_SIGNATURE_SIZE SHA_DIGEST_LENGTH
+#define SHA1_CTX SHA_CTX
+#else
 #include "sha1.h"
+#endif
 #include "pppcrypt.h"
 #include "magic.h"
 
@@ -509,7 +522,7 @@ ascii2unicode(char ascii[], int ascii_len, u_char unicode[])
 static void
 NTPasswordHash(u_char *secret, int secret_len, u_char hash[MD4_SIGNATURE_SIZE])
 {
-#ifdef __NetBSD__
+#if defined __NetBSD__ || defined USE_OPENSSL
     /* NetBSD uses the libc md4 routines which take bytes instead of bits */
     int			mdlen = secret_len;
 #else

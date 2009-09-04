@@ -44,6 +44,13 @@ Some recommendations:
 - Use 128-bit encryption.
 - Use MS-CHAPv2 only.
 
+pppd-allow-mppe.patch
+---------------------
+
+This patch allows pppd conditionaly This patch allows you to include mppe when
+the client requires. To do this you need to replace the option require-mppe-128
+to allow-mppe-128.
+
 Reference documents:
 
     <http://www.ietf.org/rfc/rfc3078.txt> MPPE

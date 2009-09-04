@@ -834,17 +834,9 @@ finish_tty()
 		 */
 		sleep(1);
 	}
-	/* patch for fast reconnect */
-	 close(real_ttyfd);
-	 while ((real_ttyfd = open(devnam, O_NONBLOCK | O_RDWR, 0)) < 0) {
-	 if (errno != EINTR) {
-	     syslog(LOG_ERR, "close_tty: Failed to reopen %s: %m", devnam);
-	 goto fail;
-	 }
-	 }
-	/* end of patch */
+
 	restore_tty(real_ttyfd);
-fail:
+
 #ifndef __linux__
 	if (tty_mode != (mode_t) -1) {
 		if (fchmod(real_ttyfd, tty_mode) != 0)

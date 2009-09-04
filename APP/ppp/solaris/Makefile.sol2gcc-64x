@@ -10,7 +10,7 @@ include Makedefs.sol2
 COPTS           += -finline -fno-inline-functions -fno-builtin -fno-asm \
 		   -nodefaultlibs -D__sun -m64 -mtune=opteron -Ui386 \
 		   -U__i386 -fno-strict-aliasing -fno-unit-at-a-time \
-		   -fno-optimize-sibling-calls -Os -D_ASM_INLINES \
+		   -fno-optimize-sibling-calls -O2 -D_ASM_INLINES \
 		   -ffreestanding -mcmodel=kernel -mno-red-zone -gdwarf-2 \
 		   -std=gnu89 -D_KERNEL -D_SYSCALL32 -D_SYSCALL32_IMPL \
 		   -D_ELF64 -Dsun -D__sun -D__SVR4

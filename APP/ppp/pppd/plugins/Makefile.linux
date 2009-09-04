@@ -1,6 +1,5 @@
-CC = mips-linux-gcc
 #CC	= gcc
-COPTS	= -Os -fPIC -g -fomit-frame-pointer -mno-memcpy
+COPTS	= -Os -g
 CFLAGS	= $(COPTS) -I.. -I../../include -fPIC
 LDFLAGS	= -shared
 INSTALL	= install

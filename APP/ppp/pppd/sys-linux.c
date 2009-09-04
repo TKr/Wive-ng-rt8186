@@ -92,6 +92,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <unistd.h>
+#include <wait.h>
 
 /* This is in netdevice.h. However, this compile will fail miserably if
    you attempt to include netdevice.h because it has so many references
@@ -199,13 +200,15 @@ static int driver_is_old       = 0;
 static int restore_term        = 0;	/* 1 => we've munged the terminal */
 static struct termios inittermios;	/* Initial TTY termios */
 
-int new_style_driver = 1;
+int new_style_driver = 0;
 
 static char loop_name[20];
 static unsigned char inbuf[512]; /* buffer for chars read from loopback */
 
 static int	if_is_up;	/* Interface has been marked up */
 static int	have_default_route;	/* Gateway for default route added */
+static struct	rtentry old_def_rt;	/* Old default route */
+static int	default_rt_repl_rest;	/* replace and restore old default rt */
 static u_int32_t proxy_arp_addr;	/* Addr for proxy arp entry added */
 static char proxy_arp_dev[16];		/* Device for proxy arp entry */
 static u_int32_t our_old_addr;		/* for detecting address changes */
@@ -452,30 +455,26 @@ int generic_establish_ppp (int fd)
 
     if (new_style_driver) {
 	int flags;
-	
-	/* if a ppp_fd is already open, close it first debian patch*/
+
+        /* if a ppp_fd is already open, close it first */
         if(ppp_fd > 0) {
-	  notice("Close old fd socket \n");
           close(ppp_fd);
           remove_fd(ppp_fd);
           ppp_fd = -1;
         }
-	
+
 	/* Open an instance of /dev/ppp and connect the channel to it */
 	if (ioctl(fd, PPPIOCGCHAN, &chindex) == -1) {
 	    error("Couldn't get channel number: %m");
 	    goto err;
 	}
 	dbglog("using channel %d", chindex);
-
 	fd = open("/dev/ppp", O_RDWR);
 	if (fd < 0) {
 	    error("Couldn't reopen /dev/ppp: %m");
 	    goto err;
 	}
 	(void) fcntl(fd, F_SETFD, FD_CLOEXEC);
-
-
 	if (ioctl(fd, PPPIOCATTCHAN, &chindex) < 0) {
 	    error("Couldn't attach to channel %d: %m", chindex);
 	    goto err_close;
@@ -638,26 +637,13 @@ static int make_ppp_unit()
 	    || fcntl(ppp_dev_fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		warn("Couldn't set /dev/ppp to nonblock: %m");
 
-	if (req_minunit > -1) {
-	    for(ifunit = req_minunit;req_minunit < MAXUNIT; ifunit = ++req_minunit) {
-		x = ioctl(ppp_dev_fd, PPPIOCNEWUNIT, &ifunit);
-		if (x < 0 && errno == EEXIST) {
-		    warn("Couldn't allocate PPP unit %d as it is already in use try to attempt next", req_minunit);
-		}
-		if (x >= 0)
-		    break;
-	    }
-	}
-	if ((x < 0) || (req_minunit == -1)) {
-	    ifunit = req_unit;
-	    x = ioctl(ppp_dev_fd, PPPIOCNEWUNIT, &ifunit);
-	    if (x < 0 && req_unit >= 0 && errno == EEXIST) {
+	ifunit = req_unit;
+	x = ioctl(ppp_dev_fd, PPPIOCNEWUNIT, &ifunit);
+	if (x < 0 && req_unit >= 0 && errno == EEXIST) {
 		warn("Couldn't allocate PPP unit %d as it is already in use", req_unit);
 		ifunit = -1;
 		x = ioctl(ppp_dev_fd, PPPIOCNEWUNIT, &ifunit);
-	    }
 	}
-
 	if (x < 0)
 		error("Couldn't create new ppp unit: %m");
 	return x;
@@ -1561,6 +1547,9 @@ static int read_route_table(struct rtentry *rt)
 	p = NULL;
     }
 
+    SET_SA_FAMILY (rt->rt_dst,     AF_INET);
+    SET_SA_FAMILY (rt->rt_gateway, AF_INET);
+
     SIN_ADDR(rt->rt_dst) = strtoul(cols[route_dest_col], NULL, 16);
     SIN_ADDR(rt->rt_gateway) = strtoul(cols[route_gw_col], NULL, 16);
     SIN_ADDR(rt->rt_genmask) = strtoul(cols[route_mask_col], NULL, 16);
@@ -1630,20 +1619,51 @@ int have_route_to(u_int32_t addr)
 /********************************************************************
  *
  * sifdefaultroute - assign a default route through the address given.
+ *
+ * If the global default_rt_repl_rest flag is set, then this function
+ * already replaced the original system defaultroute with some other
+ * route and it should just replace the current defaultroute with
+ * another one, without saving the current route. Use: demand mode,
+ * when pppd sets first a defaultroute it it's temporary ppp0 addresses
+ * and then changes the temporary addresses to the addresses for the real
+ * ppp connection when it has come up.
  */
 
-int sifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway)
+int sifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway, bool replace)
 {
-    struct rtentry rt;
+    struct rtentry rt, tmp_rt;
+    struct rtentry *del_rt = NULL;
 
-    if (defaultroute_exists(&rt) && strcmp(rt.rt_dev, ifname) != 0) {
-	if (rt.rt_flags & RTF_GATEWAY)
-	    error("not replacing existing default route via %I",
-		  SIN_ADDR(rt.rt_gateway));
-	else
+    if (default_rt_repl_rest) {
+	/* We have already reclaced the original defaultroute, if we
+	   are called again, we will delete the current default route
+	   and set the new default route in this function.
+	   - this is normally only the case the doing demand: */
+	if (defaultroute_exists(&tmp_rt))
+	    del_rt = &tmp_rt;
+    } else if (defaultroute_exists(&old_def_rt) &&
+	       strcmp(old_def_rt.rt_dev, ifname) != 0) {
+	/* We did not yet replace an existing default route, let's
+	   check if we should save and replace a default route: */
+	if (old_def_rt.rt_flags & RTF_GATEWAY) {
+	    if (!replace) {
+		error("not replacing existing default route via %I",
+		      SIN_ADDR(old_def_rt.rt_gateway));
+		return 0;
+	    } else {
+		/* we need to copy rt_dev because we need it permanent too: */
+		char *tmp_dev = malloc(strlen(old_def_rt.rt_dev) + 1);
+		strcpy(tmp_dev, old_def_rt.rt_dev);
+		old_def_rt.rt_dev = tmp_dev;
+
+		notice("replacing old default route to %s [%I]",
+			old_def_rt.rt_dev, SIN_ADDR(old_def_rt.rt_gateway));
+		default_rt_repl_rest = 1;
+		del_rt = &old_def_rt;
+	    }
+	} else
 	    error("not replacing existing default route through %s",
-		  rt.rt_dev);
-	return 0;
+		  old_def_rt.rt_dev);
     }
 
     memset (&rt, 0, sizeof (rt));
@@ -1657,13 +1677,17 @@ int sifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway)
     }
 
     rt.rt_flags = RTF_UP;
-    rt.rt_metric = 10;
-    
     if (ioctl(sock_fd, SIOCADDRT, &rt) < 0) {
-	if ( ! ok_error ( errno ))
+	if (!ok_error(errno))
 	    error("default route ioctl(SIOCADDRT): %m");
 	return 0;
     }
+    if (default_rt_repl_rest && del_rt)
+        if (ioctl(sock_fd, SIOCDELRT, del_rt) < 0) {
+	    if (!ok_error(errno))
+	        error("del old default route ioctl(SIOCDELRT): %m");
+	    return 0;
+        }
 
     have_default_route = 1;
     return 1;
@@ -1690,14 +1714,22 @@ int cifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway)
     }
 
     rt.rt_flags = RTF_UP;
-    rt.rt_metric = 10;
-    
     if (ioctl(sock_fd, SIOCDELRT, &rt) < 0 && errno != ESRCH) {
 	if (still_ppp()) {
-	    if ( ! ok_error ( errno ))
+	    if (!ok_error(errno))
 		error("default route ioctl(SIOCDELRT): %m");
 	    return 0;
 	}
+    }
+    if (default_rt_repl_rest) {
+	notice("restoring old default route to %s [%I]",
+		old_def_rt.rt_dev, SIN_ADDR(old_def_rt.rt_gateway));
+        if (ioctl(sock_fd, SIOCADDRT, &old_def_rt) < 0) {
+	    if (!ok_error(errno))
+	        error("restore default route ioctl(SIOCADDRT): %m");
+	    return 0;
+        }
+        default_rt_repl_rest = 0;
     }
 
     return 1;
@@ -2071,6 +2103,46 @@ int ppp_available(void)
 
     if (kernel_version >= KVERSION(2,3,13)) {
 	error("Couldn't open the /dev/ppp device: %m");
+	char modprobePath[PATH_MAX] = "";
+	int status, p, count;
+	pid_t pid;
+
+	fd = open("/proc/sys/kernel/modprobe", O_RDONLY);
+	if (fd >= 0) {
+		int count = read(fd, modprobePath, PATH_MAX - 1);
+		if (count < 1)
+			modprobePath[0] = 0;
+		else if (modprobePath[count - 1] == '\n')
+			modprobePath[count - 1] = 0;
+		close(fd);
+	}
+
+	if (modprobePath[0] == 0)
+		strcpy(modprobePath, "/sbin/modprobe");
+
+	switch (pid = fork()) {
+		case 0: /* child */
+			setenv("PATH", "/sbin", 1);
+			status = execl(modprobePath, "modprobe", "ppp_generic", NULL);
+		case -1: /* couldn't fork */
+			errno = ENOENT;
+		default: /* parent */
+			do
+				p = waitpid(pid, &status, 0);
+			while (p == -1 && count++ < 4);
+
+			sleep (5);
+
+	}
+
+	if ((fd = open("/dev/ppp", O_RDWR)) >= 0) {
+		new_style_driver = 1;
+		driver_version = 2;
+		driver_modification = 4;
+		driver_patch = 0;
+		close(fd);
+		return 1;
+	}
 	if (errno == ENOENT)
 	    no_ppp_msg =
 		"You need to create the /dev/ppp device node by\n"

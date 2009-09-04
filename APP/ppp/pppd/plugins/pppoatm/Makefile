@@ -1,6 +1,5 @@
-CC = mips-linux-gcc
 #CC	= gcc
-COPTS	= -Os -fPIC -g -fomit-frame-pointer -mno-memcpy
+COPTS	= -Os -g
 CFLAGS	= $(COPTS) -I../.. -I../../../include -fPIC
 LDFLAGS	= -shared
 INSTALL	= install
@@ -20,14 +19,18 @@ PLUGIN_OBJS := pppoatm.o
 # or leave it unset to build the few routines we actually _use_ into
 # the plugin directly.
 #
-#HAVE_LIBATM=yes
+HAVE_LIBATM=no
 
 ifdef HAVE_LIBATM
 LIBS := -latm
 else
 CFLAGS += -I.
+PLUGIN_OBJS += text2atm.o
+ifdef USE_COMPLEX_ATM_RESOLVER
+CFLAGS += -DUSE_COMPLEX_ATM_RESOLVER
 PLUGIN_OBJS += text2qos.o text2atm.o misc.o ans.o
 LIBS := -lresolv
+endif
 endif
 
 #*********

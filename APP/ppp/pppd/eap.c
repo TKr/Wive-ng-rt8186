@@ -62,7 +62,14 @@
 
 #include "pppd.h"
 #include "pathnames.h"
+#ifdef USE_OPENSSL
+#include <openssl/md5.h>
+#define MD5Init MD5_Init
+#define MD5Update MD5_Update
+#define MD5Final MD5_Final
+#else
 #include "md5.h"
+#endif
 #include "eap.h"
 
 #ifdef USE_SRP

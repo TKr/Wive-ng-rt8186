@@ -1,4 +1,3 @@
-CC = mips-linux-gcc
 # Generated automatically from Makefile.in by configure.
 #***********************************************************************
 #
@@ -24,9 +23,9 @@ PPPDVERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' ../../patchlevel.h)
 INSTALL	= install
 
 # Version is set ONLY IN THE MAKEFILE!  Don't delete this!
-RP_VERSION=3.10p
+RP_VERSION=3.8p
 
-COPTS=-Os -g -fPIC -Os -fPIC -Wall -g -DNSP_SIZE_OPTIMIZATIONS -D_DISABLE_SERIAL_
+COPTS=-Os -g
 CFLAGS=$(COPTS) -I../../../include '-DRP_VERSION="$(RP_VERSION)"'
 all: rp-pppoe.so pppoe-discovery
 
@@ -44,9 +43,9 @@ rp-pppoe.so: plugin.o discovery.o if.o common.o
 
 install: all
 	$(INSTALL) -d -m 755 $(LIBDIR)
-	$(INSTALL)  -c -m 4550 rp-pppoe.so $(LIBDIR)
+	$(INSTALL) -c -m 4550 rp-pppoe.so $(LIBDIR)
 	$(INSTALL) -d -m 755 $(BINDIR)
-	$(INSTALL)  -c -m 555 pppoe-discovery $(BINDIR)
+	$(INSTALL) -c -m 555 pppoe-discovery $(BINDIR)
 
 clean:
 	rm -f *.o *.so pppoe-discovery

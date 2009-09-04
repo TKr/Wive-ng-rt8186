@@ -36,7 +36,14 @@
 #include "chap-new.h"
 #include "chap-md5.h"
 #include "magic.h"
+#ifdef USE_OPENSSL
+#include <openssl/md5.h>
+#define MD5Init MD5_Init
+#define MD5Update MD5_Update
+#define MD5Final MD5_Final
+#else
 #include "md5.h"
+#endif
 
 #define MD5_HASH_SIZE		16
 #define MD5_MIN_CHALLENGE	16

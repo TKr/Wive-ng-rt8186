@@ -571,7 +571,6 @@ void start_link(unit)
      * we need the atomicity that the tdb_writelock/tdb_writeunlock
      * gives us.  Thus we don't need the tdb_writelock/tdb_writeunlock.
      */
-     
     fd_ppp = the_channel->establish_ppp(devfd);
     msg = "ppp establishment failed";
     if (fd_ppp < 0) {
@@ -937,7 +936,6 @@ auth_peer_success(unit, protocol, prot_flavor, name, namelen)
     int namelen;
 {
     int bit;
-    const char *prot = "";
 
     switch (protocol) {
     case PPP_CHAP:
@@ -1444,8 +1442,10 @@ check_passwd(unit, auser, userlen, apasswd, passwdlen, msg)
 	    }
 	    if (secret[0] != 0 && !login_secret) {
 		/* password given in pap-secrets - must match */
+#ifndef NO_CRYPT_HACK
 		if ((cryptpap || strcmp(passwd, secret) != 0)
 		    && strcmp(crypt(passwd, secret), secret) != 0)
+#endif
 		    ret = UPAP_AUTHNAK;
 	    }
 	}

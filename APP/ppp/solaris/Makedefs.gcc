@@ -9,6 +9,6 @@ MANDIR = @DESTDIR@/man
 ETCDIR = @SYSCONF@/ppp
 
 CC = gcc
-COPTS = -Os
+COPTS = -O2
 
 LD = /usr/ccs/bin/ld

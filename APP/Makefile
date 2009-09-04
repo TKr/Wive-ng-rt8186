@@ -16,6 +16,8 @@ SUBDIRS_APP += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
 SUBDIRS_APP += iptables iproute2 ntpclient igmpproxy dnsmasq
 SUBDIRS_APP += ppp rp-pppoe l2tpd lwins mesh
 
+#SUBDIRS_APP += ppp
+
 all: configure
 	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i; done
 

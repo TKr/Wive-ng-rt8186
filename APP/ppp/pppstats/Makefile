@@ -1,4 +1,3 @@
-CC = mips-linux-gcc
 #
 # pppstats makefile
 # $Id: Makefile.linux,v 1.9 2006/06/04 05:07:46 paulus Exp $
@@ -11,7 +10,7 @@ PPPSTATSRCS = pppstats.c
 PPPSTATOBJS = pppstats.o
 
 #CC = gcc
-COPTS = -Os -fPIC -fomit-frame-pointer -mno-memcpy
+COPTS = -O
 COMPILE_FLAGS = -I../include
 LIBS =
 
@@ -23,7 +22,7 @@ all: pppstats
 
 install: pppstats
 	-mkdir -p $(MANDIR)
-	$(INSTALL)  -c pppstats $(BINDIR)
+	$(INSTALL) -c pppstats $(BINDIR)
 	$(INSTALL) -c -m 444 pppstats.8 $(MANDIR)
 
 pppstats: $(PPPSTATSRCS)

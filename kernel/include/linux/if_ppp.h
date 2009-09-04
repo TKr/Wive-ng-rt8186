@@ -41,8 +41,10 @@
  * Packet sizes
  */
 
+#define PPP_VERSION     "2.4.2"
 #define	PPP_MTU		1500	/* Default MTU (size of Info field) */
 #define PPP_MAXMRU	65000	/* Largest MRU we allow */
+#define PPP_MAGIC       0x5002
 #define PROTO_IPX	0x002b	/* protocol numbers */
 #define PROTO_DNA_RT    0x0027  /* DNA Routing */
 

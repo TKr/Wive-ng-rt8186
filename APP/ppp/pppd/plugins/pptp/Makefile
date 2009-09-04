@@ -21,9 +21,6 @@ LIBDIR = $(DESTDIR)/lib/pppd/$(PPPDVERSION)
 
 PPPDVERSION = $(shell awk -F '"' '/VERSION/ { print $$2; }' ../../patchlevel.h)
 
-CC	= mips-linux-gcc
-
-COPTS=-Os -fPIC -g -fomit-frame-pointer -mno-memcpy
 CFLAGS=$(COPTS) -I.. -I../.. -I../../../include/linux -I../../../include
 
 LDFLAGS	= -shared

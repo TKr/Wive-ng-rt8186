@@ -20,7 +20,7 @@
 #include "pathnames.h"
 #include "fsm.h" /* Needed for lcp.h to include cleanly */
 #include "lcp.h"
-#include <atm.h>
+#include "atm.h"
 #include <linux/atmdev.h>
 #include <linux/atmppp.h>
 #include <sys/stat.h>
@@ -75,7 +75,7 @@ static int setdevname_pppoatm(const char *cp, const char **argv, int doit)
 	//info("PPPoATM setdevname_pppoatm: '%s'", cp);
 	memset(&addr, 0, sizeof addr);
 	if (text2atm(cp, (struct sockaddr *) &addr, sizeof(addr),
-	    T2A_PVC | T2A_NAME) < 0) {
+	    T2A_PVC | T2A_NAME | T2A_WILDCARD) < 0) {
                if(doit)
                    info("atm does not recognize: %s", cp);
 		return 0;
@@ -144,8 +144,12 @@ static int connect_pppoatm(void)
 	qos.txtp.traffic_class = qos.rxtp.traffic_class = ATM_UBR;
 	/* TODO: support simplified QoS setting */
 	if (qosstr != NULL)
+#ifdef USE_COMPLEX_ATM_RESOLVER
 		if (text2qos(qosstr, &qos, 0))
 			fatal("Can't parse QoS: \"%s\"");
+#else
+		fatal("qos support has not been compiled in");
+#endif
 	qos.txtp.max_sdu = lcp_allowoptions[0].mru + pppoatm_overhead();
 	qos.rxtp.max_sdu = lcp_wantoptions[0].mru + pppoatm_overhead();
 	qos.aal = ATM_AAL5;

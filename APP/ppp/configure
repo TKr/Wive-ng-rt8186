@@ -2,7 +2,7 @@
 # $Id: configure,v 1.38 2008/06/15 07:08:49 paulus Exp $
 
 # Where to install stuff by default
-DESTDIR=./filesystem
+DESTDIR=/usr/local
 SYSCONF=/etc
 
 #  if [ -d /NextApps ]; then
@@ -195,7 +195,8 @@ if [ -d "$ksrc" ]; then
     mkmkf $ksrc/Makedefs$compiletype Makedefs.com
     for dir in pppd pppstats chat pppdump pppd/plugins pppd/plugins/rp-pppoe \
 	       pppd/plugins/radius pppd/plugins/pppoatm \
-	       pppd/plugins/pptp pppd/plugins/pppol2tp; do
+	       pppd/plugins/pppol2tp \
+	       pppd/plugins/pptp; do
 	mkmkf $dir/Makefile.$makext $dir/Makefile
     done
     if [ -f $ksrc/Makefile.$makext$archvariant ]; then

@@ -435,11 +435,11 @@ fsm_rconfreq(f, id, inp, len)
 	f->state = REQSENT;
 	break;
 
-    case STOPPED:
-	/* Negotiation started by our peer */
-	fsm_sconfreq(f, 0);		/* Send initial Configure-Request */
-	f->state = REQSENT;
-	break;
+//    case STOPPED:
+//	/* Negotiation started by our peer */
+//	fsm_sconfreq(f, 0);		/* Send initial Configure-Request */
+//	f->state = REQSENT;
+//	break;
     }
 
     /*
@@ -453,6 +453,11 @@ fsm_rconfreq(f, id, inp, len)
 	code = CONFREJ;			/* Reject all CI */
     else
 	code = CONFACK;
+
+    if (f->state==STOPPED){
+	fsm_sconfreq(f, 0);		/* Send initial Configure-Request */
+	f->state = REQSENT;
+    }
 
     /* send the Ack, Nak or Rej to the peer */
     fsm_sdata(f, code, id, inp, len);

@@ -91,12 +91,14 @@ void call_callback(PPTP_CONN *conn, PPTP_CALL *call, enum call_state state)
                 //if(lci->pid[0] > 1) kill(lci->pid[0], SIGTERM);
                 //if(lci->pid[1] > 1) kill(lci->pid[1], SIGTERM);
             }
+#ifdef EMBPERSIST
             /* redial if peer closed connect */
             if (persist) {
                 log("Persist mode, start redial.");
                 sleep(holdoff);
                 execl("/bin/sh", "sh", "-c", "/etc/init.d/vpnnetwork-pptp restart", (char *)0);
             }
+#endif
             break;
         default:
             log("Unhandled call callback state [%d].", (int) state);

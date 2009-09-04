@@ -15,7 +15,7 @@ PPP_DEBUG=no
 #--PPTP
 PPTP_CALL_START=no
 PPTP_SERVER=10.0.0.254
-PPTP_MPPE=yes
+PPTP_MPPE=auto #yes - always, no - refuse, auto - allow mppe
 PPTP_MTU=
 PPTP_MRU=
 PPTP_USER=pptp

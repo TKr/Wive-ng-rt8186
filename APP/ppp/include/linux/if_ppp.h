@@ -1,27 +1,50 @@
-/*	$Id: if_ppp.h 793 2007-05-28 14:30:43Z james $	*/
+/*	$Id: if_ppp.h,v 1.23 2002/12/06 09:49:15 paulus Exp $	*/
 
 /*
  * if_ppp.h - Point-to-Point Protocol definitions.
  *
- * Copyright (c) 1989 Carnegie Mellon University.
- * All rights reserved.
+ * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by Carnegie Mellon University.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The name "Carnegie Mellon University" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. For permission or any legal
+ *    details, please contact
+ *      Office of Technology Transfer
+ *      Carnegie Mellon University
+ *      5000 Forbes Avenue
+ *      Pittsburgh, PA  15213-3890
+ *      (412) 268-4387, fax: (412) 268-7395
+ *      tech-transfer@andrew.cmu.edu
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Computing Services
+ *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ *
+ * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
 
 /*
- *  ==FILEVERSION 20050812==
+ *  ==FILEVERSION 20000724==
  *
  *  NOTE TO MAINTAINERS:
  *     If you modify this file at all, please set the above date.
@@ -34,8 +57,6 @@
 
 #ifndef _IF_PPP_H_
 #define _IF_PPP_H_
-
-#include <linux/version.h>
 
 /*
  * Packet sizes
@@ -72,7 +93,6 @@
 #define SC_LOG_RAWIN	0x00080000	/* log all chars received */
 #define SC_LOG_FLUSH	0x00100000	/* log all chars flushed */
 #define	SC_SYNC		0x00200000	/* synchronous serial mode */
-#define	SC_MUST_COMP	0x00400000	/* no uncompressed packets may be sent or received */
 #define	SC_MASK		0x0f200fff	/* bits that user can change */
 
 /* state bits */
@@ -108,21 +128,6 @@ struct ifpppstatsreq {
 struct ifpppcstatsreq {
 	struct ifreq	      b;
 	struct ppp_comp_stats stats;
-};
-
-/* For PPPIOCGL2TPSTATS */
-struct pppol2tp_ioc_stats {
-	__u16	tunnel_id;	/* redundant */
-	__u16	session_id;	/* if zero, get tunnel stats */
-	__u32	using_ipsec:1;	/* valid only for session_id == 0 */
-	__u64	tx_packets;
-	__u64	tx_bytes;
-	__u64	tx_errors;
-	__u64	rx_packets;
-	__u64	rx_bytes;
-	__u64	rx_seq_discards;
-	__u64	rx_oos_packets;
-	__u64	rx_errors;
 };
 
 #define ifr__name       b.ifr_ifrn.ifrn_name
@@ -161,7 +166,6 @@ struct pppol2tp_ioc_stats {
 #define PPPIOCDISCONN	_IO('t', 57)		/* disconnect channel */
 #define PPPIOCATTCHAN	_IOW('t', 56, int)	/* attach to ppp channel */
 #define PPPIOCGCHAN	_IOR('t', 55, int)	/* get ppp channel number */
-#define PPPIOCGL2TPSTATS _IOR('t', 54, struct pppol2tp_ioc_stats)
 
 #define SIOCGPPPSTATS   (SIOCDEVPRIVATE + 0)
 #define SIOCGPPPVER     (SIOCDEVPRIVATE + 1)	/* NEVER change this!! */

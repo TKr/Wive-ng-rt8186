@@ -198,6 +198,14 @@ static option_t ipcp_option_list[] = {
       "disable defaultroute option", OPT_ALIAS | OPT_A2CLR,
       &ipcp_wantoptions[0].default_route },
 
+    { "replacedefaultroute", o_bool,
+				&ipcp_wantoptions[0].replace_default_route,
+      "Replace default route", 1
+    },
+    { "noreplacedefaultroute", o_bool,
+				&ipcp_allowoptions[0].replace_default_route,
+      "Never replace default route", OPT_A2COPY,
+				&ipcp_wantoptions[0].replace_default_route },
     { "proxyarp", o_bool, &ipcp_wantoptions[0].proxy_arp,
       "Add proxy ARP entry", OPT_ENABLE|1, &ipcp_allowoptions[0].proxy_arp },
     { "noproxyarp", o_bool, &ipcp_allowoptions[0].proxy_arp,
@@ -271,7 +279,7 @@ struct protent ipcp_protent = {
     ip_active_pkt
 };
 
-static void ipcp_clear_addrs __P((int, u_int32_t, u_int32_t));
+static void ipcp_clear_addrs __P((int, u_int32_t, u_int32_t, bool));
 static void ipcp_script __P((char *, int));	/* Run an up/down script */
 static void ipcp_script_done __P((void *));
 
@@ -1686,7 +1694,8 @@ ip_demand_conf(u)
     if (!sifnpmode(u, PPP_IP, NPMODE_QUEUE))
 	return 0;
     if (wo->default_route)
-	if (sifdefaultroute(u, wo->ouraddr, wo->hisaddr))
+	if (sifdefaultroute(u, wo->ouraddr, wo->hisaddr,
+		wo->replace_default_route))
 	    default_route_set[u] = 1;
     if (wo->proxy_arp)
 	if (sifproxyarp(u, wo->hisaddr))
@@ -1774,7 +1783,8 @@ ipcp_up(f)
      */
     if (demand) {
 	if (go->ouraddr != wo->ouraddr || ho->hisaddr != wo->hisaddr) {
-	    ipcp_clear_addrs(f->unit, wo->ouraddr, wo->hisaddr);
+	    ipcp_clear_addrs(f->unit, wo->ouraddr, wo->hisaddr,
+				      wo->replace_default_route);
 	    if (go->ouraddr != wo->ouraddr) {
 		warn("Local IP address changed to %I", go->ouraddr);
 		script_setenv("OLDIPLOCAL", ip_ntoa(wo->ouraddr), 0);
@@ -1799,7 +1809,8 @@ ipcp_up(f)
 
 	    /* assign a default route through the interface if required */
 	    if (ipcp_wantoptions[f->unit].default_route) 
-		if (sifdefaultroute(f->unit, go->ouraddr, ho->hisaddr))
+		if (sifdefaultroute(f->unit, go->ouraddr, ho->hisaddr,
+			wo->replace_default_route))
 		    default_route_set[f->unit] = 1;
 
 	    /* Make a proxy ARP entry if requested. */
@@ -1808,7 +1819,7 @@ ipcp_up(f)
 		    proxy_arp_set[f->unit] = 1;
 
 	}
-	demand_rexmit(PPP_IP);
+	demand_rexmit(PPP_IP,go->ouraddr);
 	sifnpmode(f->unit, PPP_IP, NPMODE_PASS);
 
     } else {
@@ -1849,7 +1860,8 @@ ipcp_up(f)
 
 	/* assign a default route through the interface if required */
 	if (ipcp_wantoptions[f->unit].default_route) 
-	    if (sifdefaultroute(f->unit, go->ouraddr, ho->hisaddr))
+	    if (sifdefaultroute(f->unit, go->ouraddr, ho->hisaddr,
+		    wo->replace_default_route))
 		default_route_set[f->unit] = 1;
 
 	/* Make a proxy ARP entry if requested. */
@@ -1883,7 +1895,7 @@ ipcp_up(f)
      */
     if (ipcp_script_state == s_down && ipcp_script_pid == 0) {
 	ipcp_script_state = s_up;
-	ipcp_script(_PATH_IPUP, 0);
+	ipcp_script(path_ipup, 0);
     }
 }
 
@@ -1927,13 +1939,13 @@ ipcp_down(f)
 	sifnpmode(f->unit, PPP_IP, NPMODE_DROP);
 	sifdown(f->unit);
 	ipcp_clear_addrs(f->unit, ipcp_gotoptions[f->unit].ouraddr,
-			 ipcp_hisoptions[f->unit].hisaddr);
+			 ipcp_hisoptions[f->unit].hisaddr, 0);
     }
 
     /* Execute the ip-down script */
     if (ipcp_script_state == s_up && ipcp_script_pid == 0) {
 	ipcp_script_state = s_down;
-	ipcp_script(_PATH_IPDOWN, 0);
+	ipcp_script(path_ipdown, 0);
     }
 }
 
@@ -1943,16 +1955,25 @@ ipcp_down(f)
  * proxy arp entries, etc.
  */
 static void
-ipcp_clear_addrs(unit, ouraddr, hisaddr)
+ipcp_clear_addrs(unit, ouraddr, hisaddr, replacedefaultroute)
     int unit;
     u_int32_t ouraddr;  /* local address */
     u_int32_t hisaddr;  /* remote address */
+    bool replacedefaultroute;
 {
     if (proxy_arp_set[unit]) {
 	cifproxyarp(unit, hisaddr);
 	proxy_arp_set[unit] = 0;
     }
-    if (default_route_set[unit]) {
+    /* If replacedefaultroute, sifdefaultroute will be called soon
+     * with replacedefaultroute set and that will overwrite the current
+     * default route. This is the case only when doing demand, otherwise
+     * during demand, this cifdefaultroute would restore the old default
+     * route which is not what we want in this case. In the non-demand
+     * case, we'll delete the default route and restore the old if there
+     * is one saved by an sifdefaultroute with replacedefaultroute.
+     */
+    if (!replacedefaultroute && default_route_set[unit]) {
 	cifdefaultroute(unit, ouraddr, hisaddr);
 	default_route_set[unit] = 0;
     }
@@ -1987,13 +2008,13 @@ ipcp_script_done(arg)
     case s_up:
 	if (ipcp_fsm[0].state != OPENED) {
 	    ipcp_script_state = s_down;
-	    ipcp_script(_PATH_IPDOWN, 0);
+	    ipcp_script(path_ipdown, 0);
 	}
 	break;
     case s_down:
 	if (ipcp_fsm[0].state == OPENED) {
 	    ipcp_script_state = s_up;
-	    ipcp_script(_PATH_IPUP, 0);
+	    ipcp_script(path_ipup, 0);
 	}
 	break;
     }
@@ -2042,7 +2063,7 @@ create_resolv(peerdns1, peerdns2)
 
     f = fopen(_PATH_RESOLV, "w");
     if (f == NULL) {
-	error("Failed to create %s: %m", _PATH_RESOLV);
+	/* error("Failed to create %s: %m", _PATH_RESOLV); */
 	return;
     }
 

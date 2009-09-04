@@ -24,8 +24,12 @@ if [ "$PPTP_CALL_START" = "yes" ] ; then
 	else
 	PEERDNS=""
     fi
-    if [ "$PPTP_MPPE" = "yes" ] ; then
-        MPPE=require-mppe-128
+    if [ "$PPTP_MPPE" = "yes" ] || [ "$PPTP_MPPE" = "auto" ] ; then
+        if [ "$PPTP_MPPE" = "yes" ] ; then
+    	    MPPE=require-mppe-128
+    	    else
+    	    MPPE=allow-mppe-128
+        fi
         #if mppe need load kernel module
         modenable=`lsmod | grep ppp_mppe -c`
     	    if [ "$modenable" = "0" ] ; then

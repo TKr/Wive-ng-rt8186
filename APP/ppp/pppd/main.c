@@ -90,7 +90,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/sysinfo.h>
 
 #include "pppd.h"
 #include "magic.h"
@@ -232,7 +231,6 @@ static struct subprocess *children;
 
 /* Prototypes for procedures local to this file. */
 
-static void check_time(void);
 static void setup_signals __P((void));
 static void create_pidfile __P((int pid));
 static void create_linkpidfile __P((int pid));
@@ -320,6 +318,9 @@ main(argc, argv)
     struct passwd *pw;
     struct protent *protp;
     char numbuf[16];
+
+    strlcpy(path_ipup, _PATH_IPUP, sizeof(path_ipup));
+    strlcpy(path_ipdown, _PATH_IPDOWN, sizeof(path_ipdown));
 
     link_stats_valid = 0;
     new_phase(PHASE_INITIALIZE);
@@ -535,7 +536,6 @@ main(argc, argv)
 	    info("Starting link");
 	}
 
-	check_time();
 	gettimeofday(&start_time, NULL);
 	script_unsetenv("CONNECT_TIME");
 	script_unsetenv("BYTES_SENT");
@@ -776,8 +776,7 @@ detach()
 	/* update pid files if they have been written already */
 	if (pidfilename[0])
 	    create_pidfile(pid);
-	if (linkpidfile[0])
-	    create_linkpidfile(pid);
+	create_linkpidfile(pid);
 	exit(0);		/* parent dies */
     }
     setsid();
@@ -1305,36 +1304,6 @@ struct	callout {
 
 static struct callout *callout = NULL;	/* Callout list */
 static struct timeval timenow;		/* Current time */
-static long uptime_diff = 0;
-static int uptime_diff_set = 0;
-
-static void check_time(void)
-{
-	long new_diff;
-	struct timeval t;
-	struct sysinfo i;
-    struct callout *p;
-	
-	gettimeofday(&t, NULL);
-	sysinfo(&i);
-	new_diff = t.tv_sec - i.uptime;
-	
-	if (!uptime_diff_set) {
-		uptime_diff = new_diff;
-		uptime_diff_set = 1;
-		return;
-	}
-
-	if ((new_diff - 5 > uptime_diff) || (new_diff + 5 < uptime_diff)) {
-		/* system time has changed, update counters and timeouts */
-		info("System time change detected.");
-		start_time.tv_sec += new_diff - uptime_diff;
-		
-    	for (p = callout; p != NULL; p = p->c_next)
-			p->c_time.tv_sec += new_diff - uptime_diff;
-	}
-	uptime_diff = new_diff;
-}
 
 /*
  * timeout - Schedule a timeout.
@@ -1405,8 +1374,6 @@ calltimeout()
 {
     struct callout *p;
 
-	check_time();
-	
     while (callout != NULL) {
 	p = callout;
 
@@ -1434,8 +1401,6 @@ timeleft(tvp)
 {
     if (callout == NULL)
 	return NULL;
-	
-	check_time();
 
     gettimeofday(&timenow, NULL);
     tvp->tv_sec = callout->c_time.tv_sec - timenow.tv_sec;
@@ -1709,7 +1674,7 @@ device_script(program, in, out, dont_wait)
     if (log_to_fd >= 0)
 	errfd = log_to_fd;
     else
-	errfd = open(_PATH_CONNERRS, O_WRONLY | O_APPEND | O_CREAT, 0600);
+	errfd = open(_PATH_CONNERRS, O_WRONLY | O_APPEND | O_CREAT, 0644);
 
     ++conn_running;
     pid = safe_fork(in, out, errfd);
@@ -2033,9 +1998,11 @@ script_setenv(var, value, iskey)
 		free(p-1);
 		script_env[i] = newstring;
 #ifdef USE_TDB
-		if (iskey && pppdb != NULL)
-		    add_db_key(newstring);
-		update_db_entry();
+		if (pppdb != NULL) {
+		    if (iskey)
+			add_db_key(newstring);
+		    update_db_entry();
+		}
 #endif
 		return;
 	    }

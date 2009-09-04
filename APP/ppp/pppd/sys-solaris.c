@@ -2036,11 +2036,17 @@ cifaddr(u, o, h)
  * sifdefaultroute - assign a default route through the address given.
  */
 int
-sifdefaultroute(u, l, g)
+sifdefaultroute(u, l, g, replace)
     int u;
     u_int32_t l, g;
+    bool replace;
 {
     struct rtentry rt;
+
+    if (replace) {
+	error("replacedefaultroute not supported on this platform");
+	return 0;
+    }
 
 #if defined(__USLC__)
     g = l;			/* use the local address as gateway */

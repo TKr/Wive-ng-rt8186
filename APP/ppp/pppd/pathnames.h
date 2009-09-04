@@ -9,7 +9,7 @@
 
 #else /* HAVE_PATHS_H */
 #ifndef _PATH_VARRUN
-#define _PATH_VARRUN 	"/etc/ppp/"
+#define _PATH_VARRUN 	"/var/run"
 #endif
 #define _PATH_DEVNULL	"/dev/null"
 #endif /* HAVE_PATHS_H */
@@ -28,7 +28,7 @@
 #define _PATH_AUTHUP	 _ROOT_PATH "/etc/ppp/auth-up"
 #define _PATH_AUTHDOWN	 _ROOT_PATH "/etc/ppp/auth-down"
 #define _PATH_TTYOPT	 _ROOT_PATH "/etc/ppp/options."
-#define _PATH_CONNERRS	 _ROOT_PATH "/etc/ppp/connect-errors"
+#define _PATH_CONNERRS	 _ROOT_PATH "/var/log/ppp-connect-errors"
 #define _PATH_PEERFILES	 _ROOT_PATH "/etc/ppp/peers/"
 #define _PATH_RESOLV	 _ROOT_PATH "/etc/ppp/resolv.conf"
 
@@ -57,9 +57,9 @@
 
 #ifdef PLUGIN
 #ifdef __STDC__
-#define _PATH_PLUGIN	DESTDIR "/lib/pppd/" VERSION
+#define _PATH_PLUGIN	DESTDIR "/lib" VERSION
 #else /* __STDC__ */
-#define _PATH_PLUGIN	"/usr/lib/pppd"
+#define _PATH_PLUGIN	"/lib"
 #endif /* __STDC__ */
 
 #endif /* PLUGIN */
