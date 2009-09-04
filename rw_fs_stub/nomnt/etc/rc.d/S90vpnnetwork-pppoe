@@ -49,16 +49,22 @@ if [ "$PPPOE_CALL_START" = "yes" ] ; then
 	PPPOE_MRU="mru $PPPOE_MRU"
     fi
 
+    if [ "$PPPOE_DEBUG" = "yes" ] ; then
+        PPPOE_DEBUG="debug"
+    else
+	PPPOE_DEBUG=""
+    fi
+
     OPTFILE="file /etc/ppp/options.pppoe"
     
  #Userspace or kernel mode select
  if test "$PPPOE_KERNEL_MODE" = "yes" ; then
     # Standard PPP options we always use
-    PPP_STD_OPTIONS="noipdefault noauth -detach $DEFAULTROUTE $PPPOE_AUTO_REDIAL $PEERDNS"
+    PPP_STD_OPTIONS="$PPPOE_DEBUG noipdefault noauth -detach $DEFAULTROUTE $PPPOE_AUTO_REDIAL $PEERDNS"
     # PPPoE invocation
     PPPOE_CMD="$PPPOE_ETH rp_pppoe_ac $PPPOE_ACNAME rp_pppoe_service $PPPOE_SERVICENAME \
         user $PPPOE_USER password $PPPOE_PASSWORD"
-    $NICE pppd $OPTFILE $PPPOE_MTU $PPPOE_MRU $PPP_STD_OPTIONS plugin /lib/rp-pppoe.so $PPPOE_CMD  &
+    $NICE pppd $OPTFILE $PPPOE_MTU $PPPOE_MRU $PPP_STD_OPTIONS plugin /lib/rp-pppoe.so $PPPOE_DEBUG $PPPOE_CMD &
  else
     # Standard PPP options we always use
     PPP_STD_OPTIONS="noipdefault noauth nodetach $DEFAULTROUTE $PPPOE_AUTO_REDIAL $PEERDNS \

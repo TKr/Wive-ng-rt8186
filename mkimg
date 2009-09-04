@@ -148,7 +148,6 @@ if [ "$INCLUDE_PPPOE" = "YES" ] ; then
   cp -R $APP_PATH/rp-pppoe/filesystem/sbin/pppoe-relay $RO_ROOT/sbin/pppoe-relay
   cp -R $APP_PATH/ppp/filesystem/sbin/pppoe-discovery $RO_ROOT/sbin/pppoe-discovery
   #plugins
-  #cp -R $APP_PATH/rp-pppoe/rp-pppoe.so $RO_ROOT/lib/rp-pppoe.so
   cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/rp-pppoe.so $RO_ROOT/lib/rp-pppoe.so
 fi
 #l2tp-client

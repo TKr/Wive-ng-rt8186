@@ -33,7 +33,7 @@ endif
 
 # CC = gcc
 #
-COPTS = -Os -fPIC -pipe -Wall -g -fomit-frame-pointer -mno-memcpy
+COPTS = -Os -fPIC -Wall -g
 LIBS =
 
 # Uncomment the next 2 lines to include support for Microsoft's
