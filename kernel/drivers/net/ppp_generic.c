@@ -1015,10 +1015,6 @@ ppp_send_frame(struct ppp *ppp, struct sk_buff *skb)
 	switch (proto) {
 	case PPP_IP:
 		if (ppp->vj == 0 || (ppp->flags & SC_COMP_TCP) == 0) {
-    		    //if (skb->len > 1038) {
-			//skb->len = 1038;
-			//printk(KERN_INFO "FIX ME in ppp BigPacket DROP"); //sfstudio
-    		    //}
     		    goto nocompress;
 		    break;
 		}
