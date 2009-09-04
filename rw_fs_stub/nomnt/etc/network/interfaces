@@ -10,7 +10,12 @@ VLAN_START=no
 #over toonels (need for Corbina/Beeline and 
 #for others buggy servers)
 BUGGY_NAS=no
+
+#Enable debug message from ppp to syslog
 PPP_DEBUG=no
+
+#Wait times befor pptp/l2tp start
+PPP_SLEEP=10
 
 #--PPTP
 PPTP_CALL_START=no
@@ -23,6 +28,16 @@ PPTP_PASSWORD=testppppass
 PPTP_DEFROUTE=no #(yes|no|replace)
 PPTP_PEERDNS=yes
 PPTP_AUTO_REDIAL=no
+
+#--L2TP
+L2TP_CALL_START=no
+L2TP_SERVER=10.0.0.233
+L2TP_USER=pptp
+L2TP_PASS=testppppass
+L2TP_MPPE=auto
+L2TP_MTU=
+L2TP_MRU=
+L2TP_DEFAULTROUTE=no
 
 #--PPPOE
 PPPOE_CALL_START=no
@@ -37,10 +52,6 @@ PPPOE_PEERDNS=yes
 PPPOE_DEFAULTROUTE=no
 PPPOE_AUTO_REDIAL=no
 PPPOE_KERNEL_MODE=no
-
-#--L2TP
-#Edit /etc/ppp/l2tpd.conf fo configure
-L2TP_CALL_START=no
 
 #-----------Interfaces config-------------------
 #Bridge config

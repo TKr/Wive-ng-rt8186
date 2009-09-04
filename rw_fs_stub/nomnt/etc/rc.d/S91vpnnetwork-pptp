@@ -11,10 +11,21 @@ if [ "$PPTP_CALL_START" = "yes" ] ; then
 
     if [ "$BR0_USE_DHCP" = "yes" ] || [ "$ETH0_USE_DHCP" = "yes" ] || [ "$ETH1_USE_DHCP" = "yes" ] || [ "$WLAN_USE_DHCP" = "yes" ] ; then
 	echo "Wait for recive network parametrs from dhcpclient. PPTP start delayed."
-	sleep 10
+	sleep $PPP_SLEEP
     fi
 	sleep 5
+
     echo "Starting VPN network pptp..."
+    #Add static route to vpn server
+    if [ "$BUGGY_NAS" = "yes" ] ; then
+        ADDRESS=`nslookup $PPTP_SERVER | grep Address | tail -n1 | cut -c 12- | awk {' print $1 '}`
+        if [ "$ADDRESS" != "" ]; then
+            PPTP_SERVER=$ADDRESS
+        fi
+        ROUTE=`ip r get $ADDRESS | grep dev | cut -f -3 -d " "`
+        route add $ROUTE
+    fi                                                            
+
     echo > /etc/ppp/connect-errors
     #Disable nat ipsec (SDK)
     echo "0" > /proc/nat_ipsec

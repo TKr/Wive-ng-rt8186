@@ -5,30 +5,117 @@
 
 start() {
 
+#clear all configs
+ppp=/etc/ppp
+echo > $ppp/l2tpd.conf
+echo > $ppp/options.l2tp
+echo > $ppp/chap-secrets
+
 NICE="nice --15"
 
 if [ "$L2TP_CALL_START" = "yes" ] ; then
     if [ "$BR0_USE_DHCP" = "yes" ] || [ "$ETH0_USE_DHCP" = "yes" ] || [ "$ETH1_USE_DHCP" = "yes" ] || [ "$WLAN_USE_DHCP" = "yes" ] ; then
         echo "Wait for recive network parametrs from dhcpclient. L2TP start delayed."
-        sleep 10
+        sleep $PPP_SLEEP
     fi
 	sleep 5
-
+                            
+    echo "Generate VPN network configs..."
+    #Add static route to vpn server
+    if [ "$BUGGY_NAS" = "yes" ] ; then
+        ADDRESS=`nslookup $L2TP_SERVER | grep Address | tail -n1 | cut -c 12- | awk {' print $1 '}`
+        if [ "$ADDRESS" != "" ]; then
+            L2TP_SERVER=$ADDRESS
+        fi
+        ROUTE=`ip r get $ADDRESS | grep dev | cut -f -3 -d " "`
+        route add $ROUTE
+    fi                                                            
+    #parse parametrs
     if [ "$PPP_DEBUG" = "yes" ] ; then
         LPPP_DEBUG="-D"
         else
         LPPP_DEBUG=""
     fi
-                            
+    if [ "$L2TP_MPPE" = "yes" ] || [ "$L2TP_MPPE" = "auto" ] ; then
+            if [ "$L2TP_MPPE" = "yes" ] ; then
+                MPPE=require-mppe-128
+                else
+                MPPE=allow-mppe-128
+            fi
+        #if mppe need load kernel module
+	modenable=`lsmod | grep ppp_mppe -c`
+        if [ "$modenable" = "0" ] ; then
+            modprobe sha1
+            modprobe arcfour
+            modprobe ppp_mppe
+        fi
+	else
+	MPPE=nomppe
+    fi
+    if [ "$L2TP_MTU" = "" ] || [ "$L2TP_MTU" = "AUTO" ] ; then
+        L2TP_MTU=""
+        else
+        L2TP_MTU="mtu $L2TP_MTU"
+    fi
+    if [ "$L2TP_MRU" = "" ] || [ "$L2TP_MRU" = "AUTO" ] ; then
+        L2TP_MRU=""
+        else
+        L2TP_MRU="mru $L2TP_MRU"
+    fi
+    if [ "$L2TP_DEFAULTROUTE" = "yes" ]; then
+        L2TP_DEFAULTROUTE="defaultroute"
+        else
+        L2TP_DEFAULTROUTE=""
+    fi
+    if [ "$L2TP_PEERDNS" = "yes" ] ; then
+        PEERDNS="usepeerdns"
+        else
+        PEERDNS=""
+    fi
+                                
+    printf "[global]
+    access control = yes
+    [lac $L2TP_SERVER]\n
+    redial = yes
+    redial timeout = 20
+    require chap = yes
+    require authentication = no
+    lns = $L2TP_SERVER
+    name = $L2TP_USER
+    require pap = no
+    autodial = yes
+    pppoptfile = $ppp/options.l2tp
+    " >> $ppp/l2tpd.conf
+
+    printf "
+    connect /bin/true
+    idle 0
+    maxfail 0
+    refuse-pap
+    refuse-eap
+    noipx
+    noproxyarp
+    $L2TP_MRU 
+    $L2TP_MTU
+    $MPPE
+    $L2TP_DEFAULTROUTE
+    $PEERDNS
+    " >> $ppp/options.l2tp
+
+    printf "$L2TP_USER * $L2TP_PASS" >> $ppp/chap-secrets
+    printf "$L2TP_USER * $L2TP_PASS" >> $ppp/pap-secrets
+
+    mkdir -p /var/run/xl2tpd
+
     echo "Starting VPN network l2tp..."
     echo > /etc/ppp/connect-errors
+
     #Disable nat ipsec (SDK)
     echo "0" > /proc/nat_ipsec
     echo "0" > /proc/nat_l2tp
     mkdir -p /var/run/xl2tpd
     $NICE xl2tpd $LPPP_DEBUG -c /etc/ppp/l2tpd.conf -s /etc/ppp/chap-secrets -p /var/lock/l2tpd.pid &
 fi
-
 }
 
 
