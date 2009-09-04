@@ -10,6 +10,7 @@ VLAN_START=no
 #over toonels (need for Corbina/Beeline and 
 #for others buggy servers)
 BUGGY_NAS=no
+PPP_DEBUG=no
 
 #--PPTP
 PPTP_CALL_START=no
@@ -25,7 +26,6 @@ PPTP_AUTO_REDIAL=no
 
 #--PPPOE
 PPPOE_CALL_START=no
-PPPOE_DEBUG=no
 PPPOE_ETH=br0
 PPPOE_MTU=1000
 PPPOE_MRU=1000

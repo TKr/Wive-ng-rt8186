@@ -66,10 +66,16 @@ if [ "$PPTP_CALL_START" = "yes" ] ; then
 	PPTP_MRU="mru $PPTP_MRU"
     fi
 
+    if [ "$PPP_DEBUG" = "yes" ] ; then
+        PPP_DEBUG="debug"
+        else
+        PPP_DEBUG=""
+    fi
+                            
 OPTFILE="file /etc/ppp/options.pptp"
 	
-$NICE pppd $OPTFILE -detach $PPTP_MTU $PPTP_MRU plugin /lib/pptp.so $MPPE pptp_server $PPTP_SERVER \
-    call pptp $DEFAULTROUTE $PERSIST $PEERDNS user $PPTP_USER password $PPTP_PASSWORD &
+$NICE pppd $PPP_DEBUG $OPTFILE -detach $PPTP_MTU $PPTP_MRU plugin /lib/pptp.so $PPP_DEBUG $MPPE \
+    pptp_server $PPTP_SERVER call pptp $DEFAULTROUTE $PERSIST $PEERDNS user $PPTP_USER password $PPTP_PASSWORD &
 fi
 
 }
