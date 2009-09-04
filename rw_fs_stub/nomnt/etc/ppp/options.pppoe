@@ -1,4 +1,4 @@
-#only for l2tp options
+#only for pppoe options
 lock
 
 # We don't need the tunnel server to authenticate itself
@@ -12,6 +12,7 @@ holdoff 5
 # We won't do PAP, EAP, CHAP, or MSCHAP, but we will accept MSCHAP-V2
 # (you may need to remove these refusals if the server is not using MPPE)
 refuse-eap
+require-chap
 
 #Disable it to change kernel settings.
 noktune

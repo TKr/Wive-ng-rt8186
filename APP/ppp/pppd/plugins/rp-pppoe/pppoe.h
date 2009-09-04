@@ -26,8 +26,6 @@
 #undef USE_LINUX_PACKET
 #undef USE_BPF
 
-#include <asm/byteorder.h>
-
 #if defined(HAVE_NETPACKET_PACKET_H) || defined(HAVE_LINUX_IF_PACKET_H)
 #define USE_LINUX_PACKET 1
 #elif defined(HAVE_SYS_DLPI_H)
@@ -179,15 +177,9 @@ typedef struct PPPoEPacketStruct {
     unsigned char payload[ETH_DATA_LEN]; /* A bit of room to spare */
 } PPPoEPacket;
 
-#ifdef PACK_BITFIELDS_REVERSED
-#define PPPOE_VER(vt)		((vt) & 0xf)
-#define PPPOE_TYPE(vt)		((vt) >> 4)
-#define PPPOE_VER_TYPE(t, v)    (((t) << 4) | (v))
-#elif
 #define PPPOE_VER(vt)		((vt) >> 4)
 #define PPPOE_TYPE(vt)		((vt) & 0xf)
 #define PPPOE_VER_TYPE(v, t)	(((v) << 4) | (t))
-#endif
 
 /* Header size of a PPPoE packet */
 #define PPPOE_OVERHEAD 6  /* type, code, session, length */

@@ -33,7 +33,7 @@ static char const RCSID[] =
 #include "pppd/lcp.h"
 #include "pppd/ipcp.h"
 #include "pppd/ccp.h"
-#include "pppd/pathnames.h"
+/* #include "pppd/pathnames.h" */
 
 #include <linux/types.h>
 #include <sys/ioctl.h>
@@ -49,6 +49,7 @@ static char const RCSID[] =
 #include <net/ethernet.h>
 #include <net/if_arp.h>
 #include <linux/ppp_defs.h>
+#include <linux/if_ppp.h>
 #include <linux/if_pppox.h>
 
 #ifndef _ROOT_PATH
@@ -118,57 +119,6 @@ PPPOEInitDevice(void)
     return 1;
 }
 
-/* from <linux/if.h> */
-#define IFF_UP          0x1
-#define IFF_RUNNING     0x40
-
-static short ifrflags_old;
-
-static int interface_change(const char* ifname, int up)
-{
-    int fd;
-    struct ifreq ifr;
-
-    if (!up && ifrflags_old != 0) {
-        return 0;
-    }
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) {
-	warn("socket(AF_INET, SOCK_DGRAM, 0): %s", strerror(errno));
-	return -1;
-    }
-
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
-    if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
-	warn("%s: unknown interface: %s", ifname, strerror(errno));
-	return -1;
-    }
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
-    if (up) {
-        ifrflags_old = ifr.ifr_flags & (IFF_UP | IFF_RUNNING);
-	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-    } else {
-        ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
-    }
-    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0) {
-	warn("SIOCSIFFLAGS: %s", strerror(errno));
-	return -1;
-    }
-    close(fd);
-    return 0;
-}
-
-static int interface_up (const char *ifname)
-{
-    return interface_change(ifname,1);
-}
-
-static int interface_down (const char* ifname)
-{
-    return interface_change(ifname,0);
-}
-
 /**********************************************************************
  * %FUNCTION: PPPOEConnectDevice
  * %ARGUMENTS:
@@ -182,17 +132,6 @@ static int
 PPPOEConnectDevice(void)
 {
     struct sockaddr_pppox sp;
-
-    /* Open session socket before discovery phase, to avoid losing session */
-    /* packets sent by peer just after PADS packet (noted on some Cisco    */
-    /* server equipment).                                                  */
-    /* Opening this socket just before waitForPADS in the discovery()      */
-    /* function would be more appropriate, but it would mess-up the code   */
-    conn->sessionSocket = socket(AF_PPPOX, SOCK_STREAM, PX_PROTO_OE);
-    if (conn->sessionSocket < 0) {
-	error("Failed to create PPPoE socket: %m");
-	return -1;
-    }
 
     strlcpy(ppp_devnam, devnam, sizeof(ppp_devnam));
     if (existingSession) {
@@ -208,10 +147,6 @@ PPPOEConnectDevice(void)
 	    conn->peerEth[i] = (unsigned char) mac[i];
 	}
     } else {
-        conn->discoverySocket =
-            openInterface(conn->ifName, Eth_PPPOE_Discovery, conn->myEth);
-	if (interface_up(conn->ifName) < 0)
-	    return -1;
 	discovery(conn);
 	if (conn->discoveryState != STATE_SESSION) {
 	    error("Unable to complete PPPoE Discovery");
@@ -222,6 +157,12 @@ PPPOEConnectDevice(void)
     /* Set PPPoE session-number for further consumption */
     ppp_session_number = ntohs(conn->session);
 
+    /* Make the session socket */
+    conn->sessionSocket = socket(AF_PPPOX, SOCK_STREAM, PX_PROTO_OE);
+    if (conn->sessionSocket < 0) {
+	error("Failed to create PPPoE socket: %m");
+	goto errout;
+    }
     sp.sa_family = AF_PPPOX;
     sp.sa_protocol = PX_PROTO_OE;
     sp.sa_addr.pppoe.sid = conn->session;
@@ -229,7 +170,7 @@ PPPOEConnectDevice(void)
     memcpy(sp.sa_addr.pppoe.remote, conn->peerEth, ETH_ALEN);
 
     /* Set remote_number for ServPoET */
-    notice(remote_number, "%02X:%02X:%02X:%02X:%02X:%02X \n",
+    sprintf(remote_number, "%02X:%02X:%02X:%02X:%02X:%02X",
 	    (unsigned) conn->peerEth[0],
 	    (unsigned) conn->peerEth[1],
 	    (unsigned) conn->peerEth[2],
@@ -237,7 +178,7 @@ PPPOEConnectDevice(void)
 	    (unsigned) conn->peerEth[4],
 	    (unsigned) conn->peerEth[5]);
 
-    notice("Connected to %02X:%02X:%02X:%02X:%02X:%02X via interface %s \n",
+    notice("Connected to %02X:%02X:%02X:%02X:%02X:%02X via interface %s",
 	 (unsigned) conn->peerEth[0],
 	 (unsigned) conn->peerEth[1],
 	 (unsigned) conn->peerEth[2],
@@ -247,17 +188,15 @@ PPPOEConnectDevice(void)
 	 conn->ifName);
 
     script_setenv("MACREMOTE", remote_number, 0);
-    
-    notice("connect PPPoE socket \n");
+
     if (connect(conn->sessionSocket, (struct sockaddr *) &sp,
-    		sizeof(struct sockaddr_pppox)) < 0) {
-    	notice("Failed to connect PPPoE socket: %d", errno);
-    	close(conn->sessionSocket);
-    	goto errout;
+		sizeof(struct sockaddr_pppox)) < 0) {
+	error("Failed to connect PPPoE socket: %d %m", errno);
+	close(conn->sessionSocket);
+	goto errout;
     }
-    
-    conn->sessionSocket;
-    return;
+
+    return conn->sessionSocket;
 
  errout:
     if (conn->discoverySocket >= 0) {
@@ -276,7 +215,7 @@ PPPOERecvConfig(int mru,
 {
 #if 0 /* broken protocol, but no point harrassing the users I guess... */
     if (mru > MAX_PPPOE_MTU)
-	warn("Couldn't increase MRU to %d", mru);
+	notice("Couldn't increase MRU to %d", mru);
 #endif
 }
 
@@ -306,9 +245,6 @@ PPPOEDisconnectDevice(void)
     /* don't send PADT?? */
     if (conn->discoverySocket >= 0)
 	close(conn->discoverySocket);
-    if (interface_down(conn->ifName) < 0)
-	warn("We brought %s up but failed to take it down",conn->ifName);
-    
 }
 
 static void
@@ -440,6 +376,7 @@ void pppoe_check_options(void)
     lcp_allowoptions[0].neg_pcompression = 0;
     lcp_wantoptions[0].neg_pcompression = 0;
 
+
     if (lcp_allowoptions[0].mru > MAX_PPPOE_MTU)
 	lcp_allowoptions[0].mru = MAX_PPPOE_MTU;
     if (lcp_wantoptions[0].mru > MAX_PPPOE_MTU)
@@ -465,7 +402,6 @@ struct channel pppoe_channel = {
     .disestablish_ppp = &generic_disestablish_ppp,
     .send_config = NULL,
     .recv_config = &PPPOERecvConfig,
-    .recv_config = NULL,
     .close = NULL,
     .cleanup = NULL
 };

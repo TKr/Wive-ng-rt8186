@@ -22,7 +22,6 @@ static char const RCSID[] =
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-#include <time.h>
 
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
@@ -281,9 +280,6 @@ waitForPADO(PPPoEConnection *conn, int timeout)
     fd_set readable;
     int r;
     struct timeval tv;
-    struct timeval expire_at;
-    struct timeval now;
-
     PPPoEPacket packet;
     int len;
 
@@ -295,31 +291,10 @@ waitForPADO(PPPoEConnection *conn, int timeout)
     pc.seenServiceName = 0;
     conn->error = 0;
 
-    if (gettimeofday(&expire_at, NULL) < 0) {
-	fatalSys("gettimeofday (waitForPADO)");
-    }
-    expire_at.tv_sec += timeout;
-
     do {
 	if (BPF_BUFFER_IS_EMPTY) {
-	    if (gettimeofday(&now, NULL) < 0) {
-		fatalSys("gettimeofday (waitForPADO)");
-	    }
-	    tv.tv_sec = expire_at.tv_sec - now.tv_sec;
-	    tv.tv_usec = expire_at.tv_usec - now.tv_usec;
-	    if (tv.tv_usec < 0) {
-		tv.tv_usec += 1000000;
-		if (tv.tv_sec) {
-		    tv.tv_sec--;
-		} else {
-		    /* Timed out */
-		    return;
-		}
-	    }
-	    if (tv.tv_sec <= 0 && tv.tv_usec <= 0) {
-		/* Timed out */
-		return;
-	    }
+	    tv.tv_sec = timeout;
+	    tv.tv_usec = 0;
 
 	    FD_ZERO(&readable);
 	    FD_SET(conn->discoverySocket, &readable);
@@ -332,10 +307,7 @@ waitForPADO(PPPoEConnection *conn, int timeout)
 		error("select (waitForPADO): %m");
 		return;
 	    }
-	    if (r == 0) {
-		/* Timed out */
-		return;
-	    }
+	    if (r == 0) return;        /* Timed out */
 	}
 
 	/* Get the packet */
@@ -357,8 +329,8 @@ waitForPADO(PPPoEConnection *conn, int timeout)
 	if (!packetIsForMe(conn, &packet)) continue;
 
 	if (packet.code == CODE_PADO) {
-	    if (BROADCAST(packet.ethHdr.h_source)) {
-		error("Ignoring PADO packet from broadcast MAC address");
+	    if (NOT_UNICAST(packet.ethHdr.h_source)) {
+		error("Ignoring PADO packet from non-unicast MAC address");
 		continue;
 	    }
 	    if (conn->req_peer
@@ -478,38 +450,14 @@ waitForPADS(PPPoEConnection *conn, int timeout)
     fd_set readable;
     int r;
     struct timeval tv;
-    struct timeval expire_at;
-    struct timeval now;
-
     PPPoEPacket packet;
     int len;
-
-    if (gettimeofday(&expire_at, NULL) < 0) {
-	fatalSys("gettimeofday (waitForPADS)");
-    }
-    expire_at.tv_sec += timeout;
 
     conn->error = 0;
     do {
 	if (BPF_BUFFER_IS_EMPTY) {
-	    if (gettimeofday(&now, NULL) < 0) {
-		fatalSys("gettimeofday (waitForPADS)");
-	    }
-	    tv.tv_sec = expire_at.tv_sec - now.tv_sec;
-	    tv.tv_usec = expire_at.tv_usec - now.tv_usec;
-	    if (tv.tv_usec < 0) {
-		tv.tv_usec += 1000000;
-		if (tv.tv_sec) {
-		    tv.tv_sec--;
-		} else {
-		    /* Timed out */
-		    return;
-		}
-	    }
-	    if (tv.tv_sec <= 0 && tv.tv_usec <= 0) {
-		/* Timed out */
-		return;
-	    }
+	    tv.tv_sec = timeout;
+	    tv.tv_usec = 0;
 
 	    FD_ZERO(&readable);
 	    FD_SET(conn->discoverySocket, &readable);
@@ -522,10 +470,7 @@ waitForPADS(PPPoEConnection *conn, int timeout)
 		error("select (waitForPADS): %m");
 		return;
 	    }
-	    if (r == 0) {
-		/* Timed out */
-		return;
-	    }
+	    if (r == 0) return;
 	}
 
 	/* Get the packet */

@@ -80,7 +80,7 @@
 
 
 
-static int __attribute__((unused)) pppoe_debug = 7;
+static int __attribute__((unused)) pppoe_debug = 0;
 #define PPPOE_HASH_BITS 4
 #define PPPOE_HASH_SIZE (1<<PPPOE_HASH_BITS)
 
@@ -90,7 +90,7 @@ int __pppoe_xmit(struct sock *sk, struct sk_buff *skb);
 
 struct proto_ops pppoe_ops;
 
-#if 1
+#if 0
 #define CHECKPTR(x,y) do { if (!(x) && pppoe_debug &7 ){ printk(KERN_CRIT "PPPoE Invalid pointer : %s , %p\n",#x,(x)); error=-EINVAL; goto y; }} while (0)
 #define DEBUG(s,args...) do { if( pppoe_debug & (s) ) printk(KERN_CRIT args ); } while (0)
 #else
@@ -565,10 +565,8 @@ int pppoe_release(struct socket *sock)
 	}
 
 	if (po->pppoe_dev)
-	    {
 		dev_put(po->pppoe_dev);
-		printk(KERN_INFO "PPoE: RELEASE DEVICE\n");
-	    }
+
 	po->pppoe_dev = NULL;
 
 	sock_orphan(sk);
@@ -590,7 +588,6 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 	struct pppox_opt *po = sk->protinfo.pppox;
 	int error;
 
-    	printk(KERN_ERR "PPPOE: START_PPPOX_CONNECT \n");
 	lock_sock(sk);
 
 	/* Check for protocol pppoe */
@@ -617,10 +614,8 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 		delete_item(po->pppoe_pa.sid,po->pppoe_pa.remote);
 
 		if(po->pppoe_dev)
-			{
-			printk(KERN_INFO "PPoE: CONNECT DEVICE\n");
 			dev_put(po->pppoe_dev);
-			}
+
 		memset(po, 0, sizeof(struct pppox_opt));
 		po->sk = sk;
 
@@ -629,7 +624,6 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 
 	/* Don't re-bind if sid==0 */
 	if (sp->sa_addr.pppoe.sid != 0) {
-		printk(KERN_INFO "PPoE: REBIND DEVICE\n");
 		dev = dev_get_by_name(sp->sa_addr.pppoe.dev);
 
 		error = -ENODEV;
@@ -659,12 +653,9 @@ int pppoe_connect(struct socket *sock, struct sockaddr *uservaddr,
 		po->chan.private = sk;
 		po->chan.ops = &pppoe_chan_ops;
 
-	        if( (error = ppp_register_channel(&po->chan)) ){
-        	    printk(KERN_ERR "PPPOE: failed to register PPP channel (%d)\n",error);
+	        if( (error = ppp_register_channel(&po->chan)) )
 		    goto err_put;
-                }
-                        
-        	printk(KERN_ERR "PPPOE: PPPOX_CONNECTED \n");
+
 		sk->state = PPPOX_CONNECTED;
 	}
 
@@ -675,7 +666,6 @@ end:
 
 err_put:
 	if (po->pppoe_dev) {
-		printk(KERN_INFO "PPoE: ERROR DEVICE\n");
 		dev_put(po->pppoe_dev);
 		po->pppoe_dev = NULL;
 	}
@@ -689,7 +679,6 @@ int pppoe_getname(struct socket *sock, struct sockaddr *uaddr,
 	int len = sizeof(struct sockaddr_pppox);
 	struct sockaddr_pppox sp;
 
-	printk(KERN_ERR "PPPOE: GETNAME_START ");
 	sp.sa_family	= AF_PPPOX;
 	sp.sa_protocol	= PX_PROTO_OE;
 	memcpy(&sp.sa_addr.pppoe, &sock->sk->protinfo.pppox->pppoe_pa,
@@ -711,7 +700,6 @@ int pppoe_ioctl(struct socket *sock, unsigned int cmd,
 	int val = 0;
 	int err = 0;
 
-	printk(KERN_ERR "PPPOE: IOCTL_START ");
  	po = sk->protinfo.pppox;
 	switch (cmd) {
 	case PPPIOCGMRU:

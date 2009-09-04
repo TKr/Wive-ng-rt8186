@@ -126,9 +126,9 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
     }
 
     if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval)) < 0) {
-    	error("Can't set socket options for pppoe: %m");
-    	close(fd);
-    	return -1;
+	error("Can't set socket options for pppoe: %m");
+	close(fd);
+	return -1;
     }
 
     /* Fill in hardware address */
