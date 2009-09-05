@@ -1,1 +1,2 @@
 # Generated config based on --host=mips
+TC_CONFIG_ATM:=y

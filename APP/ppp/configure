@@ -193,7 +193,7 @@ if [ -d "$ksrc" ]; then
     echo "Creating Makefiles."
     mkmkf $ksrc/Makefile.top Makefile
     mkmkf $ksrc/Makedefs$compiletype Makedefs.com
-    for dir in pppd pppstats chat pppdump pppd/plugins pppd/plugins/rp-pppoe \
+    for dir in pppd pppstats chat pppd/plugins pppd/plugins/rp-pppoe \
 	       pppd/plugins/radius pppd/plugins/pppoatm \
 	       pppd/plugins/pppol2tp \
 	       pppd/plugins/pptp; do
