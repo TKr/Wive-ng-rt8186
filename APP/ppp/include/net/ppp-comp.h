@@ -1,47 +1,52 @@
 /*
  * ppp-comp.h - Definitions for doing PPP packet compression.
  *
- * Copyright (c) 1984 Paul Mackerras. All rights reserved.
+ * Copyright (c) 1994 The Australian National University.
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation is hereby granted, provided that the above copyright
+ * notice appears in all copies.  This software is provided without any
+ * warranty, express or implied. The Australian National University
+ * makes no representations about the suitability of this software for
+ * any purpose.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * IN NO EVENT SHALL THE AUSTRALIAN NATIONAL UNIVERSITY BE LIABLE TO ANY
+ * PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
+ * THE AUSTRALIAN NATIONAL UNIVERSITY HAVE BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
+ * THE AUSTRALIAN NATIONAL UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ * ON AN "AS IS" BASIS, AND THE AUSTRALIAN NATIONAL UNIVERSITY HAS NO
+ * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
+ * OR MODIFICATIONS.
+ */
+
+/*
+ *  ==FILEVERSION 980319==
  *
- * 3. The name(s) of the authors of this software must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Paul Mackerras
- *     <paulus@samba.org>".
- *
- * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
- * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
- * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
- * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $Id: ppp-comp.h,v 1.13 2002/12/06 09:49:15 paulus Exp $
+ *  NOTE TO MAINTAINERS:
+ *     If you modify this file at all, please set the above date.
+ *     ppp-comp.h is shipped with a PPP distribution as well as with the kernel;
+ *     if everyone increases the FILEVERSION number above, then scripts
+ *     can do the right thing when deciding whether to install a new ppp-comp.h
+ *     file.  Don't change the format of that line otherwise, so the
+ *     installation script can recognize it.
  */
 
 #ifndef _NET_PPP_COMP_H
 #define _NET_PPP_COMP_H
 
+struct module;
+
 /*
  * The following symbols control whether we include code for
  * various compression methods.
  */
+
 #ifndef DO_BSD_COMPRESS
 #define DO_BSD_COMPRESS	1	/* by default, include BSD-Compress */
 #endif
@@ -54,59 +59,79 @@
 /*
  * Structure giving methods for compression/decompression.
  */
-#ifdef PACKETPTR
+
 struct compressor {
 	int	compress_proto;	/* CCP compression protocol number */
 
 	/* Allocate space for a compressor (transmit side) */
-	void	*(*comp_alloc) __P((u_char *options, int opt_len));
+	void	*(*comp_alloc) (unsigned char *options, int opt_len);
+
 	/* Free space used by a compressor */
-	void	(*comp_free) __P((void *state));
+	void	(*comp_free) (void *state);
+
 	/* Initialize a compressor */
-	int	(*comp_init) __P((void *state, u_char *options, int opt_len,
-				  int unit, int hdrlen, int debug));
+	int	(*comp_init) (void *state, unsigned char *options,
+			      int opt_len, int unit, int opthdr, int debug);
+
 	/* Reset a compressor */
-	void	(*comp_reset) __P((void *state));
+	void	(*comp_reset) (void *state);
+
 	/* Compress a packet */
-	int	(*compress) __P((void *state, PACKETPTR *mret,
-				 PACKETPTR mp, int orig_len, int max_len));
+	int     (*compress) (void *state, unsigned char *rptr,
+			      unsigned char *obuf, int isize, int osize);
+
 	/* Return compression statistics */
-	void	(*comp_stat) __P((void *state, struct compstat *stats));
+	void	(*comp_stat) (void *state, struct compstat *stats);
 
 	/* Allocate space for a decompressor (receive side) */
-	void	*(*decomp_alloc) __P((u_char *options, int opt_len));
+	void	*(*decomp_alloc) (unsigned char *options, int opt_len);
+
 	/* Free space used by a decompressor */
-	void	(*decomp_free) __P((void *state));
+	void	(*decomp_free) (void *state);
+
 	/* Initialize a decompressor */
-	int	(*decomp_init) __P((void *state, u_char *options, int opt_len,
-				    int unit, int hdrlen, int mru, int debug));
+	int	(*decomp_init) (void *state, unsigned char *options,
+				int opt_len, int unit, int opthdr, int mru,
+				int debug);
+
 	/* Reset a decompressor */
-	void	(*decomp_reset) __P((void *state));
+	void	(*decomp_reset) (void *state);
+
 	/* Decompress a packet. */
-	int	(*decompress) __P((void *state, PACKETPTR mp,
-				   PACKETPTR *dmpp));
+	int	(*decompress) (void *state, unsigned char *ibuf, int isize,
+				unsigned char *obuf, int osize);
+
 	/* Update state for an incompressible packet received */
-	void	(*incomp) __P((void *state, PACKETPTR mp));
+	void	(*incomp) (void *state, unsigned char *ibuf, int icnt);
+
 	/* Return decompression statistics */
-	void	(*decomp_stat) __P((void *state, struct compstat *stats));
+	void	(*decomp_stat) (void *state, struct compstat *stats);
+
+	/* Used in locking compressor modules */
+	struct module *owner;
+	/* Extra skb space needed by the compressor algorithm */
+	unsigned int comp_extra;
 };
-#endif /* PACKETPTR */
 
 /*
- * Return values for decompress routine.
- * We need to make these distinctions so that we can disable certain
+ * The return value from decompress routine is the length of the
+ * decompressed packet if successful, otherwise DECOMP_ERROR
+ * or DECOMP_FATALERROR if an error occurred.
+ * 
+ * We need to make this distinction so that we can disable certain
  * useful functionality, namely sending a CCP reset-request as a result
  * of an error detected after decompression.  This is to avoid infringing
  * a patent held by Motorola.
  * Don't you just lurve software patents.
  */
-#define DECOMP_OK		0	/* everything went OK */
-#define DECOMP_ERROR		1	/* error detected before decomp. */
-#define DECOMP_FATALERROR	2	/* error detected after decomp. */
+
+#define DECOMP_ERROR		-1	/* error detected before decomp. */
+#define DECOMP_FATALERROR	-2	/* error detected after decomp. */
 
 /*
  * CCP codes.
  */
+
 #define CCP_CONFREQ	1
 #define CCP_CONFACK	2
 #define CCP_TERMREQ	5
@@ -117,11 +142,13 @@ struct compressor {
 /*
  * Max # bytes for a CCP option
  */
+
 #define CCP_MAX_OPTION_LENGTH	32
 
 /*
  * Parts of a CCP packet.
  */
+
 #define CCP_CODE(dp)		((dp)[0])
 #define CCP_ID(dp)		((dp)[1])
 #define CCP_LENGTH(dp)		(((dp)[2] << 8) + (dp)[3])
@@ -134,6 +161,7 @@ struct compressor {
 /*
  * Definitions for BSD-Compress.
  */
+
 #define CI_BSD_COMPRESS		21	/* config. option for BSD-Compress */
 #define CILEN_BSD_COMPRESS	3	/* length of config. option */
 
@@ -149,6 +177,7 @@ struct compressor {
 /*
  * Definitions for Deflate.
  */
+
 #define CI_DEFLATE		26	/* config option for Deflate */
 #define CI_DEFLATE_DRAFT	24	/* value used in original draft RFC */
 #define CILEN_DEFLATE		4	/* length of its config option */
@@ -159,21 +188,56 @@ struct compressor {
 #define DEFLATE_SIZE(x)		(((x) >> 4) + DEFLATE_MIN_SIZE)
 #define DEFLATE_METHOD(x)	((x) & 0x0F)
 #define DEFLATE_MAKE_OPT(w)	((((w) - DEFLATE_MIN_SIZE) << 4) \
-				 + DEFLATE_METHOD_VAL)
+                                + DEFLATE_METHOD_VAL)
 #define DEFLATE_CHK_SEQUENCE	0
 
 /*
- * Definitions for MPPE.
+ * Definitions for MPPE/MPPC. 
  */
-#define CI_MPPE			18	/* config option for MPPE */
-#define CILEN_MPPE		6	/* length of config option */
+#define CI_MPPE                18      /* config option for MPPE */
+#define CILEN_MPPE             6       /* length of config option */
+
+#define MPPE_OVHD              4       /* MPPE overhead */
+#define MPPE_MAX_KEY_LEN       16      /* largest key length (128-bit) */
+
+#define MPPE_STATELESS          0x01   /* configuration bit H */
+#define MPPE_40BIT              0x20   /* configuration bit L */
+#define MPPE_56BIT              0x80   /* configuration bit M */
+#define MPPE_128BIT             0x40   /* configuration bit S */
+#define MPPE_MPPC               0x01   /* configuration bit C */
+
+/*
+ * Definitions for Stac LZS.
+*/
+
+#define CI_LZS                 17      /* config option for Stac LZS */
+#define CILEN_LZS              5       /* length of config option */
+
+#define LZS_OVHD               4       /* max. LZS overhead */
+#define LZS_HIST_LEN           2048    /* LZS history size */
+#define LZS_MAX_CCOUNT         0x0FFF  /* max. coherency counter value */
+
+#define LZS_MODE_NONE          0
+#define LZS_MODE_LCB           1
+#define LZS_MODE_CRC           2
+#define LZS_MODE_SEQ           3
+#define LZS_MODE_EXT           4
+
+#define LZS_EXT_BIT_FLUSHED    0x80    /* bit A */
+#define LZS_EXT_BIT_COMP       0x20    /* bit C */
 
 /*
  * Definitions for other, as yet unsupported, compression methods.
  */
+
 #define CI_PREDICTOR_1		1	/* config option for Predictor-1 */
 #define CILEN_PREDICTOR_1	2	/* length of its config option */
 #define CI_PREDICTOR_2		2	/* config option for Predictor-2 */
 #define CILEN_PREDICTOR_2	2	/* length of its config option */
+
+#ifdef __KERNEL__
+extern int ppp_register_compressor(struct compressor *);
+extern void ppp_unregister_compressor(struct compressor *);
+#endif /* __KERNEL__ */
 
 #endif /* _NET_PPP_COMP_H */

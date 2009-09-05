@@ -1,42 +1,32 @@
 /*
  * ppp-comp.h - Definitions for doing PPP packet compression.
  *
- * Copyright (c) 1984 Paul Mackerras. All rights reserved.
+ * Copyright (c) 1994 The Australian National University.
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation is hereby granted, provided that the above copyright
+ * notice appears in all copies.  This software is provided without any
+ * warranty, express or implied. The Australian National University
+ * makes no representations about the suitability of this software for
+ * any purpose.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * IN NO EVENT SHALL THE AUSTRALIAN NATIONAL UNIVERSITY BE LIABLE TO ANY
+ * PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
+ * THE AUSTRALIAN NATIONAL UNIVERSITY HAVE BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * 3. The name(s) of the authors of this software must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Paul Mackerras
- *     <paulus@samba.org>".
- *
- * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
- * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
- * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
- * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $Id: ppp-comp.h,v 1.10 2002/12/06 09:49:15 paulus Exp $
+ * THE AUSTRALIAN NATIONAL UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ * ON AN "AS IS" BASIS, AND THE AUSTRALIAN NATIONAL UNIVERSITY HAS NO
+ * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
+ * OR MODIFICATIONS.
  */
 
 /*
- *  ==FILEVERSION 20020319==
+ *  ==FILEVERSION 980319==
  *
  *  NOTE TO MAINTAINERS:
  *     If you modify this file at all, please set the above date.
@@ -49,6 +39,8 @@
 
 #ifndef _NET_PPP_COMP_H
 #define _NET_PPP_COMP_H
+
+struct module;
 
 /*
  * The following symbols control whether we include code for
@@ -114,6 +106,11 @@ struct compressor {
 
 	/* Return decompression statistics */
 	void	(*decomp_stat) (void *state, struct compstat *stats);
+
+	/* Used in locking compressor modules */
+	struct module *owner;
+	/* Extra skb space needed by the compressor algorithm */
+	unsigned int comp_extra;
 };
 
 /*
@@ -191,15 +188,43 @@ struct compressor {
 #define DEFLATE_SIZE(x)		(((x) >> 4) + DEFLATE_MIN_SIZE)
 #define DEFLATE_METHOD(x)	((x) & 0x0F)
 #define DEFLATE_MAKE_OPT(w)	((((w) - DEFLATE_MIN_SIZE) << 4) \
-				 + DEFLATE_METHOD_VAL)
+                                + DEFLATE_METHOD_VAL)
 #define DEFLATE_CHK_SEQUENCE	0
 
 /*
- * Definitions for MPPE.
+ * Definitions for MPPE/MPPC. 
  */
+#define CI_MPPE                18      /* config option for MPPE */
+#define CILEN_MPPE             6       /* length of config option */
 
-#define CI_MPPE			18	/* config option for MPPE */
-#define CILEN_MPPE		6	/* length of config option */
+#define MPPE_OVHD              4       /* MPPE overhead */
+#define MPPE_MAX_KEY_LEN       16      /* largest key length (128-bit) */
+
+#define MPPE_STATELESS          0x01   /* configuration bit H */
+#define MPPE_40BIT              0x20   /* configuration bit L */
+#define MPPE_56BIT              0x80   /* configuration bit M */
+#define MPPE_128BIT             0x40   /* configuration bit S */
+#define MPPE_MPPC               0x01   /* configuration bit C */
+
+/*
+ * Definitions for Stac LZS.
+*/
+
+#define CI_LZS                 17      /* config option for Stac LZS */
+#define CILEN_LZS              5       /* length of config option */
+
+#define LZS_OVHD               4       /* max. LZS overhead */
+#define LZS_HIST_LEN           2048    /* LZS history size */
+#define LZS_MAX_CCOUNT         0x0FFF  /* max. coherency counter value */
+
+#define LZS_MODE_NONE          0
+#define LZS_MODE_LCB           1
+#define LZS_MODE_CRC           2
+#define LZS_MODE_SEQ           3
+#define LZS_MODE_EXT           4
+
+#define LZS_EXT_BIT_FLUSHED    0x80    /* bit A */
+#define LZS_EXT_BIT_COMP       0x20    /* bit C */
 
 /*
  * Definitions for other, as yet unsupported, compression methods.
@@ -209,5 +234,10 @@ struct compressor {
 #define CILEN_PREDICTOR_1	2	/* length of its config option */
 #define CI_PREDICTOR_2		2	/* config option for Predictor-2 */
 #define CILEN_PREDICTOR_2	2	/* length of its config option */
+
+#ifdef __KERNEL__
+extern int ppp_register_compressor(struct compressor *);
+extern void ppp_unregister_compressor(struct compressor *);
+#endif /* __KERNEL__ */
 
 #endif /* _NET_PPP_COMP_H */

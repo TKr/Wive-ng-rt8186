@@ -1,5 +1,5 @@
 /***************************************************************************
- * Linux PPP over L2TP (PPPoL2TP) Socket Implementation (RFC 2661)
+ * Linux PPP over L2TP (PPPoL2TP) Socket Implementation (RFC 2661) 
  *
  * This file supplies definitions required by the PPP over L2TP driver
  * (pppol2tp.c).  All version information wrt this file is located in pppol2tp.c
@@ -17,9 +17,11 @@
 
 #include <asm/types.h>
 
-/* Structure used to connect() the socket to a particular tunnel UDP
- * socket.
- */
+#ifdef __KERNEL__
+#include <linux/in.h>
+#endif
+
+/* Structure used to bind() the socket to a particular socket & tunnel */
 struct pppol2tp_addr
 {
 	pid_t	pid;			/* pid that owns the fd.
@@ -27,7 +29,7 @@ struct pppol2tp_addr
 	int	fd;			/* FD of UDP socket to use */
 
 	struct sockaddr_in addr;	/* IP address and port to send to */
-
+	
 	__u16 s_tunnel, s_session;	/* For matching incoming packets */
 	__u16 d_tunnel, d_session;	/* For sending outgoing packets */
 };
@@ -53,7 +55,7 @@ enum {
 /* Debug message categories for the DEBUG socket option */
 enum {
 	PPPOL2TP_MSG_DEBUG	= (1 << 0),	/* verbose debug (if
-						 * compiled in) */
+						 * compiled in) */ 
 	PPPOL2TP_MSG_CONTROL	= (1 << 1),	/* userspace - kernel
 						 * interface */
 	PPPOL2TP_MSG_SEQ	= (1 << 2),	/* sequence numbers */

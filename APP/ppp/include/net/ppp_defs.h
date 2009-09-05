@@ -1,38 +1,40 @@
-/*	$Id: ppp_defs.h,v 1.17 2002/12/06 09:49:15 paulus Exp $	*/
-
 /*
  * ppp_defs.h - PPP definitions.
  *
- * Copyright (c) 1984 Paul Mackerras. All rights reserved.
+ * Copyright (c) 1994 The Australian National University.
+ * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation is hereby granted, provided that the above copyright
+ * notice appears in all copies.  This software is provided without any
+ * warranty, express or implied. The Australian National University
+ * makes no representations about the suitability of this software for
+ * any purpose.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * IN NO EVENT SHALL THE AUSTRALIAN NATIONAL UNIVERSITY BE LIABLE TO ANY
+ * PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
+ * THE AUSTRALIAN NATIONAL UNIVERSITY HAVE BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
+ * THE AUSTRALIAN NATIONAL UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ * ON AN "AS IS" BASIS, AND THE AUSTRALIAN NATIONAL UNIVERSITY HAS NO
+ * OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS,
+ * OR MODIFICATIONS.
+ */
+
+/*
+ *  ==FILEVERSION 20000114==
  *
- * 3. The name(s) of the authors of this software must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Paul Mackerras
- *     <paulus@samba.org>".
- *
- * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
- * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
- * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
- * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *  NOTE TO MAINTAINERS:
+ *     If you modify this file at all, please set the above date.
+ *     ppp_defs.h is shipped with a PPP distribution as well as with the kernel;
+ *     if everyone increases the FILEVERSION number above, then scripts
+ *     can do the right thing when deciding whether to install a new ppp_defs.h
+ *     file.  Don't change the format of that line otherwise, so the
+ *     installation script can recognize it.
  */
 
 #ifndef _PPP_DEFS_H_
@@ -43,25 +45,12 @@
  */
 #define PPP_HDRLEN	4	/* octets for standard ppp header */
 #define PPP_FCSLEN	2	/* octets for FCS */
-
-/*
- * Packet sizes
- *
- * Note - lcp shouldn't be allowed to negotiate stuff outside these
- *	  limits.  See lcp.h in the pppd directory.
- * (XXX - these constants should simply be shared by lcp.c instead
- *	  of living in lcp.h)
- */
-#define	PPP_MTU		1500	/* Default MTU (size of Info field) */
-#define PPP_MAXMTU	65535 - (PPP_HDRLEN + PPP_FCSLEN)
-#define PPP_MINMTU	64
 #define PPP_MRU		1500	/* default MRU = max length of info field */
-#define PPP_MAXMRU	65000	/* Largest MRU we allow */
-#define PPP_MINMRU	128
+#define PPP_MTU         1500    /* default MTU = max length of info field */
 
-#define PPP_ADDRESS(p)	(((u_char *)(p))[0])
-#define PPP_CONTROL(p)	(((u_char *)(p))[1])
-#define PPP_PROTOCOL(p)	((((u_char *)(p))[2] << 8) + ((u_char *)(p))[3])
+#define PPP_ADDRESS(p)  (((u_char *)(p))[0])
+#define PPP_CONTROL(p)  (((u_char *)(p))[1])
+#define PPP_PROTOCOL(p) ((((u_char *)(p))[2] << 8) + ((u_char *)(p))[3])
 
 /*
  * Significant octet values.
@@ -80,46 +69,40 @@
 #define PPP_IPX		0x2b	/* IPX protocol */
 #define	PPP_VJC_COMP	0x2d	/* VJ compressed TCP */
 #define	PPP_VJC_UNCOMP	0x2f	/* VJ uncompressed TCP */
+#define PPP_MP		0x3d	/* Multilink protocol */
 #define PPP_IPV6	0x57	/* Internet Protocol Version 6 */
+#define PPP_COMPFRAG	0xfb	/* fragment compressed below bundle */
 #define PPP_COMP	0xfd	/* compressed packet */
+#define PPP_MPLS_UC	0x0281	/* Multi Protocol Label Switching - Unicast */
+#define PPP_MPLS_MC	0x0283	/* Multi Protocol Label Switching - Multicast */
 #define PPP_IPCP	0x8021	/* IP Control Protocol */
 #define PPP_ATCP	0x8029	/* AppleTalk Control Protocol */
 #define PPP_IPXCP	0x802b	/* IPX Control Protocol */
 #define PPP_IPV6CP	0x8057	/* IPv6 Control Protocol */
+#define PPP_CCPFRAG	0x80fb	/* CCP at link level (below MP bundle) */
 #define PPP_CCP		0x80fd	/* Compression Control Protocol */
-#define PPP_ECP		0x8053	/* Encryption Control Protocol */
+#define PPP_ECP         0x8053  /* Encryption Control Protocol */
+#define PPP_MPLSCP	0x80fd	/* MPLS Control Protocol */
 #define PPP_LCP		0xc021	/* Link Control Protocol */
 #define PPP_PAP		0xc023	/* Password Authentication Protocol */
 #define PPP_LQR		0xc025	/* Link Quality Report protocol */
 #define PPP_CHAP	0xc223	/* Cryptographic Handshake Auth. Protocol */
 #define PPP_CBCP	0xc029	/* Callback Control Protocol */
-#define PPP_EAP		0xc227	/* Extensible Authentication Protocol */
+#define PPP_EAP         0xc227  /* Extensible Authentication Protocol */
 
 /*
  * Values for FCS calculations.
  */
+
 #define PPP_INITFCS	0xffff	/* Initial FCS value */
 #define PPP_GOODFCS	0xf0b8	/* Good final FCS value */
-#define PPP_FCS(fcs, c)	(((fcs) >> 8) ^ fcstab[((fcs) ^ (c)) & 0xff])
-
-/*
- * A 32-bit unsigned integral type.
- */
-
-#if !defined(__BIT_TYPES_DEFINED__) && !defined(_BITYPES) \
- && !defined(__FreeBSD__) && (NS_TARGET < 40)
-#ifdef	UINT32_T
-typedef UINT32_T	u_int32_t;
-#else
-typedef unsigned int	u_int32_t;
-typedef unsigned short  u_int16_t;
-#endif
-#endif
+#define PPP_FCS(fcs, c) (((fcs) >> 8) ^ fcstab[((fcs) ^ (c)) & 0xff])
 
 /*
  * Extended asyncmap - allows any character to be escaped.
  */
-typedef u_int32_t	ext_accm[8];
+
+typedef u_int32_t		ext_accm[8];
 
 /*
  * What to do with network protocol (NP) packets.
@@ -132,46 +115,58 @@ enum NPmode {
 };
 
 /*
- * Statistics.
+ * Statistics for LQRP and pppstats
  */
 struct pppstat	{
-    unsigned int ppp_ibytes;	/* bytes received */
-    unsigned int ppp_ipackets;	/* packets received */
-    unsigned int ppp_ierrors;	/* receive errors */
-    unsigned int ppp_obytes;	/* bytes sent */
-    unsigned int ppp_opackets;	/* packets sent */
-    unsigned int ppp_oerrors;	/* transmit errors */
+    u_int32_t	ppp_discards;	/* # frames discarded */
+
+    u_int32_t	ppp_ibytes;	/* bytes received */
+    u_int32_t	ppp_ioctects;	/* bytes received not in error */
+    u_int32_t	ppp_ipackets;	/* packets received */
+    u_int32_t	ppp_ierrors;	/* receive errors */
+    u_int32_t	ppp_ilqrs;	/* # LQR frames received */
+
+    u_int32_t	ppp_obytes;	/* raw bytes sent */
+    u_int32_t	ppp_ooctects;	/* frame bytes sent */
+    u_int32_t	ppp_opackets;	/* packets sent */
+    u_int32_t	ppp_oerrors;	/* transmit errors */ 
+    u_int32_t	ppp_olqrs;	/* # LQR frames sent */
 };
 
 struct vjstat {
-    unsigned int vjs_packets;	/* outbound packets */
-    unsigned int vjs_compressed; /* outbound compressed packets */
-    unsigned int vjs_searches;	/* searches for connection state */
-    unsigned int vjs_misses;	/* times couldn't find conn. state */
-    unsigned int vjs_uncompressedin; /* inbound uncompressed packets */
-    unsigned int vjs_compressedin; /* inbound compressed packets */
-    unsigned int vjs_errorin;	/* inbound unknown type packets */
-    unsigned int vjs_tossed;	/* inbound packets tossed because of error */
-};
-
-struct ppp_stats {
-    struct pppstat p;		/* basic PPP statistics */
-    struct vjstat vj;		/* VJ header compression statistics */
+    u_int32_t	vjs_packets;	/* outbound packets */
+    u_int32_t	vjs_compressed;	/* outbound compressed packets */
+    u_int32_t	vjs_searches;	/* searches for connection state */
+    u_int32_t	vjs_misses;	/* times couldn't find conn. state */
+    u_int32_t	vjs_uncompressedin; /* inbound uncompressed packets */
+    u_int32_t	vjs_compressedin;   /* inbound compressed packets */
+    u_int32_t	vjs_errorin;	/* inbound unknown type packets */
+    u_int32_t	vjs_tossed;	/* inbound packets tossed because of error */
 };
 
 struct compstat {
-    unsigned int unc_bytes;	/* total uncompressed bytes */
-    unsigned int unc_packets;	/* total uncompressed packets */
-    unsigned int comp_bytes;	/* compressed bytes */
-    unsigned int comp_packets;	/* compressed packets */
-    unsigned int inc_bytes;	/* incompressible bytes */
-    unsigned int inc_packets;	/* incompressible packets */
-    unsigned int ratio;		/* recent compression ratio << 8 */
+    u_int32_t	unc_bytes;	/* total uncompressed bytes */
+    u_int32_t	unc_packets;	/* total uncompressed packets */
+    u_int32_t	comp_bytes;	/* compressed bytes */
+    u_int32_t	comp_packets;	/* compressed packets */
+    u_int32_t	inc_bytes;	/* incompressible bytes */
+    u_int32_t	inc_packets;	/* incompressible packets */
+
+    /* the compression ratio is defined as in_count / bytes_out */
+    u_int32_t       in_count;	/* Bytes received */
+    u_int32_t       bytes_out;	/* Bytes transmitted */
+
+    double	ratio;		/* not computed in kernel. */
+};
+
+struct ppp_stats {
+    struct pppstat	p;	/* basic PPP statistics */
+    struct vjstat	vj;	/* VJ header compression statistics */
 };
 
 struct ppp_comp_stats {
-    struct compstat c;		/* packet compression statistics */
-    struct compstat d;		/* packet decompression statistics */
+    struct compstat	c;	/* packet compression statistics */
+    struct compstat	d;	/* packet decompression statistics */
 };
 
 /*
@@ -185,9 +180,9 @@ struct ppp_idle {
 
 #ifndef __P
 #ifdef __STDC__
-#define __P(x)	x
+#define __P(x)  x
 #else
-#define __P(x)	()
+#define __P(x)  ()
 #endif
 #endif
 
