@@ -42,5 +42,5 @@ clean:
 
 install:
 	mkdir -p $(BINDIR) $(MANDIR)
-	$(INSTALL) -c pppdump $(BINDIR)
-	$(INSTALL) -c -m 444 pppdump.8 $(MANDIR)
+	$(INSTALL) pppdump $(BINDIR)
+	$(INSTALL) -m 444 pppdump.8 $(MANDIR)

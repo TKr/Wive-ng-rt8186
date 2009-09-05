@@ -150,6 +150,9 @@ if [ "$INCLUDE_PPPOE" = "YES" ] ; then
   #plugins
   cp -R $APP_PATH/ppp/filesystem/lib/pppd/2.4.5/rp-pppoe.so $RO_ROOT/lib/rp-pppoe.so
 fi
+if [ "$INCLUDE_PPPOECD" = "YES" ] ; then
+  cp -R $APP_PATH/pppoecd/filesystem/usr/sbin/pppoecd $RO_ROOT/sbin/pppoecd
+fi
 #l2tp-client
 if [ "$INCLUDE_L2TP_CLIENT" = "YES" ] ; then
   echo -n " l2tp "

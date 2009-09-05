@@ -82,7 +82,9 @@ MAXOCTETS=y
 
 LONGCOUNTER=y
 
+ifndef INCLUDE_DIRS
 INCLUDE_DIRS= -I../include
+endif
 
 COMPILE_FLAGS= -DHAVE_PATHS_H -DIPX_CHANGE -DHAVE_MMAP
 
@@ -111,7 +113,7 @@ endif
 ifdef USE_SRP
 CFLAGS	+= -DUSE_SRP
 TARGETS	+= srp-entry
-EXTRAINSTALL = $(INSTALL) -c -m 555 srp-entry $(BINDIR)/srp-entry
+EXTRAINSTALL = $(INSTALL) -m 555 srp-entry $(BINDIR)/srp-entry
 MANPAGES += srp-entry.8
 EXTRACLEAN += srp-entry.o
 NEEDDES=y
@@ -237,10 +239,10 @@ all: $(TARGETS)
 install: pppd
 	mkdir -p $(BINDIR) $(MANDIR)
 	$(EXTRAINSTALL)
-	$(INSTALL) -c -m 555 pppd $(BINDIR)/pppd
+	$(INSTALL) -m 555 pppd $(BINDIR)/pppd
 	if chgrp pppusers $(BINDIR)/pppd 2>/dev/null; then \
 	  chmod o-rx,u+s $(BINDIR)/pppd; fi
-	$(INSTALL) -c -m 444 pppd.8 $(MANDIR)
+	$(INSTALL) -m 444 pppd.8 $(MANDIR)
 
 pppd: $(PPPDOBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o pppd $(PPPDOBJS) $(LIBS)
@@ -250,7 +252,7 @@ srp-entry:	srp-entry.c
 
 install-devel:
 	mkdir -p $(INCDIR)/pppd
-	$(INSTALL) -c -m 644 $(HEADERS) $(INCDIR)/pppd
+	$(INSTALL) -m 644 $(HEADERS) $(INCDIR)/pppd
 
 clean:
 	rm -f $(PPPDOBJS) $(EXTRACLEAN) $(TARGETS) *~ #* core

@@ -43,11 +43,11 @@ all: $(PLUGIN)
 
 install: all
 	$(INSTALL) -d -m 755 $(LIBDIR)
-	$(INSTALL) -c -m 755 radius.so $(LIBDIR)
-	$(INSTALL) -c -m 755 radattr.so $(LIBDIR)
-	$(INSTALL) -c -m 755 radrealms.so $(LIBDIR)
-	$(INSTALL) -c -m 444 pppd-radius.8 $(MANDIR)
-	$(INSTALL) -c -m 444 pppd-radattr.8 $(MANDIR)
+	$(INSTALL) -m 755 radius.so $(LIBDIR)
+	$(INSTALL) -m 755 radattr.so $(LIBDIR)
+	$(INSTALL) -m 755 radrealms.so $(LIBDIR)
+	$(INSTALL) -m 444 pppd-radius.8 $(MANDIR)
+	$(INSTALL) -m 444 pppd-radattr.8 $(MANDIR)
 
 radius.so: radius.o libradiusclient.a
 	$(CC) -o radius.so -shared radius.o libradiusclient.a

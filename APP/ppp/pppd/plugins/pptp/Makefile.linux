@@ -53,8 +53,8 @@ clean:
 
 
 install: all
-	$(INSTALL) -c -m 4550 pptp.so $(LIBDIR)
-	$(INSTALL) -c -m 4550 libpptp.so $(LIBDIR)
+	$(INSTALL) -m 4550 pptp.so $(LIBDIR)
+	$(INSTALL) -m 4550 libpptp.so $(LIBDIR)
                 
 depend:
 	$(CPP) -M $(CFLAGS) $(PLUGINSRCS) >.depend

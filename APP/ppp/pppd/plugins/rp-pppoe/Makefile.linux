@@ -43,9 +43,9 @@ rp-pppoe.so: plugin.o discovery.o if.o common.o
 
 install: all
 	$(INSTALL) -d -m 755 $(LIBDIR)
-	$(INSTALL) -c -m 4550 rp-pppoe.so $(LIBDIR)
+	$(INSTALL) -m 4550 rp-pppoe.so $(LIBDIR)
 	$(INSTALL) -d -m 755 $(BINDIR)
-	$(INSTALL) -c -m 555 pppoe-discovery $(BINDIR)
+	$(INSTALL) -m 555 pppoe-discovery $(BINDIR)
 
 clean:
 	rm -f *.o *.so pppoe-discovery

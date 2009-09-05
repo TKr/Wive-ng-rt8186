@@ -96,6 +96,8 @@ struct sockaddr_pppol2tp {
 /* Socket options */
 #define PPTP_SO_TIMEOUT 1
 #define PPTP_SO_WINDOW  2
+#define PPTP_FLAG_PAUSE 0
+#define PPTP_FLAG_PROC 1
 
 /*********************************************************************
  *
@@ -103,10 +105,10 @@ struct sockaddr_pppol2tp {
  *
  ********************************************************************/
 
-#define PPPOEIOCSFWD	_IOW(0xB1 ,0, sizeof(struct sockaddr_pppox))
-#define PPPOEIOCDFWD	_IO(0xB1 ,1)
-/*#define PPPOEIOCGFWD	_IOWR(0xB1,2, sizeof(struct sockaddr_pppox))*/
-
+#define PPPOEIOCSFWD    _IOW(0xB1 ,0, size_t)
+#define PPPOEIOCDFWD    _IO(0xB1 ,1)
+#define PPPTPIOWFP      _IOWR(0xB1 ,2,size_t)
+/*#define PPPOEIOCGFWD  _IOWR(0xB1,2, size_t)*/
 
 /* Codes to identify message types */
 #define PADI_CODE	0x09

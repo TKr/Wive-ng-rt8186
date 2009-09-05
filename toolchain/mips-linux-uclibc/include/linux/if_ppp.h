@@ -134,6 +134,8 @@ struct pppol2tp_ioc_stats {
  * Ioctl definitions.
  */
 
+#define PPPIOCGTIMEOUT  _IOR('t', 92, int)      /* get configuration flags */
+#define PPPIOCSTIMEOUT  _IOW('t', 91, int)      /* set configuration flags */
 #define	PPPIOCGFLAGS	_IOR('t', 90, int)	/* get configuration flags */
 #define	PPPIOCSFLAGS	_IOW('t', 89, int)	/* set configuration flags */
 #define	PPPIOCGASYNCMAP	_IOR('t', 88, int)	/* get async map */

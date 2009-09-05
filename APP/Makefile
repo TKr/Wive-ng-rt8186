@@ -14,7 +14,8 @@ export INCLUDEDIR=$(INCLUDEALL)
 SUBDIRS_APP  = busybox bridge-utils dropbear mount
 SUBDIRS_APP += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
 SUBDIRS_APP += iptables iproute2 ntpclient igmpproxy dnsmasq
-SUBDIRS_APP += ppp rp-pppoe l2tpd lwins mesh
+SUBDIRS_APP += ppp rp-pppoe pppoecd
+SUBDIRS_APP += l2tpd lwins mesh
 
 #SUBDIRS_APP += ppp
 

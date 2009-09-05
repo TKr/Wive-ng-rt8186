@@ -32,11 +32,11 @@ install-devel:
 	cd pppd; $(MAKE) $(MFLAGS) install-devel
 
 $(ETCDIR)/options:
-	$(INSTALL) -c -m 644 etc.ppp/options $@
+	$(INSTALL) -m 644 etc.ppp/options $@
 $(ETCDIR)/pap-secrets:
-	$(INSTALL) -c -m 600 etc.ppp/pap-secrets $@
+	$(INSTALL) -m 600 etc.ppp/pap-secrets $@
 $(ETCDIR)/chap-secrets:
-	$(INSTALL) -c -m 600 etc.ppp/chap-secrets $@
+	$(INSTALL) -m 600 etc.ppp/chap-secrets $@
 
 $(BINDIR):
 	$(INSTALL) -d -m 755 $@

@@ -48,6 +48,12 @@
 /* Private (from user) interface flags (netdevice->priv_flags). */
 #define IFF_802_1Q_VLAN 0x1             /* 802.1Q VLAN device.          */
 
+#define IFF_PKTGEN_RCV  0x2             /* Registered to receive & consume  Pktgen skbs */
+#define IFF_ACCEPT_LOCAL_ADDRS 0x4      /*  Accept pkts even if they come from a local
+                                         * address.  This lets use send pkts to ourselves
+                                         * over external interfaces (when used in conjunction
+                                         * with SO_BINDTODEVICE
+                                         */
 /*
  *	Device mapping structure. I'd just gone off and designed a 
  *	beautiful scheme using only loadable modules with arguments
