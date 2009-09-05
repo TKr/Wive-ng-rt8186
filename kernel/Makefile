@@ -18,14 +18,15 @@ HPATH   	= $(TOPDIR)/include
 FINDHPATH	= $(HPATH)/asm $(HPATH)/linux $(HPATH)/scsi $(HPATH)/net
 WIVEROOT	= /opt/Wive
 CROSSPATH	= /usr/local/bin/
-HOSTCC  	= gcc
 CROSS_COMPILE 	= mips-linux-
 OBJCOPY		= mips-uclibc-objcopy
 STRIP		= mips-linux-strip
 
 EXTRA_ASFLAGS	= -mips1 -mcpu=r3000
-HOSTCFLAGS	= $(OPTIMIZEFLAGS) -Wstrict-prototypes
 COPTS		= $(OPTIMIZEFLAGS) -DNO_IPV6 
+
+HOSTCC  	= gcc
+HOSTCFLAGS	= -O2
 
 # Include the make variables (CC, etc...)
 #
