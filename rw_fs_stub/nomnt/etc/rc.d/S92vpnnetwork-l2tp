@@ -28,7 +28,7 @@ if [ "$L2TP_CALL_START" = "yes" ] ; then
             L2TP_SERVER=$ADDRESS
         fi
         ROUTE=`ip r get $ADDRESS | grep dev | cut -f -3 -d " "`
-        route add $ROUTE
+        ip r add $ROUTE
     fi                                                            
     #parse parametrs
     if [ "$PPP_DEBUG" = "yes" ] ; then

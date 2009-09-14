@@ -23,7 +23,7 @@ if [ "$PPTP_CALL_START" = "yes" ] ; then
             PPTP_SERVER=$ADDRESS
         fi
         ROUTE=`ip r get $ADDRESS | grep dev | cut -f -3 -d " "`
-        route add $ROUTE
+        ip r add $ROUTE
     fi                                                            
 
     echo > /etc/ppp/connect-errors
