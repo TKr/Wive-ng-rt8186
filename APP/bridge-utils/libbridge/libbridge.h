@@ -120,10 +120,15 @@ int br_set_bridge_max_age(struct bridge *br, struct timeval *tv);
 int br_set_ageing_time(struct bridge *br, struct timeval *tv);
 int br_set_gc_interval(struct bridge *br, struct timeval *tv);
 int br_set_stp_state(struct bridge *br, int stp_state);
+void br_cmd_meshsignaloff(struct bridge *);
 int br_set_bridge_priority(struct bridge *br, int bridge_priority);
 int br_set_port_priority(struct port *p, int port_priority);
 int br_set_path_cost(struct port *p, int path_cost);
+#ifdef GUEST_ZONE
+int br_read_fdb(struct bridge *br, struct fdb_entry *fdbs, int offset, int num, int for_guest);
+#else
 int br_read_fdb(struct bridge *br, struct fdb_entry *fdbs, int offset, int num);
+#endif
 // MULTICAST_FILTER
 int br_set_clrfltr(struct bridge *br);
 int br_set_fltrport(struct bridge *br, int port);
@@ -131,6 +136,14 @@ int br_set_fltrport(struct bridge *br, int port);
 int br_set_mlticst_bw(struct port *p, int bandwidth);
 // RTL_BRIDGE_MAC_CLONE
 int br_set_port_enable_macclone(struct port *p, struct port *target);
+
+#ifdef GUEST_ZONE
+int br_set_port_zone(struct port *p, int zone_value);
+int br_set_isolation_zone(struct bridge *br, int val);
+int br_set_isolation_guest(struct bridge *br, int val);
+int br_set_lock_client(struct bridge *br, unsigned char *mac);
+int br_show_guestinfo(struct bridge *br);
+#endif
 
 /* libc5 combatability */
 char *if_indextoname(unsigned int __ifindex, char *__ifname);

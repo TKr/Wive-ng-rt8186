@@ -14,17 +14,8 @@
  * RTL8186 Software Package
  */
 #define CONFIG_RTL8186_AP 1
-#define CONFIG_NINO 1
-
-/*
- * RTL Enchanched mode for NAT/VPN/BRIDGE/IPSEC
- */
-#define DELAY_RX 1
-#define CONFIG_DRIVER_SPEEDUP 1
-#define BR_SHORTCUT 1
-#define CONFIG_UCLINUX 1
-#define FIXED_BOGOMIPS 1
-#undef  CONFIG_RTL_IPSEC
+#undef  CONFIG_RTL8196_AP
+#undef  CONFIG_NINO
 
 /*
  * Wive-NG Tiny selection
@@ -46,18 +37,9 @@
 /*
  * Machine selection
  */
-#define CONFIG_FPU_EMU 1
-#define CONFIG_BOARD_SCACHE 1
-#undef  CONFIG_RTL8181_WTDOG
-#define CONFIG_RTL8181_GPIO 1
-#undef  CONFIG_PCI
-#undef  CONFIG_NEW_PCI
 #define CONFIG_RWSEM_GENERIC_SPINLOCK 1
 #undef  CONFIG_MCA
 #undef  CONFIG_SBUS
-#define CONFIG_NEW_IRQ 1
-#define CONFIG_NEW_TIME_C 1
-#define CONFIG_NONCOHERENT_IO 1
 #undef  CONFIG_ISA
 #undef  CONFIG_EISA
 

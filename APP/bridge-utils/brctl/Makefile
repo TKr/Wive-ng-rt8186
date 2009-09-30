@@ -8,6 +8,9 @@ CFLAGS  += -ffunction-sections -fdata-sections
 LDFLAGS += --static -Wl,--gc-sections
 endif
 
+ifeq ($(GUEST_ZONE),1)
+CFLAGS  += -DGUEST_ZONE
+endif
 
 all:			brctl brctld
 

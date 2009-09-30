@@ -146,6 +146,18 @@ int br_set_stp_state(struct bridge *br, int stp_state)
 	return 0;
 }
 
+int br_turnoff_signal_pathsel(struct bridge *br)
+{
+	unsigned long args[3];
+
+        args[0] = 111;	//should br BRCTL_SET_BRIDGE_STP_STATE
+        args[1] = 0;
+        args[2] = 0;
+
+        return ioctl(br_socket_fd, SIOCGIFBR, args);
+        //return 0;
+}
+
 int br_set_bridge_priority(struct bridge *br, int bridge_priority)
 {
 	if (br_device_ioctl(br, BRCTL_SET_BRIDGE_PRIORITY, bridge_priority,
@@ -181,15 +193,30 @@ void __copy_fdb(struct fdb_entry *ent, struct __fdb_entry *f)
 	__jiffies_to_tv(&ent->ageing_timer_value, f->ageing_timer_value);
 }
 
+#ifdef GUEST_ZONE
+int br_read_fdb(struct bridge *br, struct fdb_entry *fdbs, int offset, int num, int for_guest)
+#else
 int br_read_fdb(struct bridge *br, struct fdb_entry *fdbs, int offset, int num)
+#endif
 {
 	struct __fdb_entry f[num];
 	int i;
 	int numread;
 
+#ifdef GUEST_ZONE
+	unsigned long id;
+	if (for_guest)
+		id = 110;
+	else
+		id = BRCTL_GET_FDB_ENTRIES;
+	if ((numread = br_device_ioctl(br, id,
+				       (unsigned long)f, num, offset)) < 0)
+		return errno;
+#else
 	if ((numread = br_device_ioctl(br, BRCTL_GET_FDB_ENTRIES,
 				       (unsigned long)f, num, offset)) < 0)
 		return errno;
+#endif
 
 	for (i=0;i<numread;i++)
 		__copy_fdb(fdbs+i, f+i);
@@ -237,3 +264,49 @@ int br_set_port_enable_macclone(struct port *p, struct port *target)
 }
 
 
+#ifdef GUEST_ZONE
+int br_set_port_zone(struct port *p, int zone_value)
+{
+	if (br_device_ioctl(p->parent, 105, p->index,
+			    zone_value, 0) < 0) 
+		return errno;
+
+	return 0;
+}
+
+int br_set_isolation_zone(struct bridge *br, int val)
+{
+	if (br_device_ioctl(br, 106, val,
+			    0, 0) < 0)
+		return errno;
+
+	return 0;
+}
+
+int br_set_isolation_guest(struct bridge *br, int val)
+{
+	if (br_device_ioctl(br, 107, val,
+			    0, 0) < 0)
+		return errno;
+
+	return 0;
+}
+
+int br_set_lock_client(struct bridge *br, unsigned char *mac)
+{
+	if (br_device_ioctl(br, 108, (unsigned long)mac,
+			    0, 0) < 0)
+		return errno;
+
+	return 0;
+}
+
+int br_show_guestinfo(struct bridge *br)
+{
+	if (br_device_ioctl(br, 109, 0,
+			    0, 0) < 0)
+		return errno;
+
+	return 0;
+}
+#endif // GUEST_ZONE

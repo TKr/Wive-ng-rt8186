@@ -366,7 +366,11 @@ echo "********************* RO filesystem *********************"
 echo "============Create Squashfs====================="
 rm -rf $IMAGES_PATH/root.bin
 $MKSQUASHFS $RO_ROOT squashfs.o -be -all-root -2.0 >>/dev/null
-$CVIMG root squashfs.o $IMAGES_PATH/root.bin 100000 100000
+if [ RTL8196 != "YES" ];then
+    $CVIMG root squashfs.o $IMAGES_PATH/root.bin 100000 100000
+else
+    $CVIMG root squashfs.o $IMAGES_PATH/root.bin 140000 C0000
+fi
 IMGSIZE=`du -s squashfs.o |  cut -f1`
 rm -rf squashfs.o
 ROOTSIZE=`du -s $RO_ROOT | cut -f1`

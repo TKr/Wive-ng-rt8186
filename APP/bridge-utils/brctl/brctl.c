@@ -43,6 +43,7 @@ char *help_message =
 "\tsetpathcost\t<bridge> <port> <cost>\tset path cost\n"
 "\tsetportprio\t<bridge> <port> <prio>\tset port priority\n"
 "\tstp\t\t<bridge> <state>\tturn stp on/off\n"
+"\tmeshsignaloff\t\tdisable signal to pathselection daemon(mesh)\n"
 // MULTICAST_FILTER
 "\n"
 "\tclrfltrport\t<bridge>\t\tclear multicast filter\n"
@@ -53,6 +54,14 @@ char *help_message =
 // RTL_BRIDGE_MAC_CLONE
 "\n"
 "\tclone\t\t<bridge> <ptFr> <ptTo>\tturn MAC clone on\n"
+#ifdef GUEST_ZONE
+"\tsetzone\t\t<bridge> <device> <val>\tset zone type (0: host, 1: guest) for interface\n"
+"\tsetzoneisolate\t<bridge> <value>\tset zone isolation (0: no, 1: yes)\n"
+"\tsetguestisolate\t<bridge> <value>\tset guest isolation (0: no, 1: yes)\n"
+"\tchkguestmac\t<bridge> <verb> <mac>\tcheck if mac addrs of client is come from guest zone\n"
+"\tsetlockclient\t<bridge> <mac>\t\tset mac addrs of locked client list\n"
+"\tshowguestinfo\t<bridge>\t\tshow zone and locked client info\n"
+#endif
 ;
 
 void help()

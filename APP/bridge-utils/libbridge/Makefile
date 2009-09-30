@@ -5,6 +5,10 @@ ifeq ($(SLINK),1)
 CFLAGS  += -Os -fPIC -ffunction-sections -fdata-sections -fomit-frame-pointer -mno-memcpy
 endif
 
+ifeq ($(GUEST_ZONE),1)
+CFLAGS  += -DGUEST_ZONE
+endif
+
 all:			libbridge.a
 
 clean:

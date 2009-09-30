@@ -229,6 +229,11 @@ void br_cmd_stp(struct bridge *br, char *arg0, char *arg1)
 	br_set_stp_state(br, stp);
 }
 
+void br_cmd_meshsignaloff(struct bridge *br)
+{
+	br_turnoff_signal_pathsel(br);
+}
+
 void br_cmd_showstp(struct bridge *br, char *arg0, char *arg1)
 {
 	br_dump_info(br);
@@ -286,8 +291,11 @@ void br_cmd_showmacs(struct bridge *br, char *arg0, char *arg1)
 	while (1) {
 		int i;
 		int num;
-
+#ifdef GUEST_ZONE
+		num = br_read_fdb(br, fdb, offset, 1024, 0);
+#else
 		num = br_read_fdb(br, fdb, offset, 1024);
+#endif
 		if (!num)
 			break;
 
@@ -349,6 +357,106 @@ void br_cmd_enable_macclone(struct bridge *br, char *arg0, char *arg1)
 	br_set_port_enable_macclone(p, target);
 }
 
+
+#ifdef GUEST_ZONE
+void br_cmd_set_zone(struct bridge *br, char *arg0, char *arg1)
+{
+	struct port *p;
+	int val;
+	if ((p = br_find_port(br, arg0)) == NULL) {
+		fprintf(stderr, "can't find port %s in bridge %s\n", arg0, br->ifname);
+		return;
+	}
+	sscanf(arg1, "%i", &val);	
+	br_set_port_zone(p, val);
+}
+
+void br_cmd_set_isolation_zone(struct bridge *br, char *arg0, char *arg1)
+{
+	int val;
+	sscanf(arg0, "%i", &val);	
+
+	br_set_isolation_zone(br, val);
+}
+
+void br_cmd_set_isolation_guest(struct bridge *br, char *arg0, char *arg1)
+{
+	int val;
+	sscanf(arg0, "%i", &val);	
+	
+	br_set_isolation_guest(br, val);
+}
+
+void br_cmd_chk_guestmac(struct bridge *br, char *arg0, char *arg1)
+{
+	unsigned char mac[6];
+	unsigned int tmp[6];
+	struct fdb_entry fdb[1024];
+	int offset;
+	int verbose;
+
+	sscanf(arg0, "%i", &verbose);	
+
+	if (sscanf(arg1, "%02x%02x%02x%02x%02x%02x", 
+			&tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) != 6) {
+		fprintf(stderr, "invalid mac address format [xxxxxxxxxxxx]!\n");
+		return;			
+	}
+	mac[0] = (unsigned char)tmp[0];
+	mac[1] = (unsigned char)tmp[1];
+	mac[2] = (unsigned char)tmp[2];
+	mac[3] = (unsigned char)tmp[3];
+	mac[4] = (unsigned char)tmp[4];
+	mac[5] = (unsigned char)tmp[5];
+
+	offset = 0;
+	while (1) {
+		int i;
+		int num;
+		num = br_read_fdb(br, fdb, offset, 1024, 1);
+		if (!num) {
+			break;
+		}
+		
+		for (i=0;i<num;i++) {			
+			if (!memcmp(fdb[i].mac_addr, mac, 6)) {
+				if (verbose)
+					fprintf(stderr, "is guest address!\n");
+				exit(1);
+			}			
+		}
+		offset += num;
+	}
+	if (verbose)
+		fprintf(stderr, "not guest address!\n");	
+}
+
+void br_cmd_set_lockclient(struct bridge *br, char *arg0, char *arg1)
+{
+	unsigned char mac[6];
+	unsigned int tmp[6];
+
+	if (sscanf(arg0, "%02x%02x%02x%02x%02x%02x", 
+			&tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) != 6) {
+		fprintf(stderr, "invalid mac address format [xxxxxxxxxxxx]!\n");
+		return;			
+	}
+	mac[0] = (unsigned char)tmp[0];
+	mac[1] = (unsigned char)tmp[1];
+	mac[2] = (unsigned char)tmp[2];
+	mac[3] = (unsigned char)tmp[3];
+	mac[4] = (unsigned char)tmp[4];
+	mac[5] = (unsigned char)tmp[5];
+
+	br_set_lock_client(br, mac);
+}
+
+void br_cmd_show_guestinfo(struct bridge *br, char *arg0, char *arg1)
+{
+	br_show_guestinfo(br);
+}
+#endif // GUEST_ZONE
+
 static struct command commands[] = {
 	{0, 1, "addbr", br_cmd_addbr},
 	{1, 1, "addif", br_cmd_addif},
@@ -366,6 +474,9 @@ static struct command commands[] = {
 	{1, 0, "showmacs", br_cmd_showmacs},
 	{1, 0, "showstp", br_cmd_showstp},
 	{1, 1, "stp", br_cmd_stp},
+//#if defined(CONFIG_RTK_MESH) && defined(MESH_DYPORTAL)
+	{0, 0, "meshsignaloff", br_cmd_meshsignaloff},
+//#endif
 
 // MULTICAST_FILTER
 	{1, 0, "clrfltrport", br_cmd_clrfltrport},
@@ -376,6 +487,14 @@ static struct command commands[] = {
 
 // RTL_BRIDGE_MAC_CLONE
 	{1, 2, "clone", br_cmd_enable_macclone},
+#ifdef GUEST_ZONE
+       {1, 2, "setzone", br_cmd_set_zone},
+       {1, 1, "setzoneisolate", br_cmd_set_isolation_zone},
+       {1, 1, "setguestisolate", br_cmd_set_isolation_guest},
+       {1, 2, "chkguestmac", br_cmd_chk_guestmac},
+       {1, 1, "setlockclient", br_cmd_set_lockclient},
+       {1, 0, "showguestinfo", br_cmd_show_guestinfo},
+#endif
 };
 
 struct command *br_command_lookup(char *cmd)
