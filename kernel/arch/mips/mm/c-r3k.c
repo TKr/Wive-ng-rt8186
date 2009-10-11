@@ -190,7 +190,7 @@ void __init ld_mmu_r23000(void)
 	_flush_icache_page = r3k_flush_icache_page;
 	_flush_icache_range = r3k_flush_icache_range;
 
-	_dma_cache_wback_inv = r3k_dma_cache_wback_inv;
+	//_dma_cache_wback_inv = r3k_dma_cache_wback_inv;
 
 
 }

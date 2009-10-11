@@ -2176,7 +2176,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 		
 	rtl8305_outl(MII_reg, phy_addr_data);
 	while (1) {	
-		udelay(120);
+		udelay(300);
 		if ((rtl8305_inl(MII_reg) & 0x80000000) == 0) {
 #ifdef CONFIG_SWITCH_DEBUG_MODE			
 			printk("write phy%d reg%d =0x%x\n",phyaddr, regaddr,rtl8305_inl(MII_reg));
@@ -2208,7 +2208,7 @@ unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short in
 		
 	rtl8305_outl(MII_reg, phy_addr);
 	while (1) {	
-		udelay(120);
+		udelay(300);
 		if ((rtl8305_inl(MII_reg) & 0x80000000)) {
 #ifdef CONFIG_SWITCH_DEBUG_MODE			
 			printk("read phy%d reg%d =0x%x\n",phyaddr, regaddr,rtl8305_inl(MII_reg));
