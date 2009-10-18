@@ -3,6 +3,9 @@
 #Global options
 VLAN_START=no
 
+#Options for dhcp clients, for help see udhcpc --help
+DHCPOPTS="-S -t 3 -b -R"
+
 #--------------VPN config---------------------
 
 #Remove auto route in tunnel added from kernel 

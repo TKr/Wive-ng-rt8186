@@ -381,7 +381,7 @@ if [ "$WLAN_IN_BR0" != "yes" ]; then
     if [ "$WLAN_USE_DHCP" = "yes" ]; then
 	echo "Set wlan0 IP adreess from dhcp server"
 	ip link set wlan0 up
-	$dhcpc -p /var/run/udhcpc-wlan0.pid -S -i wlan0 -t 3 -b >>/dev/null
+	$dhcpc -p /var/run/udhcpc-wlan0.pid -i wlan0 $DHCPOPTS >>/dev/null
     else
 	echo "Set IP adreess from local files"
 	ip link set wlan0 up

@@ -28,7 +28,7 @@ if [ -f /etc/devices/eth0 ]; then
         if [ "$ETH0_USE_DHCP" = "yes" ]; then
            echo "Set IP adress eth0 from DHCP server" 
            ip link set eth0 up
-           $dhcpc -p /var/run/udhcpc-eth0.pid -S -i eth0 -t 3 -b >>/dev/null
+           $dhcpc -p /var/run/udhcpc-eth0.pid -i eth0 $DHCPOPTS >>/dev/null
         else
            echo "Set IP adress eth0 from local files" 
            ip link set eth0 up
@@ -47,7 +47,7 @@ if [ -f /etc/devices/eth1 ]; then
         if [ "$ETH1_USE_DHCP" = "yes" ]; then
            echo "Set IP adress eth1 from DHCP server" 
            ip link set eth1 up
-           $dhcpc -p /var/run/udhcpc-eth1.pid -S -i eth1 -t 3 -b >>/dev/null
+           $dhcpc -p /var/run/udhcpc-eth1.pid -S -i eth1 $DHCPOPTS >>/dev/null
         else
            echo "Set IP adress eth1 from local files" 
            ip link set eth1 up

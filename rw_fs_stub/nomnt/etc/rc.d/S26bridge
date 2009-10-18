@@ -62,7 +62,7 @@ if [ "$BRIDGE_START" = "yes" ] ; then
         echo "Bridge up for dhcpd br0"
 	ip link set br0 up
 	echo "From DHCP server"
-        $dhcpc -p /var/run/udhcpc-br0.pid -S -i br0 -t 3 -n >>/dev/null
+        $dhcpc -p /var/run/udhcpc-br0.pid -i br0 $DHCPOPTS >>/dev/null
      else
         echo "Bridge up for local br0"
 	ip link set br0 up
