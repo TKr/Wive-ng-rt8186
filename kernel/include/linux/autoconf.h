@@ -564,6 +564,7 @@
 #undef  CONFIG_DUMMY
 #undef  CONFIG_BONDING
 #undef  CONFIG_EQUALIZER
+#undef  CONFIG_IMQ
 #undef  CONFIG_TUN
 
 /*

@@ -555,6 +555,7 @@ CONFIG_NET_WIRELESS_AG=y
 # CONFIG_DUMMY is not set
 # CONFIG_BONDING is not set
 # CONFIG_EQUALIZER is not set
+# CONFIG_IMQ is not set
 # CONFIG_TUN is not set
 
 #
