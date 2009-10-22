@@ -172,6 +172,7 @@ endif
 obj-$(CONFIG_STRIP) += strip.o
 obj-$(CONFIG_DUMMY) += dummy.o
 obj-$(CONFIG_BONDING) += bonding.o
+obj-$(CONFIG_IMQ) += imq.o
 obj-$(CONFIG_DE600) += de600.o
 obj-$(CONFIG_DE620) += de620.o
 obj-$(CONFIG_AT1500) += lance.o

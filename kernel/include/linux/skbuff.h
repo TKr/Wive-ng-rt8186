@@ -98,6 +98,9 @@ struct nf_ct_info {
 	struct nf_conntrack *master;
 };
 #endif
+#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
+struct nf_info;
+#endif
 
 struct sk_buff_head {
 	/* These two members must be first. */
@@ -219,6 +222,9 @@ struct sk_buff {
 
 #ifdef CONFIG_NET_SCHED
        __u32           tc_index;               /* traffic control index */
+#endif
+#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
+       struct nf_info	*nf_info;
 #endif
 };
 

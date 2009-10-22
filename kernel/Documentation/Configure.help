@@ -8500,6 +8500,20 @@ CONFIG_BONDING
   say M here and read <file:Documentation/modules.txt>.  The module
   will be called bonding.o.
 
+Intermediate queueing device support
+CONFIG_IMQ
+  The imq device(s) is used as placeholder for QoS queueing disciplines.
+  Every packet entering/leaving the ip stack can be directed through
+  the imq device where it's enqueued/dequeued to the attached qdisc.
+  This allows you to treat network devices as classes and distribute
+  bandwidth among them. Iptables is used to specify through which imq
+  device, if any, packets travel.
+
+  If you want to compile this as a module ( = code which ca be
+  inserted in and removed from the running kernel whenever you want),
+  say M here and read <file:Documentation/modules.txt>.  The module
+  will be called imq.o
+
 SLIP (serial line) support
 CONFIG_SLIP
   Say Y if you intend to use SLIP or CSLIP (compressed SLIP) to
