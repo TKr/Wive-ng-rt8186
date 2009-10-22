@@ -1,6 +1,6 @@
 CC=mips-linux-gcc
 
-PF_EXT_SLIB:=ah dscp esp icmp length limit mac mark multiport owner standard state tcp tcpmss tos ttl udp unclean DNAT DSCP LOG MARK MASQUERADE MIRROR REDIRECT REJECT SAME SNAT TCPMSS TOS ULOG NOTRACK ECN
+PF_EXT_SLIB:=ah dscp esp icmp length limit mac mark multiport owner standard state tcp tcpmss tos ttl udp unclean DNAT DSCP LOG MARK MASQUERADE MIRROR REDIRECT REJECT SAME SNAT TCPMSS TOS ULOG NOTRACK ECN IMQ
 #PF6_EXT_SLIB:=icmpv6 length limit mac mark multiport owner standard tcp udp LOG MARK
 
 # The following may not be present, but compile them anyway.
