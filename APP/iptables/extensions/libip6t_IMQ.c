@@ -14,8 +14,7 @@ help(void)
 {
 	printf(
 "IMQ target v%s options:\n"
-"  --todev <N>		enqueue to imq<N>, defaults to 0\n", 
-IPTABLES_VERSION);
+"  --todev <N>		enqueue to imq<N>, defaults to 0\n");
 }
 
 static struct option opts[] = {
@@ -84,7 +83,6 @@ static
 struct ip6tables_target imq
 = { NULL,
     "IMQ",
-    IPTABLES_VERSION,
     IP6T_ALIGN(sizeof(struct ip6t_imq_info)),
     IP6T_ALIGN(sizeof(struct ip6t_imq_info)),
     &help,
