@@ -133,6 +133,12 @@ if [ "$INCLUDE_NTP_CLIENT" = "YES" ] ; then
   cp -R $APP_PATH/ntpclient/filesystem/bin/* $RO_ROOT/bin
 fi
 
+#ether-wake
+if [ "$INCLUDE_ETHERWAKE" = "YES" ] ; then
+  echo -n " ntp_client "
+  cp -R $APP_PATH/ether-wake/ether-wake $RO_ROOT/bin/ether-wake
+fi
+
 #---------------------------PPPD AND VPN--------------------------------------------
 #pppd
 if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then
