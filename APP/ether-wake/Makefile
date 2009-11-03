@@ -9,6 +9,9 @@ $(EXEC): $(OBJS)
 romfs:
 	$(ROMFSINST) /bin/$(EXEC)
 
+install:
+	echo "OK"
+
 clean:
 	-rm -f $(EXEC) *.elf *.o
 
