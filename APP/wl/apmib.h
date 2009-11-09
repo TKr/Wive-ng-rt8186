@@ -1092,9 +1092,9 @@ typedef struct param_header {
 /* Firmware image file header */
 typedef struct img_header {
 	unsigned char signature[SIGNATURE_LEN] __PACK__;
-	unsigned long startAddr __PACK__;
-	unsigned long burnAddr __PACK__;
-	unsigned long len __PACK__;
+	uint32_t startAddr __PACK__;
+	uint32_t burnAddr __PACK__;
+	uint32_t len __PACK__;
 } IMG_HEADER_T, *IMG_HEADER_Tp;
 
 /* Web page file header */

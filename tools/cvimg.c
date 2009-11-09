@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -31,8 +32,8 @@ int main(int argc, char** argv)
 	struct stat status;
 	char *buf;
 	IMG_HEADER_Tp pHeader;
-	unsigned long startAddr;
-	unsigned long burnAddr;
+	uint32_t startAddr;
+	uint32_t burnAddr;
 	unsigned short checksum;
 
 	if (argc == 4 && !strcmp(argv[1], "size_chk")) {

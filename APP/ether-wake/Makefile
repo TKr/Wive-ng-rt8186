@@ -1,3 +1,6 @@
+CC=mips-linux-gcc -Os -fPIC
+STRIP=mips-linux-strip -s
+
 EXEC = ether-wake
 OBJS = ether-wake.o
 

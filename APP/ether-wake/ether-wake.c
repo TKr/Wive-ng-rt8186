@@ -59,13 +59,14 @@ static char usage_msg[] =
   doing so only works with adapters configured for unicast+broadcast Rx
   filter.  That configuration consumes more power.
 */
-
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
+#include <netinet/ether.h>
 
 #if 0							/* Only exists on some versions. */
 #include <ioctls.h>
@@ -289,10 +290,12 @@ static int get_dest_addr(const char *hostid, struct ether_addr *eaddr)
 		if (debug)
 			fprintf(stderr, "The target station address is %s.\n",
 					ether_ntoa(eaddr));
+#ifndef __UCLIBC__
 	} else if (ether_hostton(hostid, eaddr) == 0) {
 		if (debug)
 			fprintf(stderr, "Station address for hostname %s is %s.\n",
 					hostid, ether_ntoa(eaddr));
+#endif
 	} else {
 		(void)fprintf(stderr,
 					  "ether-wake: The Magic Packet host address must be "
