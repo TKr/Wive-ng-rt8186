@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	unsigned short checksum;
 
 	if (argc == 4 && !strcmp(argv[1], "size_chk")) {
-		unsigned long total_size;
+		uint32_t total_size;
 
 		sscanf(argv[2], "%s", inFile);
 		sscanf(argv[3], "%x", &startAddr);
@@ -48,16 +48,16 @@ int main(int argc, char** argv)
 		printf("==============================================\n");
 		printf("Summary ==>\n");
 		printf("Image loading  addr          :0x%x\n", startAddr);
-		printf("Image decompress end addr    :0x%x\n", ((unsigned long)DEFAULT_BASE_ADDR)+(unsigned long)status.st_size);
+		printf("Image decompress end addr    :0x%x\n", ((uint32_t)DEFAULT_BASE_ADDR)+(uint32_t)status.st_size);
 
-		total_size = startAddr - ((unsigned long)DEFAULT_BASE_ADDR);
+		total_size = startAddr - ((uint32_t)DEFAULT_BASE_ADDR);
 
 		if (status.st_size > (int)total_size)
 			printf("Error!!!! : Kernel image decompress will overwirte load image\n");
 
 		else
 			printf("Available size               :0x%08x\n",
-					total_size - (unsigned long)status.st_size);
+					total_size - (uint32_t)status.st_size);
 
 		exit(0);
 	}
