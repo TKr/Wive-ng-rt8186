@@ -25,7 +25,7 @@ if [ -f /etc/devices/eth1 ]; then
     if [ `dmesg | grep "NETDEV WATCHDOG: eth1:" -c` != "0" ]; then
     echo "ETH 1 interface is no working - SET DOWN FLAG!!!"
     rm -f /etc/devices/eth1
-    echo eth0 > /etc/devices/bad.eth1
+    echo eth1 > /etc/devices/bad.eth1
     FS_SAVE=yes
     fi
 fi
