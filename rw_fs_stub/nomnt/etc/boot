@@ -28,10 +28,12 @@ START_PPPOE_RELAY=no
 SERVER_IF=wlan0
 CLIENT_IF=eth0
 
+#UDPXY multicast to http proxy (default port 81 tcp)
 #IGMP forward/proxy
+START_UDPXY=no
 START_IGMPPROXY=no
 MCASTNET=224.0.0.0/4
-MCASTDEV=eth1
+MCASTDEV=br0
 
 #Start syslog daemon (start if 16MB or more RAM, disable if RAM size <16MB )
 SYSLOG_ENABLE=yes

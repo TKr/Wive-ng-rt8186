@@ -145,6 +145,12 @@ if [ "$INCLUDE_MCPROBE" = "YES" ] ; then
   cp -R $APP_PATH/mcprobe/mcprobe $RO_ROOT/bin/mcprobe
 fi
 
+#udpxy
+if [ "$INCLUDE_UDPXY" = "YES" ] ; then
+  echo -n " udpxy multicast to http strem tranlator"
+  cp -R $APP_PATH/udpxy/filesystem/bin/udpxy $RO_ROOT/bin/udpxy
+fi
+
 #---------------------------PPPD AND VPN--------------------------------------------
 #pppd
 if [ "$INCLUDE_PPP_CLIENT" = "YES" ] ; then

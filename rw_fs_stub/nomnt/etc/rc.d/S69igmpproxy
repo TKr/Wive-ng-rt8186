@@ -3,11 +3,17 @@
 . /etc/boot
 
 start() {
-if [ "$START_IGMPPROXY" == "yes" ]; then
+if [ "$START_IGMPPROXY" == "yes" ] || [ "$START_UDPXY" == "yes" ]; then
  echo "Starting IGMPPROXY: "
     echo 1 > /proc/bridge/br_igmpsnoop
     ip route add $MCASTNET dev $MCASTDEV metric 20
-    /bin/igmpproxy -c /etc/igmpproxy.conf &
+    if [ "$START_IGMPPROXY" == "yes" ]; then
+	/bin/igmpproxy -c /etc/igmpproxy.conf &
+    fi
+    if [ "$START_UDPXY" == "yes" ]; then
+	udpxy -m $MCASTDEV -n-20 -c1 -H10 -R-1 -B64k -p81 -l /var/log/udpxy.log
+	iptables -t filter -I INPUT -p tcp --dport 81 -j ACCEPT
+    fi
     iptables -t filter -I INPUT -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
     iptables -t filter -I FORWARD -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
  echo " Ok"
@@ -16,7 +22,13 @@ fi
 
 stop() {
  echo "Stopping IGMPPROXY: "
+if [ "$START_IGMPPROXY" == "yes" ]; then
     killall igmpproxy
+fi
+if [ "$START_UDPXY" == "yes" ]; then
+    killall udpxy
+fi
+    iptables -t filter -D INPUT -p tcp --dport 81 -j ACCEPT
     iptables -t filter -D INPUT -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
     iptables -t filter -D FORWARD -i $MCASTDEV -s $MCASTNET -p udp -j ACCEPT
     ip route del $MCASTNET dev $MCASTDEV metric 20

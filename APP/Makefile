@@ -15,8 +15,8 @@ SUBDIRS_APP  = busybox bridge-utils dropbear mount
 SUBDIRS_APP += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
 SUBDIRS_APP += iptables iproute2 ntpclient igmpproxy dnsmasq
 SUBDIRS_APP += ppp rp-pppoe pppoecd
-SUBDIRS_APP += l2tpd lwins mesh
-SUBDIRS_APP += ether-wake mcprobe
+SUBDIRS_APP += l2tpd lwins mesh ether-wake
+SUBDIRS_APP += mcprobe udpxy
 
 #SUBDIRS_APP += ppp
 
