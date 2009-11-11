@@ -135,8 +135,14 @@ fi
 
 #ether-wake
 if [ "$INCLUDE_ETHERWAKE" = "YES" ] ; then
-  echo -n " ntp_client "
+  echo -n " wake on lan "
   cp -R $APP_PATH/ether-wake/ether-wake $RO_ROOT/bin/ether-wake
+fi
+
+#mcprobe
+if [ "$INCLUDE_MCPROBE" = "YES" ] ; then
+  echo -n " multicast probe tool "
+  cp -R $APP_PATH/mcprobe/mcprobe $RO_ROOT/bin/mcprobe
 fi
 
 #---------------------------PPPD AND VPN--------------------------------------------
