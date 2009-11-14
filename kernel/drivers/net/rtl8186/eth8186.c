@@ -44,6 +44,25 @@
         readw(cp->regs + (reg));                \
         } while (0)
                         
+#ifdef CONFIG_DRIVER_SPEEDUP
+static void local_dev_kfree_skb(struct sk_buff *skb)
+{
+        dev_kfree_skb(skb);
+}
+static void local_dev_kfree_skb_irq(struct sk_buff *skb)
+{
+        dev_kfree_skb_irq(skb);
+}
+static void local_netif_wake_queue(struct net_device *dev)
+{
+        netif_wake_queue(dev);
+}
+static void local_netif_stop_queue(struct net_device *dev)
+{
+        netif_stop_queue(dev);
+}
+#endif
+
 /* proc entry for rtl8186 */
 static struct proc_dir_entry * root_ethX_dir;
 
@@ -1110,7 +1129,11 @@ static inline void rtl8186_tx(struct re_private *cp)
 
 		if (netif_msg_tx_done(cp))
 			printk(KERN_DEBUG "%s: tx done, slot %d\n", cp->dev->name, tx_tail);
+#ifdef CONFIG_DRIVER_SPEEDUP
+		local_dev_kfree_skb_irq(skb);
+#else
 		dev_kfree_skb_irq(skb);
+#endif
 		cp->tx_skb[tx_tail].skb = NULL;
 		tx_tail = NEXT_TX(tx_tail);
 	}
@@ -1118,7 +1141,11 @@ static inline void rtl8186_tx(struct re_private *cp)
 	cp->tx_hqtail = tx_tail;
 
 	if (netif_queue_stopped(cp->dev) && (TX_HQBUFFS_AVAIL(cp) > (MAX_SKB_FRAGS + 1)))
+#ifdef CONFIG_DRIVER_SPEEDUP
+		local_netif_wake_queue(cp->dev);
+#else
 		netif_wake_queue(cp->dev);
+#endif
 }
 
 static int rtl8186_start_xmit(struct sk_buff *skb, struct net_device *dev)
@@ -1164,7 +1191,11 @@ dequeue_label:
 
 	/* This is a hard error, log it. */
 	if (TX_HQBUFFS_AVAIL(cp) <= (skb_shinfo(skb)->nr_frags + 1)) {
+#ifdef CONFIG_DRIVER_SPEEDUP
+		local_netif_stop_queue(dev);
+#else
 		netif_stop_queue(dev);
+#endif
 		spin_unlock_irq(&cp->lock);
 #ifdef CONFIG_RTL8186_ETH_DEBUG
 		printk(KERN_ERR PFX "%s: Tx Ring full when queue awake!\n",dev->name);
@@ -1278,8 +1309,11 @@ dequeue_label:
 		printk(KERN_DEBUG "%s: tx queued, slot %d, skblen %d\n",
 		       dev->name, entry, skb->len);
 	if (TX_HQBUFFS_AVAIL(cp) <= (MAX_SKB_FRAGS + 1))
+#ifdef CONFIG_DRIVER_SPEEDUP
+		local_netif_stop_queue(dev);
+#else
 		netif_stop_queue(dev);
-
+#endif
 	spin_unlock_irq(&cp->lock);
 #ifndef DELAY_RX
 	RTL_W32(IO_CMD, CMD_CONFIG | TX_POLL);
@@ -1602,7 +1636,11 @@ static void rtl8186_clean_rings(struct re_private *cp)
 	for (i = 0; i < RTL8186_TX_RING_SIZE; i++) {
 		if (cp->tx_skb[i].skb) {
 			struct sk_buff *skb = cp->tx_skb[i].skb;
+#ifdef CONFIG_DRIVER_SPEEDUP			
+			local_dev_kfree_skb(skb);
+#else
 			dev_kfree_skb(skb);
+#endif
 			cp->net_stats.tx_dropped++;
 		}
 	}
