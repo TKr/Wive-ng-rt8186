@@ -959,6 +959,8 @@ static inline unsigned int rtl8186_rx_csum_ok(u32 status)
 	return 0;
 }
 
+static unsigned char eth_close=0;
+
 static inline void rtl8186_rx(unsigned long task_priv)
 {
 	struct re_private *cp = (struct re_private *)task_priv;
@@ -970,6 +972,10 @@ static inline void rtl8186_rx(unsigned long task_priv)
 	struct sk_buff *skb, *new_skb;
 	DMA_DESC *desc;
 	unsigned buflen;
+	
+       //protect eth rx while reboot
+        if(eth_close == 1)
+                return;
 
 	while (rx_work--) {
 		skb = cp->rx_skb[rx_tail].skb;
@@ -1113,6 +1119,11 @@ static inline void rtl8186_tx(struct re_private *cp)
 {
 	unsigned tx_head = cp->tx_hqhead;
 	unsigned tx_tail = cp->tx_hqtail;
+
+        //no tx if eth is down
+	if(eth_close == 1){
+                return;
+        }
 
 	while (tx_tail != tx_head) {
 		struct sk_buff *skb;
@@ -1746,6 +1757,7 @@ static int rtl8186_open(struct net_device *dev)
 	rtl8186_init_hw(cp);
 
 	netif_start_queue(dev);
+        eth_close=0;
 
 #ifdef DYNAMIC_ADJUST_TASKLET
 	init_timer(&cp->expire_timer);
@@ -1811,6 +1823,7 @@ static int rtl8186_close(struct net_device *dev)
 {
 	struct re_private *cp = dev->priv;
 
+        eth_close=1;
 	if (netif_msg_ifdown(cp))
 		printk(KERN_DEBUG "%s: disabling interface\n", dev->name);
 #ifdef DELAY_RX
