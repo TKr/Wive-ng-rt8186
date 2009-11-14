@@ -102,11 +102,16 @@ MODULE_PARM_DESC (multicast_filter_limit, "RTL8186NIC maximum number of filtered
 
 #define NEXT_TX(N)		(((N) + 1) & (RTL8186_TX_RING_SIZE - 1))
 #define NEXT_RX(N)		(((N) + 1) & (RTL8186_RX_RING_SIZE - 1))
+
+#ifdef CONFIG_DRIVER_SPEEDUP
+#define TX_HQBUFFS_AVAIL(CP)                                           \
+       (((CP)->tx_hqtail - (CP)->tx_hqhead -1 + RTL8186_TX_RING_SIZE) & (RTL8186_TX_RING_SIZE -1))
+#else
 #define TX_HQBUFFS_AVAIL(CP)					\
 	(((CP)->tx_hqtail <= (CP)->tx_hqhead) ?			\
 	  (CP)->tx_hqtail + (RTL8186_TX_RING_SIZE - 1) - (CP)->tx_hqhead : \
 	  (CP)->tx_hqtail - (CP)->tx_hqhead - 1)
-
+#endif
 #define PKT_BUF_SZ		1536	/* Size of each temporary Rx buffer.*/
 #define RX_OFFSET		2
 
@@ -1139,11 +1144,11 @@ static inline void rtl8186_tx(struct re_private *cp)
 	}
 
 	cp->tx_hqtail = tx_tail;
-
-	if (netif_queue_stopped(cp->dev) && (TX_HQBUFFS_AVAIL(cp) > (MAX_SKB_FRAGS + 1)))
 #ifdef CONFIG_DRIVER_SPEEDUP
+	if (netif_queue_stopped(cp->dev))
 		local_netif_wake_queue(cp->dev);
 #else
+	if (netif_queue_stopped(cp->dev) && (TX_HQBUFFS_AVAIL(cp) > (MAX_SKB_FRAGS + 1)))
 		netif_wake_queue(cp->dev);
 #endif
 }
@@ -1190,10 +1195,11 @@ dequeue_label:
 	spin_lock_irq(&cp->lock);
 
 	/* This is a hard error, log it. */
-	if (TX_HQBUFFS_AVAIL(cp) <= (skb_shinfo(skb)->nr_frags + 1)) {
 #ifdef CONFIG_DRIVER_SPEEDUP
+	if (TX_HQBUFFS_AVAIL(cp) <= 1) {
 		local_netif_stop_queue(dev);
 #else
+	if (TX_HQBUFFS_AVAIL(cp) <= (skb_shinfo(skb)->nr_frags + 1)) {
 		netif_stop_queue(dev);
 #endif
 		spin_unlock_irq(&cp->lock);
@@ -1305,6 +1311,7 @@ dequeue_label:
 
 	}
 	cp->tx_hqhead = entry;
+#ifndef CONFIG_DRIVER_SPEEDUP
 	if (netif_msg_tx_queued(cp))
 		printk(KERN_DEBUG "%s: tx queued, slot %d, skblen %d\n",
 		       dev->name, entry, skb->len);
@@ -1313,6 +1320,7 @@ dequeue_label:
 		local_netif_stop_queue(dev);
 #else
 		netif_stop_queue(dev);
+#endif
 #endif
 	spin_unlock_irq(&cp->lock);
 #ifndef DELAY_RX
