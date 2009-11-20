@@ -920,7 +920,8 @@ ccp_nakci(f, p, len, treat_as_reject)
 	 */
 	MPPE_CI_TO_OPTS(&p[2], try.mppe);
 	if ((try.mppe & MPPE_OPT_STATEFUL) && refuse_mppe_stateful) {
-	    error("Refusing MPPE stateful mode offered by peer");
+	    //no need log if mppe not support, use no encryption instead
+	    //error("Refusing MPPE stateful mode offered by peer");
 	    try.mppe = 0;
 	} else if (((go->mppe | MPPE_OPT_STATEFUL) & try.mppe) != try.mppe) {
 	    /* Peer must have set options we didn't request (suggest) */
@@ -1144,7 +1145,8 @@ ccp_reqci(f, p, lenp, dont_nak)
 		     * the Internet -- which is where we expect MPPE.
 		     */
 		   if (refuse_mppe_stateful) {
-			error("Refusing MPPE stateful mode offered by peer");
+			//no need log if mppe not support, use no encryption instead
+			//error("Refusing MPPE stateful mode offered by peer");
 			newret = CONFREJ;
 			break;
 		    }
