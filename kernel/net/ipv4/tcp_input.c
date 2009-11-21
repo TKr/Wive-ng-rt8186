@@ -4285,6 +4285,7 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
 	switch (sk->state) {
 	case TCP_CLOSE_WAIT:
 	case TCP_CLOSING:
+	case TCP_LAST_ACK:
 		if (!before(TCP_SKB_CB(skb)->seq, tp->rcv_nxt))
 			break;
 	case TCP_FIN_WAIT1:
