@@ -358,6 +358,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, struct sk_buff *skb)
 	icmp_out_count(icmp_param->data.icmph.type);
 
 	sk->protinfo.af_inet.tos = skb->nh.iph->tos;
+	sk->protinfo.af_inet.ttl = sysctl_ip_default_ttl;
 	daddr = ipc.addr = rt->rt_src;
 	ipc.opt = NULL;
 	if (icmp_param->replyopts.optlen) {
@@ -502,6 +503,7 @@ void icmp_send(struct sk_buff *skb_in, int type, int code, u32 info)
 	icmp_param.offset=skb_in->nh.raw - skb_in->data;
 	icmp_out_count(icmp_param.data.icmph.type);
 	icmp_socket->sk->protinfo.af_inet.tos = tos;
+	icmp_socket->sk->protinfo.af_inet.ttl = sysctl_ip_default_ttl;
 	ipc.addr = iph->saddr;
 	ipc.opt = &icmp_param.replyopts;
 	if (icmp_param.replyopts.srr) {
@@ -883,7 +885,7 @@ static void icmp_discard(struct sk_buff *skb)
  
 int icmp_rcv(struct sk_buff *skb)
 {
-	struct icmphdr *icmph = skb->h.icmph;
+	struct icmphdr *icmph;
 	struct rtable *rt = (struct rtable*)skb->dst;
 
 	ICMP_INC_STATS_BH(IcmpInMsgs);
@@ -901,6 +903,8 @@ int icmp_rcv(struct sk_buff *skb)
 
 	if (!pskb_pull(skb, sizeof(struct icmphdr)))
 		goto error;
+
+        icmph = skb->h.icmph;
 
 	/*
 	 *	18 is the highest 'known' ICMP type. Anything else is a mystery
