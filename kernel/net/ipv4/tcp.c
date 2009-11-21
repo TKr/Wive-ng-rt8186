@@ -1157,7 +1157,8 @@ new_segment:
 
 			from += copy;
 			copied += copy;
-			seglen -= copy;
+                        if ((seglen -= copy) == 0 && iovlen == 0)
+                                goto out;
 
 			if (skb->len != mss_now || (flags&MSG_OOB))
 				continue;
@@ -1571,6 +1572,12 @@ do_prequeue:
 				}
 			}
 		}
+                if ((flags & MSG_PEEK) && peek_seq != tp->copied_seq) {
+                        if (net_ratelimit())
+                                printk(KERN_DEBUG "TCP(%s:%d): Application bug, race in MSG_PEEK.\n",
+                                       current->comm, current->pid);
+                        peek_seq = tp->copied_seq;
+                }
 		continue;
 
 	found_ok_skb:
