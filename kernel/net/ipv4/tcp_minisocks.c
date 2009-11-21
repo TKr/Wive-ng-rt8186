@@ -304,9 +304,23 @@ static void __tcp_tw_hashdance(struct sock *sk, struct tcp_tw_bucket *tw)
 	struct tcp_bind_hashbucket *bhead;
 	struct sock **head, *sktw;
 
-	write_lock(&ehead->lock);
+        /* Step 1: Put TW into bind hash. Original socket stays there too.
+           Note, that any socket with sk->num!=0 MUST be bound in binding
+           cache, even if it is closed.
+         */
+        bhead = &tcp_bhash[tcp_bhashfn(sk->num)];
+        spin_lock(&bhead->lock);
+        tw->tb = (struct tcp_bind_bucket *)sk->prev;
+        BUG_TRAP(sk->prev!=NULL);
+        if ((tw->bind_next = tw->tb->owners) != NULL)
+                tw->tb->owners->bind_pprev = &tw->bind_next;
+        tw->tb->owners = (struct sock*)tw;
+        tw->bind_pprev = &tw->tb->owners;
+        spin_unlock(&bhead->lock);
 
-	/* Step 1: Remove SK from established hash. */
+        write_lock(&ehead->lock);
+
+	/* Step 2: Remove SK from established hash. */
 	if (sk->pprev) {
 		if(sk->next)
 			sk->next->pprev = sk->pprev;
@@ -315,7 +329,7 @@ static void __tcp_tw_hashdance(struct sock *sk, struct tcp_tw_bucket *tw)
 		sock_prot_dec_use(sk->prot);
 	}
 
-	/* Step 2: Hash TW into TIMEWAIT half of established hash table. */
+	/* Step 3: Hash TW into TIMEWAIT half of established hash table. */
 	head = &(ehead + tcp_ehash_size)->chain;
 	sktw = (struct sock *)tw;
 	if((sktw->next = *head) != NULL)
@@ -326,19 +340,6 @@ static void __tcp_tw_hashdance(struct sock *sk, struct tcp_tw_bucket *tw)
 
 	write_unlock(&ehead->lock);
 
-	/* Step 3: Put TW into bind hash. Original socket stays there too.
-	   Note, that any socket with sk->num!=0 MUST be bound in binding
-	   cache, even if it is closed.
-	 */
-	bhead = &tcp_bhash[tcp_bhashfn(sk->num)];
-	spin_lock(&bhead->lock);
-	tw->tb = (struct tcp_bind_bucket *)sk->prev;
-	BUG_TRAP(sk->prev!=NULL);
-	if ((tw->bind_next = tw->tb->owners) != NULL)
-		tw->tb->owners->bind_pprev = &tw->bind_next;
-	tw->tb->owners = (struct sock*)tw;
-	tw->bind_pprev = &tw->tb->owners;
-	spin_unlock(&bhead->lock);
 }
 
 /* 
@@ -786,6 +787,7 @@ struct sock *tcp_create_openreq_child(struct sock *sk, struct open_request *req,
 			newtp->ack.last_seg_size = skb->len-newtp->tcp_header_len;
 		newtp->mss_clamp = req->mss;
 		TCP_ECN_openreq_child(newtp, req);
+		TCP_INC_STATS_BH(TcpPassiveOpens);
 	}
 	return newsk;
 }
@@ -861,6 +863,22 @@ struct sock *tcp_check_req(struct sock *sk,struct sk_buff *skb,
 	   violating protocol. All the checks must be made
 	   before attempt to create socket.
 	 */
+
+        /* RFC793 page 36: "If the connection is in any non-synchronized state ...
+         *                  and the incoming segment acknowledges something not yet
+         *                  sent (the segment carries an unaccaptable ACK) ...
+         *                  a reset is sent."
+         *
+         * Invalid ACK: reset will be sent by listening socket
+         */
+        if ((flg & TCP_FLAG_ACK) &&
+            (TCP_SKB_CB(skb)->ack_seq != req->snt_isn+1))
+                return sk;
+
+        /* Also, it would be not so bad idea to check rcv_tsecr, which
+         * is essentially ACK extension and too early or too late values
+         * should cause reset in unsynchronized states.
+         */
 
 	/* RFC793: "first check sequence number". */
 
