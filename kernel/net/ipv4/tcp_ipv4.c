@@ -383,6 +383,9 @@ void tcp_unhash(struct sock *sk)
 {
 	rwlock_t *lock;
 
+        if (!sk->pprev)
+                goto ende;
+
 	if (sk->state == TCP_LISTEN) {
 		local_bh_disable();
 		tcp_listen_wlock();
@@ -401,6 +404,7 @@ void tcp_unhash(struct sock *sk)
 		sock_prot_dec_use(sk->prot);
 	}
 	write_unlock_bh(lock);
+ende:
 	if (sk->state == TCP_LISTEN)
 		wake_up(&tcp_lhash_wait);
 }
