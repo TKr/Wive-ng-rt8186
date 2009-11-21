@@ -113,6 +113,8 @@ int udp_port_rover;
 
 static int udp_v4_get_port(struct sock *sk, unsigned short snum)
 {
+	int    error = 1;
+
 	write_lock_bh(&udp_hash_lock);
 	if (snum == 0) {
 		int best_size_so_far, best, result, i;
@@ -123,8 +125,9 @@ static int udp_v4_get_port(struct sock *sk, unsigned short snum)
 		best_size_so_far = 32767;
 		best = result = udp_port_rover;
 		for (i = 0; i < UDP_HTABLE_SIZE; i++, result++) {
-			struct sock *sk;
+			
 			int size;
+			struct sock *sk;
 
 			sk = udp_hash[result & (UDP_HTABLE_SIZE - 1)];
 			if (!sk) {
@@ -185,12 +188,11 @@ gotit:
 		sock_prot_inc_use(sk->prot);
 		sock_hold(sk);
 	}
-	write_unlock_bh(&udp_hash_lock);
-	return 0;
+	error = 0;
 
 fail:
 	write_unlock_bh(&udp_hash_lock);
-	return 1;
+	return error;
 }
 
 static void udp_v4_hash(struct sock *sk)
