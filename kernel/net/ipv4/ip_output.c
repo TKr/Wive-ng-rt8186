@@ -134,9 +134,10 @@ int ip_build_and_send_pkt(struct sk_buff *skb, struct sock *sk,
 	iph->version  = 4;
 	iph->ihl      = 5;
 	iph->tos      = sk->protinfo.af_inet.tos;
-	iph->frag_off = 0;
 	if (ip_dont_fragment(sk, &rt->u.dst))
-		iph->frag_off |= htons(IP_DF);
+                iph->frag_off = htons(IP_DF);
+        else
+                iph->frag_off = 0;
 	iph->ttl      = sk->protinfo.af_inet.ttl;
 	iph->daddr    = rt->rt_dst;
 	iph->saddr    = rt->rt_src;
@@ -321,7 +322,9 @@ static inline int ip_queue_xmit2(struct sk_buff *skb)
 		goto fragment;
 
 	if (ip_dont_fragment(sk, &rt->u.dst))
-		iph->frag_off |= __constant_htons(IP_DF);
+                iph->frag_off = htons(IP_DF);
+        else
+                iph->frag_off = 0;
 
 	ip_select_ident(iph, &rt->u.dst, sk);
 
