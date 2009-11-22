@@ -2,7 +2,7 @@
 
 #------------------General config mode set-----------------------------
 BASE_STATION=YES
-VERSION="::Wive-NG-0.3.11::RTL8186-REALTIME::"
+VERSION="::Wive-NG-0.3.12::RTL8186-REALTIME::"
 FULLREBUILD=NO
 CLEANCCACHE=NO
 REBUILDTOOLCHAIN=NO

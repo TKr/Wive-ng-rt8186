@@ -76,7 +76,7 @@ OSFLAGS+= -DUSE_KERNEL
 # the basic search path, and will over-ride some gcc-specific
 # include paths and cause problems.
 #
-CC=mips-linux-gcc
+#CC=mips-linux-gcc
 #OSFLAGS= -DSOLARIS
 #OSLIBS= -lnsl -lsocket
 
@@ -106,18 +106,16 @@ MANDIR?=$(DESTDIR)${PREFIX}/share/man
 
 
 all: $(EXEC) 
-#pfc
 
 clean:
-	rm -f $(OBJS) $(EXEC) 
-#pfc.o pfc
+	rm -f $(OBJS) $(EXEC) pfc.o pfc
 
 $(EXEC): $(OBJS) $(HDRS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
-#pfc:
-#	$(CC) $(CFLAGS) -c contrib/pfc.c
-#	$(CC) $(LDFLAGS) -lpcap $(LDLIBS) -o pfc pfc.o
+pfc:
+	$(CC) $(CFLAGS) -c contrib/pfc.c
+	$(CC) $(LDFLAGS) -lpcap $(LDLIBS) -o pfc pfc.o
 
 romfs:
 	$(ROMFSINST) /bin/$(EXEC)
@@ -133,10 +131,10 @@ install: ${EXEC}
 	install -m 0644 doc/xl2tpd.8 ${MANDIR}/man8/
 	install -m 0644 doc/xl2tpd.conf.5 doc/l2tp-secrets.5 \
 		 ${MANDIR}/man5/
-# pfc
-	install -d -m 0755 ${BINDIR}
+#	# pfc
+#	install -d -m 0755 ${BINDIR}
 #	install -m 0755 pfc ${BINDIR}/pfc
-	install -d -m 0755 ${MANDIR}/man1
+#	install -d -m 0755 ${MANDIR}/man1
 #	install -m 0644 contrib/pfc.1 ${MANDIR}/man1/
 
 # openbsd
