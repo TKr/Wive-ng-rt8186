@@ -284,6 +284,7 @@ extern int	debug;		/* Debug flag */
 extern int	kdebugflag;	/* Tell kernel to print debug messages */
 extern int	default_device;	/* Using /dev/tty or equivalent */
 extern char	devnam[MAXPATHLEN];	/* Device name */
+extern int defaultmetric;		/* Metric of the default route */
 extern int	crtscts;	/* Use hardware flow control */
 extern bool	modem;		/* Use modem control lines */
 extern int	inspeed;	/* Input/Output speed requested */

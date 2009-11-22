@@ -1449,7 +1449,7 @@ static char *path_to_procfs(const char *tail)
 FILE *route_fd = (FILE *) 0;
 static char route_buffer[512];
 static int route_dev_col, route_dest_col, route_gw_col;
-static int route_flags_col, route_mask_col;
+static int route_flags_col, route_mask_col, route_metric_col;
 static int route_num_cols;
 
 static int open_route_table (void);
@@ -1492,6 +1492,7 @@ static int open_route_table (void)
     route_dest_col = 1;
     route_gw_col = 2;
     route_flags_col = 3;
+    route_metric_col = 6;
     route_mask_col = 7;
     route_num_cols = 8;
 
@@ -1511,6 +1512,8 @@ static int open_route_table (void)
 		route_gw_col = col;
 	    else if (strcasecmp(q, "flags") == 0)
 		route_flags_col = col;
+	    else if (strcasecmp(q, "metric") == 0)
+		route_metric_col = col;
 	    else if (strcasecmp(q, "mask") == 0)
 		route_mask_col = col;
 	    else
@@ -1556,6 +1559,7 @@ static int read_route_table(struct rtentry *rt)
 
     rt->rt_flags = (short) strtoul(cols[route_flags_col], NULL, 16);
     rt->rt_dev   = cols[route_dev_col];
+    rt->rt_metric = (short) strtoul(cols[route_metric_col], NULL, 16);
 
     return 1;
 }
@@ -1575,8 +1579,9 @@ static int defaultroute_exists (struct rtentry *rt)
     while (read_route_table(rt) != 0) {
 	if ((rt->rt_flags & RTF_UP) == 0)
 	    continue;
-
 	if (kernel_version > KVERSION(2,1,0) && SIN_ADDR(rt->rt_genmask) != 0)
+	    continue;
+	if (rt->rt_metric != defaultmetric) /* consider only routes with the same metric */
 	    continue;
 	if (SIN_ADDR(rt->rt_dst) == 0L) {
 	    result = 1;
@@ -1716,6 +1721,7 @@ int cifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway)
     }
 
     rt.rt_flags = RTF_UP;
+    rt.rt_metric = defaultmetric + 1; /* +1 for binary compatibility */
     if (ioctl(sock_fd, SIOCDELRT, &rt) < 0 && errno != ESRCH) {
 	if (still_ppp()) {
 	    if (!ok_error(errno))
@@ -2529,7 +2535,7 @@ int cifaddr (int unit, u_int32_t our_adr, u_int32_t his_adr)
 	SIN_ADDR(rt.rt_gateway) = 0;
 	SIN_ADDR(rt.rt_dst)     = his_adr;
 	rt.rt_flags = RTF_UP | RTF_HOST;
-
+        rt.rt_metric = defaultmetric + 1; /* +1 for binary compatibility */
 	if (kernel_version > KVERSION(2,1,0)) {
 	    SET_SA_FAMILY (rt.rt_genmask, AF_INET);
 	    SIN_ADDR(rt.rt_genmask) = -1L;

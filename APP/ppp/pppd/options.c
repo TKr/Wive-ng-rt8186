@@ -94,6 +94,7 @@ int	debug = 0;		/* Debug flag */
 int	kdebugflag = 0;		/* Tell kernel to print debug messages */
 int	default_device = 1;	/* Using /dev/tty or equivalent */
 char	devnam[MAXPATHLEN];	/* Device name */
+int 	defaultmetric = 10;	/* Metric of the default route */
 bool	nodetach = 0;		/* Don't detach from controlling tty */
 bool	updetach = 0;		/* Detach once link is up */
 int	maxconnect = 0;		/* Maximum connect time */
@@ -286,9 +287,14 @@ option_t general_options[] = {
     { "ip-up-script", o_string, path_ipup,
       "Set pathname of ip-up script",
       OPT_PRIV|OPT_STATIC, NULL, MAXPATHLEN },
+
     { "ip-down-script", o_string, path_ipdown,
       "Set pathname of ip-down script",
       OPT_PRIV|OPT_STATIC, NULL, MAXPATHLEN },
+
+    { "defaultmetric", o_int, &defaultmetric,
+      "The metric of the default route",
+      OPT_LIMITS, 0, 32766 },
 
 #ifdef HAVE_MULTILINK
     { "multilink", o_bool, &multilink,

@@ -47,6 +47,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/ppp_defs.h>
 #ifdef PPP_FILTER
 #include <pcap-bpf.h>
 #endif

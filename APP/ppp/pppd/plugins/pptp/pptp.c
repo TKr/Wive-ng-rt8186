@@ -72,12 +72,10 @@ static int callmgr_sock;
 static int pptp_fd;
 int call_ID;
 
-//static struct in_addr get_ip_address(char *name);
 static int open_callmgr(int call_id,struct in_addr inetaddr, char *phonenr,int window);
 static void launch_callmgr(int call_is,struct in_addr inetaddr, char *phonenr,int window);
 static int get_call_id(int sock, pid_t gre, pid_t pppd, u_int16_t *peer_call_id);
 
-//static int pptp_devname_hook(char *cmd, char **argv, int doit);
 static option_t Options[] =
 {
     { "pptp_server", o_string, &pptp_server,
@@ -94,20 +92,15 @@ static option_t Options[] =
 };
 
 static int pptp_connect(void);
-//static void pptp_send_config(int mtu,u_int32_t asyncmap,int pcomp,int accomp);
-//static void pptp_recv_config(int mru,u_int32_t asyncmap,int pcomp,int accomp);
 static void pptp_disconnect(void);
 
 struct channel pptp_channel = {
     options: Options,
-    //process_extra_options: &PPPOEDeviceOptions,
     check_options: NULL,
     connect: &pptp_connect,
     disconnect: &pptp_disconnect,
     establish_ppp: &generic_establish_ppp,
     disestablish_ppp: &generic_disestablish_ppp,
-    //send_config: &pptp_send_config,
-    //recv_config: &pptp_recv_config,
     close: NULL,
     cleanup: NULL
 };
@@ -150,10 +143,6 @@ static int pptp_start_client(void)
 		src_addr.sa_addr.pptp.sin_addr=addr.sin_addr;
 		close(sock);
 	}
-	//info("PPTP: connect server=%s\n",inet_ntoa(conn.sin_addr));
-	//conn.loc_addr.s_addr=INADDR_NONE;
-	//conn.timeout=1;
-	//conn.window=pptp_window;
 
 	src_addr.sa_family=AF_PPPOX;
 	src_addr.sa_protocol=PX_PROTO_PPTP;
@@ -251,10 +240,6 @@ static int open_callmgr(int call_id,struct in_addr inetaddr, char *phonenr,int w
                 case 0: /* child */
                 {
                     close (fd);
-                    //close(pptp_fd);
-                    /* close the pty and gre in the call manager */
-                   // close(pty_fd);
-                    //close(gre_fd);
                     launch_callmgr(call_id,inetaddr, phonenr,window);
                 }
                 default: /* parent */
@@ -286,7 +271,6 @@ static void launch_callmgr(int call_id,struct in_addr inetaddr, char *phonenr,in
       sprintf(win,"%u",window);
       sprintf(call,"%u",call_id);
       snprintf(buf, sizeof(buf), "pptp: call manager for %s", my_argv[1]);
-      //inststr(argc, argv, envp, buf);
       exit(callmgr_main(8, my_argv, environ));
 }
 

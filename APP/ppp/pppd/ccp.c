@@ -519,7 +519,7 @@ ccp_protrej(unit)
 
 #ifdef MPPE
     if (ccp_gotoptions[unit].mppe) {
-	error("MPPE required but peer negotiation failed");
+	//error("MPPE required but peer negotiation failed");
 	lcp_close(unit, "MPPE required but peer negotiation failed");
     }
 #endif
