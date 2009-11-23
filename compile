@@ -41,7 +41,7 @@ if [ "$FULLREBUILD" = "YES" ] ; then
 	echo Full build
     else
 	echo > kernel/.config
-	cd kernel && make clean && make mrproper && cd ..
+	cd kernel && make mrproper && cd ..
 	echo Build only kernel
 fi
 

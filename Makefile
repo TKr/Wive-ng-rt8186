@@ -15,7 +15,6 @@ clean:
 	rm -rf ./ro_root/*
 	rm -rf ./rw_root/*
 	echo > kernel/.config
-	make -C kernel clean
 	make -C kernel mrproper
 	rm -rf ./kernel/modules_installmake/*
 	make -C tools clean
