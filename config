@@ -2,7 +2,7 @@
 
 #------------------General config mode set-----------------------------
 VERSION="::Wive-NG-0.3.12::RTL8186-REALTIME::"
-RTL8196=YES
+RTL8196=NO
 FULLREBUILD=NO
 CLEANCCACHE=NO
 REBUILDTOOLCHAIN=NO
