@@ -18,6 +18,9 @@
 #ifdef CONFIG_RTL8186_AP
 #include <asm/rtl8186.h>
 #endif
+#ifdef CONFIG_RTL8196_AP
+#include <asm/rtl8196.h>
+#endif
 
 #define ALLINTS (IE_IRQ0 | IE_IRQ2 | IE_IRQ3 | IE_IRQ4 | IE_IRQ5)
 

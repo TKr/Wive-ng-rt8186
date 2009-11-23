@@ -34,10 +34,10 @@ if [ "$REBUILDTOOLCHAIN" = "YES" ] ; then
 fi
 
 #select kernel config for current mode
-if [ "$BASE_STATION" = "YES" ] ; then
-	cp -f kernel/.config.bs kernel/.config
+if [ "$RTL8196" = "YES" ] ; then
+	cp -f kernel/.config.8196 kernel/.config
     else	
-	cp -f kernel/.config.cl kernel/.config
+	cp -f kernel/.config.8186 kernel/.config
 fi
 
 #for full rebuild

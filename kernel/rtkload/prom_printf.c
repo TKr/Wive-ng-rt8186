@@ -13,8 +13,11 @@
 
 #include <stdarg.h>
 
-#ifdef CONFIG_RTL8186_AP
+#ifdef RTL8186
 #include <asm/rtl8186.h>
+#endif
+#ifdef RTL8196
+#include <asm/rtl8196.h>
 #endif
        
 void serial_outc(char c)

@@ -15,24 +15,26 @@
 
 
 #include <linux/types.h>
+#include <linux/autoconf.h>
+#include <linux/config.h>
 #include "hfload.h"
 
 #ifndef CONFIG_RTL8186_AP
+#ifndef CONFIG_RTL8196_AP
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #endif
+#endif 
 
 char *source_memory;
 
-#ifdef CONFIG_RTL8186_AP
+#if defined(CONFIG_RTL8186_AP) || defined(CONFIG_RTL8196_AP)
 #ifndef COMPRESSED_KERNEL
 extern char source_memory_start;
 #endif
 #endif
 
-// david -----------------------
-#include <linux/config.h>
 
 #ifdef BZ2_COMPRESS //sc_yang
 void * memcpy(void * dest,const void *src,size_t count)
@@ -97,6 +99,7 @@ copy_to_region(int *addr, ssize_t size) {
 void
 init_read() {
 #ifndef CONFIG_RTL8186_AP
+#ifndef CONFIG_RTL8196_AP
         struct stat buf;
         if (fstat(0, &buf)) {
                 perror("stat");
@@ -112,6 +115,7 @@ init_read() {
         source_memory = UNCOMPRESS_OUT;
 #else
         source_memory = &source_memory_start;
+#endif
 #endif
 #endif
 }

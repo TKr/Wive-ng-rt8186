@@ -347,6 +347,8 @@ SUBDIRS       += arch/mips/jmr3927/rbhma3100  arch/mips/jmr3927/common
 LOADADDR      += 0x80050000 
 endif                                                        
 
+STACK_SIZE = $(CONFIG_STACK_SIZE)
+
 #
 # Choosing incompatible machines durings configuration will result in
 # error messages during linking.  Select a default linkscript if
@@ -354,9 +356,17 @@ endif
 #
 vmlinux: arch/$(ARCH)/ld.script
 
+ifdef CONFIG_RTL8186_AP
 arch/$(ARCH)/ld.script: arch/$(ARCH)/ld.script.in arch/$(ARCH)/Makefile
 	sed -e 's/@@LOADADDR@@/$(LOADADDR)/' <$< >$@
+endif
+ifdef CONFIG_RTL8196_AP
+arch/$(ARCH)/ld.script: arch/$(ARCH)/ld.script.in.8196b arch/$(ARCH)/Makefile include/linux/autoconf.h
+	sed -e 's/@@LOADADDR@@/$(LOADADDR)/' -e 's/@@IRAMSIZE@@/16384/' -e 's/@@DRAMSIZE@@/8192/' -e 's/@@STACKSIZE@@/$(STACK_SIZE)/' <$< >$@
+endif
+
 LINKFLAGS	+= -T arch/$(ARCH)/ld.script
+
 
 HEAD := arch/mips/kernel/head.o arch/mips/kernel/init_task.o
 

@@ -54,6 +54,7 @@ export	VERSION PATCHLEVEL SUBLEVEL EXTRAVERSION KERNELRELEASE ARCH \
 
 all:	do-it-all
 
+
 #
 # Make "config" the default target if there is no configuration file or
 # "depend" the target if there is no top-level dependency information.
@@ -165,10 +166,19 @@ endif
 ifeq ($(CONFIG_RTL8186),y)
     DRIVERS-$(CONFIG_RTL8186) += drivers/net/rtl8186/rtl8186.o
 endif
+ifeq ($(CONFIG_RTL8196_AP),y)
+    DRIVERS-$(CONFIG_RTL8196_AP) += drivers/net/rtl865x/rtl865x.o
+    DRIVERS-$(CONFIG_RTL8196_RTL8366) += drivers/net/rtl865x/RTL8366RB_DRIVER/rtl8366.o
+endif
 
 #------Realtek binary 8225(8185) RF driver------------------------	
 ifeq ($(CONFIG_NET_WIRELESS_AG),y)
+ifdef CONFIG_RTL8186_AP
     DRIVERS-$(CONFIG_NET_WIRELESS_AG) += rtl8186/wireless_ag_net.o
+endif
+ifdef CONFIG_RTL8196_AP
+    DRIVERS-$(CONFIG_NET_WIRELESS_AG) += rtl8196b/wireless_agn_net.o
+endif
 endif
 
 #-----------------REALTEK BINARY MODULES------------------------
@@ -410,10 +420,17 @@ clean:	archclean
 		| grep -v lxdialog/ | xargs rm -f
 	rm -f $(CLEAN_FILES)
 	rm -rf $(CLEAN_DIRS)
+ifdef CONFIG_RTL8186_AP
 	tar xvfz rtl8186.tar.gz
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/wireless_ag_net.o
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/ipsec.o
 	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/fastpath.o
+endif
+ifdef CONFIG_RTL8196_AP
+	tar xvfz rtl8196b.tar.gz
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/wireless_agn_net.o
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/fastpath.o
+endif
 	make -C rtkload clean
 
 mrproper: clean archmrproper

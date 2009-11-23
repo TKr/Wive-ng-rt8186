@@ -16,11 +16,25 @@ mainmenu_option next_comment
 comment 'RTL8186 Software Package'
 	bool 'RTL8186_AP' CONFIG_RTL8186_AP
 	bool 'RTL8196_AP' CONFIG_RTL8196_AP
-	if [ "$CONFIG_RTL8186_AP" = "y" ] || [ "$CONFIG_RTL8196_AP" = "y" ]; then
+	if [ "$CONFIG_RTL8186_AP" = "y" ]; then
 	    define_bool CONFIG_NINO y
 	    source arch/mips/rtlfastpath/Config.in
-	    else
-	    define_bool CONFIG_NINO n
+	fi
+	if [ "$CONFIG_RTL8196_AP" = "y" ]; then
+            bool '  Enable watchdog timer support' CONFIG_RTL865X_WTDOG
+            bool '  Enable RTL865xC suspend mode' CONFIG_RTL865X_SUSPEND
+            bool '  Enable hardware multicast table support' CONFIG_HW_MULTICAST_TBL
+            bool '  Enable hardware pass through support' CONFIG_HW_PROTOCOL_VLAN_TBL
+            bool '  Enable RTL865x hardware tables support' CONFIG_RTL865X_HW_TABLES
+            if [ "$CONFIG_RTL865X_HW_TABLES" = "y" ]; then
+                bool '    Enable Command Line Engine support' CONFIG_RTL865X_CLE
+                define_bool CONFIG_RTL865X_LIGHT_ROMEDRV y
+                define_bool CONFIG_HW_MULTICAST_TBL n
+            fi
+            define_bool CONFIG_RTL865XC y
+	    define_int CONFIG_STACK_SIZE 16384
+	    define_bool CONFIG_NINO y
+	    source arch/mips/rtlfastpath/Config.in
 	fi
 endmenu
 

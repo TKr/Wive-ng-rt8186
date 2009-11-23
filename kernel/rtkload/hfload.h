@@ -12,7 +12,7 @@
 
 //sc_yang
 #include <linux/config.h>
-#ifdef CONFIG_RTL8186_AP
+#if defined(CONFIG_RTL8186_AP) || defined(CONFIG_RTL8196_AP)
 #include <linux/string.h>
 #define printf prom_printf
 #else

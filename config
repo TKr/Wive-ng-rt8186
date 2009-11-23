@@ -1,14 +1,13 @@
 #!/bin/sh
 
 #------------------General config mode set-----------------------------
-BASE_STATION=YES
 VERSION="::Wive-NG-0.3.12::RTL8186-REALTIME::"
+RTL8196=NO
 FULLREBUILD=NO
 CLEANCCACHE=NO
 REBUILDTOOLCHAIN=NO
 DOS2UNIX=NO
 DEBUG=NO
-RTL8196=NO
 #----------------------------------------------------------------------
 #-------------------TOOLCHAIN DIR CONFIG--------------------------------
 #root dir of Wive
@@ -34,30 +33,16 @@ INCLUDE_CONTROL="YES"
 INCLUDE_IAPP="YES"
 INCLUDE_AUTH="YES"
 INCLUDE_HDC="NO"
-# Select packages for AP mode firmware specific
-if [ "$BASE_STATION" = "YES" ] ; then
-    #debug to console
-    INCLUDE_TC="YES"
-    INCLUDE_KERNEL_PPTP="YES"
-    INCLUDE_PPTP_CLIENT="NO"
-    INCLUDE_PPPOE="YES"
-    INCLUDE_PPPOECD="YES"
-    INCLUDE_L2TP_CLIENT="YES"
-    INCLUDE_IGMPPROXY="YES"
-    INCLUDE_CIFS="YES"
-    INCLUDE_DNS="YES"
-    INCLUDE_WINS="NO"
-    INCLUDE_WPS="NO"
-else
-    #no console bind
-    INCLUDE_TC="YES"
-    INCLUDE_KERNEL_PPTP="YES"
-    INCLUDE_PPPOE="YES"
-    INCLUDE_L2TP_CLIENT="NO"
-    INCLUDE_IGMPPROXY="YES"
-    INCLUDE_CIFS="YES"
-    INCLUDE_DNS="YES"
-    INCLUDE_WINS="NO"
-    INCLUDE_WPS="NO"
-fi
+#debug to console
+INCLUDE_TC="YES"
+INCLUDE_KERNEL_PPTP="YES"
+INCLUDE_PPTP_CLIENT="NO"
+INCLUDE_PPPOE="YES"
+INCLUDE_PPPOECD="YES"
+INCLUDE_L2TP_CLIENT="YES"
+INCLUDE_IGMPPROXY="YES"
+INCLUDE_CIFS="YES"
+INCLUDE_DNS="YES"
+INCLUDE_WINS="NO"
+INCLUDE_WPS="NO"
 #--------------------- Packages----------------------------------------

@@ -1,0 +1,68 @@
+#if defined(CONFIG_RTL8190_PRIV_SKB) || defined(CONFIG_RTL865X_ETH_PRIV_SKB)
+#ifdef CONFIG_WIRELESS_LAN_MODULE
+extern struct sk_buff *dev_alloc_8190_skb(unsigned char *data, int size);
+EXPORT_SYMBOL(dev_alloc_8190_skb);
+#endif
+
+#ifdef CONFIG_RTL8196B
+__attribute__ ((section(".iram-gen")))
+#endif
+struct sk_buff *dev_alloc_8190_skb(unsigned char *data, int size)
+{
+	struct sk_buff *skb;
+
+	skb = skb_head_from_pool();
+	if (skb == NULL) {
+		skb = kmem_cache_alloc(skbuff_head_cache, GFP_ATOMIC & ~__GFP_DMA);
+		if (skb == NULL)
+			goto nohead;
+	}
+
+	/* XXX: does not include slab overhead */ 
+	skb->truesize = size + sizeof(struct sk_buff);
+
+	/* Load the data pointers. */
+	skb->head = data;
+	skb->data = data;
+	skb->tail = data;
+	skb->end = data + size + 128;	// we have allocated extra 128 bytes for system reservation
+
+	/* Set up other state */
+	skb->len = 0;
+	skb->cloned = 0;
+	skb->data_len = 0;
+
+	atomic_set(&skb->users, 1); 
+	atomic_set(&(skb_shinfo(skb)->dataref), 1);
+	skb_shinfo(skb)->nr_frags = 0;
+	skb_shinfo(skb)->frag_list = NULL;
+
+#ifdef CONFIG_RTK_VOIP_VLAN_ID
+	skb->rx_vlan = 0;
+	skb->rx_wlan = 0;
+	skb->priority = 0;
+	skb_reserve(skb, 4); // for VLAN TAG insertion
+#endif	
+
+#ifdef CONFIG_RTL8196_RTL8366
+	skb_reserve(skb, 8); // for VLAN TAG insertion
+#endif
+
+#ifdef CONFIG_RTK_VLAN_SUPPORT
+	skb->tag.v = 0;
+//	skb_reserve(skb, 4); // for VLAN TAG insertion	
+#endif	
+
+	skb_reserve(skb, 128);
+
+#ifdef CONFIG_NET_WIRELESS_AGN	
+	skb->__unused = 0;
+#endif
+
+	return skb;
+
+nohead:
+	return NULL;
+}
+#endif // CONFIG_RTL8190_PRIV_SKB
+

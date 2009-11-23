@@ -39,6 +39,15 @@ mainmenu_option next_comment
 comment 'Ethernet (10 or 100Mbit)'
 bool 'Ethernet (10 or 100Mbit)' CONFIG_NET_ETHERNET
 if [ "$CONFIG_NET_ETHERNET" = "y" ]; then
+
+#-----------------RTL8196 SOC-------------------------------------------------------------------
+if [ "$CONFIG_RTL8196_AP" = "y" ]; then
+        tristate 'Realtek 8196 Ethernet switch driver support' CONFIG_RTL865X_ETH
+        if [ "$CONFIG_RTL865X_ETH" = "y" ]; then
+                bool '  Private skb buffer management' CONFIG_RTL865X_ETH_PRIV_SKB
+        fi
+        bool ' RTL8366 support' CONFIG_RTL8196_RTL8366
+fi
 #-----------------RTL8186 SOC-------------------------------------------------------------------
 comment 'Select ether RTL8186'
 	bool 'RTL8186 ethernet (For RTL8186 SOC) 10/100 support' CONFIG_RTL8186

@@ -8,7 +8,12 @@ KERNEL_ROOT = ..
 
 # ---- shouldn't need to modify below this line.
 COPTIONS = -DROM_MEMORY -DCOMPRESSED_KERNEL
+ifdef CONFIG_RTL8186_AP
 COPTIONS += -DRTL8186
+endif
+ifdef CONFIG_RTL8196_AP
+COPTIONS += -DRTL8196 -DCONFIG_RTL865XC
+endif
 
 ifdef BZ2_COMPRESS
 	SOURCES = display.c misc.c hfload.c start.S 

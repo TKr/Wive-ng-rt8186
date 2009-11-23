@@ -49,6 +49,10 @@
 #include <asm/rtl8186.h>
 #endif
 
+#ifdef CONFIG_RTL8196_AP
+#include <asm/rtl8196.h>
+#endif
+
 #define PROBE_NULL	0
 #define PROBE_ACTIVE	1
 #define PROBE_RESET	2

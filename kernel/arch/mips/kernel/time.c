@@ -32,6 +32,9 @@
 #ifdef CONFIG_RTL8186_AP
 #include <asm/rtl8186.h>
 #endif
+#ifdef CONFIG_RTL8196_AP
+#include <asm/rtl8196.h>
+#endif
 
 /* This is for machines which generate the exact clock. */
 #define USECS_PER_JIFFY         tick

@@ -33,6 +33,13 @@ ifeq ($(CONFIG_ISDN_PPP),y)
   obj-$(CONFIG_ISDN) += slhc.o
 endif
 
+ifeq ($(CONFIG_RTL865X_ETH),y)
+    subdir-$(CONFIG_RTL865X_ETH) += rtl865x
+endif
+
+#CONFIG_RTL8196_RTL8366
+subdir-$(CONFIG_RTL8196_RTL8366) += rtl865x/RTL8366RB_DRIVER
+
 ifeq ($(CONFIG_RTL8186),y)
     subdir-$(CONFIG_RTL8186) += rtl8186
     obj-y += mii.o
@@ -255,7 +262,11 @@ ifneq ($(ARCH),s390x)
 ifneq ($(CONFIG_RTL8139CP),y)
 ifneq ($(CONFIG_RTL8186),y)
 ifneq ($(CONFIG_RE865X),y)
+ifneq ($(CONFIG_RTL865X_ETH),y)
+ifneq ($(CONFIG_RTL8196_AP),y)
 obj-y += auto_irq.o
+endif
+endif
 endif
 endif
 endif
