@@ -1,1 +1,0 @@
-#define CONFIG_NET_RADIO 1

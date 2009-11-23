@@ -33,21 +33,23 @@ if [ "$REBUILDTOOLCHAIN" = "YES" ] ; then
     sh toolchain/make_links.sh
 fi
 
-#select kernel config for current mode
-if [ "$RTL8196" = "YES" ] ; then
-	cp -f kernel/.config.8196 kernel/.config
-    else	
-	cp -f kernel/.config.8186 kernel/.config
-fi
-
 #for full rebuild
 if [ "$FULLREBUILD" = "YES" ] ; then
+	echo > kernel/.config
 	make clean
         rm -f kernel/.config.old
 	echo Full build
     else
-	cd kernel && make clean && cd ..
+	echo > kernel/.config
+	cd kernel && make clean && make mrproper && cd ..
 	echo Build only kernel
+fi
+
+#select kernel config for current mode
+if [ "$RTL8196" = "YES" ] ; then
+	cp -f kernel/config.8196 kernel/.config
+    else	
+	cp -f kernel/config.8186 kernel/.config
 fi
 
 make dirs

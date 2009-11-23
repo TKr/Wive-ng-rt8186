@@ -1,1 +1,0 @@
-#undef  CONFIG_RTK_MTD_ROOT

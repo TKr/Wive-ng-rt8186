@@ -1,1 +1,0 @@
-#undef  CONFIG_RTL8186_ETH_DEBUG

@@ -1,1 +1,0 @@
-#define CONFIG_EXT_SWITCH 1

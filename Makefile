@@ -15,6 +15,7 @@ clean:
 	rm -rf ./ro_root/*
 	rm -rf ./rw_root/*
 	make -C kernel clean
+	make -C kernel mrproper
 	rm -rf ./kernel/modules_installmake/*
 	make -C tools clean
 	find ${PWD}/APP -name '*.o' | xargs rm -f

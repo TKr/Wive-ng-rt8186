@@ -1,1 +1,0 @@
-#define CONFIG_TCP_WESTWOOD 1

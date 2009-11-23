@@ -1,1 +1,0 @@
-#define CONFIG_IP_IGMPV3 1

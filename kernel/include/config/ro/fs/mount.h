@@ -1,1 +1,0 @@
-#define CONFIG_RO_FS_MOUNT 1

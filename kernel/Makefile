@@ -52,8 +52,16 @@ export	VERSION PATCHLEVEL SUBLEVEL EXTRAVERSION KERNELRELEASE ARCH \
 	CONFIG_SHELL TOPDIR HPATH HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC \
 	CPP AR NM STRIP OBJCOPY OBJDUMP MAKE MAKEFILES GENKSYMS MODFLAGS PERL
 
-all:	do-it-all
+all:	unpack do-it-all
 
+unpack:
+	tar xvfz rtl8186.tar.gz
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/wireless_ag_net.o
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/ipsec.o
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/fastpath.o
+	tar xvfz rtl8196b.tar.gz
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/wireless_agn_net.o
+	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/fastpath.o
 
 #
 # Make "config" the default target if there is no configuration file or
@@ -420,17 +428,8 @@ clean:	archclean
 		| grep -v lxdialog/ | xargs rm -f
 	rm -f $(CLEAN_FILES)
 	rm -rf $(CLEAN_DIRS)
-ifdef CONFIG_RTL8186_AP
-	tar xvfz rtl8186.tar.gz
-	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/wireless_ag_net.o
-	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/ipsec.o
-	$(OBJCOPY) --strip-debug --strip-unneeded rtl8186/fastpath.o
-endif
-ifdef CONFIG_RTL8196_AP
-	tar xvfz rtl8196b.tar.gz
-	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/wireless_agn_net.o
-	$(OBJCOPY) --strip-debug --strip-unneeded rtl8196b/fastpath.o
-endif
+	rm -rf rtl8186
+	rm -rf rtl8196b
 	make -C rtkload clean
 
 mrproper: clean archmrproper

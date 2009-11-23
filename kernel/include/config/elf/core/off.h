@@ -1,1 +1,0 @@
-#define CONFIG_ELF_CORE_OFF 1

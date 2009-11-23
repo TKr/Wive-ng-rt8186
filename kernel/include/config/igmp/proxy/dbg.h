@@ -1,1 +1,0 @@
-#undef  CONFIG_IGMP_PROXY_DBG

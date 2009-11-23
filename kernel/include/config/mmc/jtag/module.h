@@ -1,1 +1,0 @@
-#define CONFIG_MMC_JTAG_MODULE 1

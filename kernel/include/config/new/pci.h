@@ -1,1 +1,0 @@
-#undef  CONFIG_NEW_PCI

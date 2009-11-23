@@ -1,1 +1,0 @@
-#undef  CONFIG_AU1000_UART

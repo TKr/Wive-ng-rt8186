@@ -1,1 +1,0 @@
-#define CONFIG_FPU_EMU 1
