@@ -33,6 +33,7 @@ struct dst_entry 	*dst_garbage_list;
 static atomic_t			 dst_total = ATOMIC_INIT(0);
 static spinlock_t		 dst_lock = SPIN_LOCK_UNLOCKED;
 
+
 static unsigned long dst_gc_timer_expires;
 static unsigned long dst_gc_timer_inc = DST_GC_MAX;
 static void dst_run_gc(unsigned long);
@@ -98,17 +99,12 @@ void * dst_alloc(struct dst_ops * ops)
 	struct dst_entry * dst;
 
 	if (ops->gc && atomic_read(&ops->entries) > ops->gc_thresh) {
-		#ifdef CLEAN_DST_CACHE
 		spin_lock_bh(&dst_lock);
 		if (ops->gc()){
 			spin_unlock_bh(&dst_lock);
 			return NULL;
-		}
+	      }
 		spin_unlock_bh(&dst_lock);
-		#else
-		if (ops->gc())
-			return NULL;
-		#endif
 	}
 	
 	

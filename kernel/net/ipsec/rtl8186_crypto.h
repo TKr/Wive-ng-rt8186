@@ -71,17 +71,17 @@
 
 
 // for AES
-typedef unsigned char uint8 ;
-typedef unsigned long int uint32 ;
+typedef unsigned char _uint8 ;
+typedef unsigned long int _uint32 ;
 
 struct rtl8186_aes_context
 {
     int nr;             /* number of rounds */
-    uint32 erk[64];     /* encryption round keys */
-    uint32 drk[64];     /* decryption round keys */
+    _uint32 erk[64];     /* encryption round keys */
+    _uint32 drk[64];     /* decryption round keys */
 };
 
-int  rtl8186_aes_set_key( struct rtl8186_aes_context *ctx, uint8 *key, int nbits );
+int  rtl8186_aes_set_key( struct rtl8186_aes_context *ctx, _uint8 *key, int nbits );
 
  
 enum RTL8186_CRYPTO_DESC_ATTRIBUTE { // i.e. descriptor

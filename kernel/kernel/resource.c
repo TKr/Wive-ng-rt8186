@@ -15,7 +15,7 @@
 #include <linux/spinlock.h>
 #include <asm/io.h>
 
-#if 0
+#ifdef CONFIG_RTL8196B
 struct resource ioport_resource = { "PCI IO", 0x0000, IO_SPACE_LIMIT, IORESOURCE_IO };
 struct resource iomem_resource = { "PCI mem", 0x00000000, 0xffffffff, IORESOURCE_MEM };
 #else
@@ -23,7 +23,7 @@ struct resource iomem_resource = { "PCI mem", 0x00000000, 0xffffffff, IORESOURCE
 struct resource ioport_resource = { "PCI IO", (0xbd500000-0xbd010000), (0xbd5fffff-0xbd010000), IORESOURCE_IO };
 ////struct resource ioport_resource = { "PCI IO", (0x1d500000), (0x1d5fffff), IORESOURCE_IO };
 struct resource iomem_resource = { "PCI mem", 0x1d600000, 0x1d6fffff, IORESOURCE_MEM };
-#endif /* if 0 */
+#endif
 
 static rwlock_t resource_lock = RW_LOCK_UNLOCKED;
 
