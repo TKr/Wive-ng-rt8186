@@ -2,11 +2,12 @@
 /* Linux driver for Disk-On-Chip 2000       */
 /* (c) 1999 Machine Vision Holdings, Inc.   */
 /* Author: David Woodhouse <dwmw2@mvhi.com> */
-/* $Id: doc2000.h,v 1.1.1.1 2005/03/09 04:54:34 rex Exp $ */
+/* $Id: doc2000.h,v 1.2 2008/08/04 08:08:23 michael Exp $ */
 
 #ifndef __MTD_DOC2000_H__
 #define __MTD_DOC2000_H__
 
+#include <linux/config.h>
 #include <linux/mtd/mtd.h>
 
 #define DoC_Sig1 0
@@ -144,5 +145,11 @@ struct DiskOnChip {
 };
 
 int doc_decode_ecc(unsigned char sector[512], unsigned char ecc1[6]);
+
+#if defined(CONFIG_RTL8196B)
+#define FLASH_BASE 0xbd000000
+#else
+#define FLASH_BASE 0xbe000000  //865x, 0xbfc00000
+#endif
 
 #endif /* __MTD_DOC2000_H__ */

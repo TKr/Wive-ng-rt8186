@@ -1,5 +1,5 @@
 
-/* $Id: mtd.h,v 1.1.1.1 2005/03/09 04:54:34 rex Exp $ */
+/* $Id: mtd.h,v 1.2 2009/02/11 07:17:08 bradhuang Exp $ */
 
 #ifndef __MTD_MTD_H__
 #define __MTD_MTD_H__
@@ -29,8 +29,13 @@ struct mtd_oob_buf {
 
 #define MTD_CHAR_MAJOR 90
 #define MTD_BLOCK_MAJOR 31
+//Brad modify for kld
+#if defined(CONFIG_RTL8196B_KLD)
+#define MAX_MTD_DEVICES 3 
+#else
+#define MAX_MTD_DEVICES 2 
+#endif
 
-#define MAX_MTD_DEVICES 4 //sc_yang 
 
 #define MTD_ABSENT		0
 #define MTD_RAM			1

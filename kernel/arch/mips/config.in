@@ -31,6 +31,7 @@ comment 'RTL8186 Software Package'
                 define_bool CONFIG_RTL865X_LIGHT_ROMEDRV y
                 define_bool CONFIG_HW_MULTICAST_TBL n
             fi
+            define_bool CONFIG_RTL8196B y
             define_bool CONFIG_RTL865XC y
 	    define_int CONFIG_STACK_SIZE 16384
 	    define_bool CONFIG_NINO y
