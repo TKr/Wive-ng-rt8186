@@ -3,22 +3,22 @@
 /* Probe routines common to all DoC devices			*/
 /* (c) 1999 Machine Vision Holdings, Inc.			*/
 /* Author: David Woodhouse <dwmw2@infradead.org>		*/
-/* $Id: docprobe.c,v 1.3 2008/08/04 05:22:38 michael Exp $	*/
+/* $Id: docprobe.c,v 1.1.1.1 2004/07/28 06:27:24 ysc Exp $	*/
 
 
 
 /* DOC_PASSIVE_PROBE:
-   In order to ensure that the BIOS checksum is correct at boot time, and
-   hence that the onboard BIOS extension gets executed, the DiskOnChip
-   goes into reset mode when it is read sequentially: all registers
-   return 0xff until the chip is woken up again by writing to the
-   DOCControl register.
+   In order to ensure that the BIOS checksum is correct at boot time, and 
+   hence that the onboard BIOS extension gets executed, the DiskOnChip 
+   goes into reset mode when it is read sequentially: all registers 
+   return 0xff until the chip is woken up again by writing to the 
+   DOCControl register. 
 
-   Unfortunately, this means that the probe for the DiskOnChip is unsafe,
-   because one of the first things it does is write to where it thinks
-   the DOCControl register should be - which may well be shared memory
-   for another device. I've had machines which lock up when this is
-   attempted. Hence the possibility to do a passive probe, which will fail
+   Unfortunately, this means that the probe for the DiskOnChip is unsafe, 
+   because one of the first things it does is write to where it thinks 
+   the DOCControl register should be - which may well be shared memory 
+   for another device. I've had machines which lock up when this is 
+   attempted. Hence the possibility to do a passive probe, which will fail 
    to detect a chip in reset mode, but is at least guaranteed not to lock
    the machine.
 
@@ -31,12 +31,12 @@
    Millennium driver has been merged into DOC2000 driver.
 
    The newly-merged driver doesn't appear to work for writing. It's the
-   same with the DiskOnChip 2000 and the Millennium. If you have a
+   same with the DiskOnChip 2000 and the Millennium. If you have a 
    Millennium and you want write support to work, remove the definition
    of DOC_SINGLE_DRIVER below to use the old doc2001-specific driver.
 
    Otherwise, it's left on in the hope that it'll annoy someone with
-   a Millennium enough that they go through and work out what the
+   a Millennium enough that they go through and work out what the 
    difference is :)
 */
 
@@ -52,7 +52,7 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/init.h>
-#include <linux/types.h>
+#include <linux/types.h>  
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
@@ -61,46 +61,28 @@
 //#define CONFIG_MTD_DOCPROBE_ADDRESS (24*1024)
 
 // david ----------------------
-/* MXIC */
+/* Manufacturers */
 #define MANUFACTURER_MXIC	0x00C2
+
+/* MXIC */
 #define MX29LV800B		0x225B
 #define MX29LV160AB		0x2249
 #define MX29LV320AB		0x22A8
-#define MX29LV640AB		0x22CB
-#define MX29LV1280DB	        0x227a //16MB, bottom
+#define MX29LV640AB		0x22CB//Add by vin
 
+#define MANUFACTURER_AMD    0x0001
 /*AMD*/
-#define MANUFACTURER_AMD	0x0001
-#define AM29LV800BB		0x225B
-#define AM29LV160DB		0x2249
-#define AM29LV320DB		0x22F9
+#define AM29LV800BB     0x225B
+#define AM29LV160DB     0x2249
+#define AM29LV320DB     0x22F9
 
 /*ST*/
-#define MANUFACTURER_ST		0x0020
-#define M29W160DB		0X2249
+#define MANUFACTURER_ST     0x0020
+#define M29W160DB       0X2249
 
-/* ESMT */
-#define MANUFACTURER_ESMT	0x008C
-#define F49L160BA		0x2249
 
-/* SAMSUNG */
-#define MANUFACTURER_SAMSUNG	0x00EC
-#define K8D1716UBC		0x2277
+#define FLASH_BASE 0xbe000000
 
-/* ESI */
-#define MANUFACTURER_ESI	0x004A
-#define ES29LV320D		0x22F9
-
-/* EON */
-#define MANUFACTURER_EON	0x007F
-#define EN29LV160A		0x2249
-
-// new
-#define MANUFACTURER_SPANSION   0X0001
-#define S29GL064N       0x227E 
-
-//#define FLASH_BASE 0xbe000000 //865x
-//#define FLASH_BASE 0xbd000000 //8196B
 
 struct flash_info {
 	const __u16 mfr_id;
@@ -186,7 +168,7 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 	 * probe is done.
 	 */
 	const struct flash_info table[] = {
-	{
+	  {
 		mfr_id: MANUFACTURER_MXIC,
 		dev_id: MX29LV800B,
 		name: "MXIC MX29LV800B",
@@ -199,8 +181,8 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
 			{ offset: 0x010000, erasesize: 0x10000, numblocks: 15 }
 		}
-	},
-	{
+	  },
+	  {
 		mfr_id: MANUFACTURER_MXIC,
 		dev_id: MX29LV160AB,
 		name: "MXIC MX29LV160AB",
@@ -213,8 +195,8 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
 			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
 		}
-	},
-	{
+	  },
+		  {
 		mfr_id: MANUFACTURER_MXIC,
 		dev_id: MX29LV320AB,
 		name: "MXIC MX29LV320AB",
@@ -223,10 +205,10 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 		numeraseregions: 2,
 		regions: {
 			{ offset: 0x000000, erasesize: 0x02000, numblocks:  8 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 63 }
+			{ offset: 0x010000, erasesize: 0x10000, numblocks:  63}
 		}
-	},
-	{
+	  },
+		  {
 		mfr_id: MANUFACTURER_AMD,
 		dev_id: AM29LV800BB,
 		name: "AMD AM29LV800BB",
@@ -239,8 +221,8 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
 			{ offset: 0x010000, erasesize: 0x10000, numblocks: 15 }
 		}
-	},
-	{
+	  },
+			  {
 		mfr_id: MANUFACTURER_AMD,
 		dev_id: AM29LV160DB,
 		name: "AMD AM29LV160DB",
@@ -251,10 +233,10 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 			{ offset: 0x000000, erasesize: 0x04000, numblocks:  1 },
 			{ offset: 0x004000, erasesize: 0x02000, numblocks:  2 },
 			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
+			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }	
 		}
-	},
-	{
+	  },
+	  {
 		mfr_id: MANUFACTURER_AMD,
 		dev_id: AM29LV320DB,
 		name: "AMD AM29LV320DB",
@@ -263,104 +245,29 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 		numeraseregions: 2,
 		regions: {
 			{ offset: 0x000000, erasesize: 0x02000, numblocks:  8 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 63 }
+			{ offset: 0x010000, erasesize: 0x10000, numblocks:  63}
 		}
-	},
-	{
-		mfr_id: MANUFACTURER_ST,
-		dev_id: M29W160DB,
-		name: "ST M29W160DB",
-		size: 0x00200000,
-		shift: 21,/*21 bit=> that is 2 MByte size*/
-		numeraseregions: 4,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x04000, numblocks:  1 },
-			{ offset: 0x004000, erasesize: 0x02000, numblocks:  2 },
-			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
-		}
-	},
-	{
+	  },
+	  /*ST*/
+	  	{                                                                
+	  	mfr_id: MANUFACTURER_ST,                                         
+	  	dev_id: M29W160DB,                                               
+	  	name: "ST M29W160DB",                                      
+	  	size: 0x00200000,                                                
+	  	shift: 21,/*21 bit=> that is 2 MByte size*/                      
+	  	numeraseregions: 4,                                                    
+	  	regions: {                                                       
+	  		{ offset: 0x000000, erasesize: 0x04000, numblocks:  1 }, 
+	  		{ offset: 0x004000, erasesize: 0x02000, numblocks:  2 }, 
+	  		{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 }, 
+	  		{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }  
+	  	}
+		},
+		
+		{
 		mfr_id: MANUFACTURER_MXIC,
 		dev_id: MX29LV640AB,
 		name: "MXIC MX29LV640AB",
-		size: 0x00800000,
-		shift: 23,/*23 bit=> that is 8 MByte size*/
-		numeraseregions: 2,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x02000, numblocks:   8 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 127 }
-		}
-	},
-	{
-		mfr_id: MANUFACTURER_MXIC,
-		dev_id: MX29LV1280DB,
-		name: "MXIC MX29LV1280DB",
-		size: 0x01000000,
-		shift: 24,/*24 bit=> that is 16 MByte size*/
-		numeraseregions: 2,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x02000, numblocks:   8 }, //8KB 
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 255 }
-		}
-	},	
-	{
-		mfr_id: MANUFACTURER_SAMSUNG,
-		dev_id: K8D1716UBC,
-		name: "SAMSUNG K8D1716UBC",
-		size: 0x00200000,
-		shift: 21,/*21 bit=> that is 2 MByte size*/
-		numeraseregions: 2,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x02000, numblocks:  8 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
-		}
-	},
-	{
-		mfr_id: MANUFACTURER_ESMT,
-		dev_id: F49L160BA,
-		name: "ESMT F49L160BA",
-		size: 0x00200000,
-		shift: 21,/*21 bit=> that is 2 MByte size*/
-		numeraseregions: 4,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x04000, numblocks:  1 },
-			{ offset: 0x004000, erasesize: 0x02000, numblocks:  2 },
-			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
-		}
-	},
-	{
-		mfr_id: MANUFACTURER_ESI,
-		dev_id: ES29LV320D,
-		name: "ESI ES29LV320D",
-		size: 0x00400000,
-		shift: 22,/*22 bit=> that is 4 MByte size*/
-		numeraseregions: 2,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x02000, numblocks:  8 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 63 }
-		}
-	},
-	{
-		mfr_id: MANUFACTURER_EON,
-		dev_id: EN29LV160A,
-		name: "EON EN29LV160A",
-		size: 0x00200000,
-		shift: 21,
-		numeraseregions: 4,
-		regions: {
-			{ offset: 0x000000, erasesize: 0x04000, numblocks:  1 },
-			{ offset: 0x004000, erasesize: 0x02000, numblocks:  2 },
-			{ offset: 0x008000, erasesize: 0x08000, numblocks:  1 },
-			{ offset: 0x010000, erasesize: 0x10000, numblocks: 31 }
-		}
-	}
-	,
-	{
-		mfr_id: MANUFACTURER_SPANSION,
-		dev_id: S29GL064N,
-		name: "SPANSION S29GL064N",
 		size: 0x00800000,
 		shift: 23,/*22 bit=> that is 8 MByte size*/
 		numeraseregions: 2,
@@ -368,14 +275,13 @@ static int probeChip(struct DiskOnChip *doc, struct mtd_info *mtd)
 			{ offset: 0x000000, erasesize: 0x02000, numblocks:  8 },
 			{ offset: 0x010000, erasesize: 0x10000, numblocks:  127}
 		}
-	}
+		}
 	};
-
 	struct DiskOnChip *this = (struct DiskOnChip *)mtd->priv;
 	unsigned long docptr = this->virtadr;
 	__u16 mfid, devid;
 	int i, j, k, interleave=1, chipsize;
-
+	
 	// issue reset and auto-selection command
 	*(volatile unsigned short *)(FLASH_BASE) = 0xf0;
 

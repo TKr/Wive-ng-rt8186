@@ -5,7 +5,7 @@
  *
  *		IPv4 Forwarding Information Base: semantics.
  *
- * Version:	$Id: fib_semantics.c,v 1.1.1.1 2004/07/28 06:27:37 ysc Exp $
+ * Version:	$Id: fib_semantics.c,v 1.9 2009/03/20 01:18:56 davidhsu Exp $
  *
  * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
  *
@@ -792,8 +792,18 @@ fib_convert_rtentry(int cmd, struct nlmsghdr *nl, struct rtmsg *rtm,
 	ptr = &((struct sockaddr_in*)&r->rt_gateway)->sin_addr.s_addr;
 	if (r->rt_gateway.sa_family == AF_INET && *ptr) {
 		rta->rta_gw = ptr;
-		if (r->rt_flags&RTF_GATEWAY && inet_addr_type(*ptr) == RTN_UNICAST)
+		if (r->rt_flags&RTF_GATEWAY && inet_addr_type(*ptr) == RTN_UNICAST){
 			rtm->rtm_scope = RT_SCOPE_UNIVERSE;
+		}
+#if defined(CONFIG_RTL865X_AC) || defined(CONFIG_RTL865X_KLD) || defined(CONFIG_RTL8196B_KLD) || defined(CONFIG_RTL8186_AP) || defined(CONFIG_RTL8196B_TR) //Brad add to support x.y.z.255 when C class ip address 20080516
+		else if(r->rt_flags&RTF_GATEWAY && inet_addr_type(*ptr) == RTN_BROADCAST){
+			u32 gw_addr=0;
+			gw_addr = *ptr;
+			if(((gw_addr & 0xFF000000) != 0xFF000000) && ((gw_addr & 0x00FFFFFF) != 0x00FFFFFF)){ 
+				rtm->rtm_scope = RT_SCOPE_UNIVERSE;
+			}
+		}
+#endif		
 	}
 
 	if (cmd == SIOCDELRT)

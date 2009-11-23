@@ -31,9 +31,9 @@ struct mtd_oob_buf {
 #define MTD_BLOCK_MAJOR 31
 //Brad modify for kld
 #if defined(CONFIG_RTL8196B_KLD)
-#define MAX_MTD_DEVICES 3 
+#define MAX_MTD_DEVICES 4
 #else
-#define MAX_MTD_DEVICES 2 
+#define MAX_MTD_DEVICES 4 
 #endif
 
 

@@ -508,9 +508,7 @@ static inline void rt_drop_zero_refcnt() {
    is idle expires is large enough to keep enough of warm entries,
    and when load increases it reduces to limit cache size.
  */
-#ifdef CLEAN_DST_CACHE 
 static inline void rt_cache_clean(int count); 
-#endif
 static int rt_garbage_collect(void)
 {
 	static unsigned expire = RT_GC_TIMEOUT;
@@ -605,7 +603,6 @@ static int rt_garbage_collect(void)
 		printk(KERN_DEBUG "expire>> %u %d %d %d\n", expire,
 				atomic_read(&ipv4_dst_ops.entries), goal, i);
 #endif
-#ifdef CLEAN_DST_CACHE
 		if (atomic_read(&ipv4_dst_ops.entries) < (ip_rt_max_size-2))
 			goto out;
 		else{
@@ -613,10 +610,6 @@ static int rt_garbage_collect(void)
 		if (atomic_read(&ipv4_dst_ops.entries) < ip_rt_max_size)
 			goto out;
 		}
-#else
-	if (atomic_read(&ipv4_dst_ops.entries) < ip_rt_max_size)
-			goto out;
-#endif		
 	} while (!in_softirq() && jiffies - now < 1);
 	
 	#ifdef CONFIG_IP_ROUTING_CACHE_DROP
@@ -624,7 +617,6 @@ static int rt_garbage_collect(void)
 		rt_drop_zero_refcnt();
 	}
 	#endif
-#ifdef CLEAN_DST_CACHE
 	if (atomic_read(&ipv4_dst_ops.entries) < (ip_rt_max_size-2))
 		goto out;
 	else{
@@ -638,12 +630,6 @@ static int rt_garbage_collect(void)
 			goto out;
 		printk(KERN_WARNING "CCC dst cache overflow, the size=%d\n", atomic_read(&ipv4_dst_ops.entries));	
 	}
-#else
-if (atomic_read(&ipv4_dst_ops.entries) < ip_rt_max_size)
-		goto out;
-	if (net_ratelimit())
-		printk(KERN_WARNING "dst cache overflow, the current size=%d\n",atomic_read(&ipv4_dst_ops.entries));
-#endif	
 	return 1;
 
 work_done:
@@ -657,7 +643,6 @@ work_done:
 #endif
 out:	return 0;
 }
-#ifdef CLEAN_DST_CACHE
 extern struct dst_entry 	*dst_garbage_list;
 
 static inline void rt_cache_clean(int count) {
@@ -683,7 +668,6 @@ static inline void rt_cache_clean(int count) {
 		}
 	}
 }
-#endif
 
 static int rt_intern_hash(unsigned hash, struct rtable *rt, struct rtable **rp)
 {
