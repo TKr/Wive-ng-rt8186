@@ -64,10 +64,10 @@ static int __br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	ipaddr =  iph->daddr;
 	proto =  iph->protocol;
 	//Brad disable the check 20080619
-	/*
+
 	 if((ipaddr&0xFFFFFF00)==0xE0000000)
 	        reserved=1;
-	*/        
+        
 #endif	
 	br = dev->priv;
 	br->statistics.tx_packets++;

@@ -86,11 +86,11 @@ static void br_pass_frame_up(struct net_bridge *br, struct sk_buff *skb)
        	if (proto== IPPROTO_IGMP){
 			if ((operation=igmp_type_check(skb, macAddr)) > 0) {
 
-				#ifdef	MCAST_TO_UNICAST
+	#ifdef	MCAST_TO_UNICAST
                	br_update_igmp_snoop_fdb(operation, br, p, macAddr,skb);
-				#else
+	#else
                	br_update_igmp_snoop_fdb(operation, br, p, macAddr);
-				#endif
+	#endif
 			}	
 		}
 	}
@@ -186,11 +186,11 @@ static int br_handle_frame_finish(struct sk_buff *skb)
 	       	if (proto == IPPROTO_IGMP) {
                	if ((operation=igmp_type_check(skb, macAddr1)) > 0){
 
-					#ifdef	MCAST_TO_UNICAST
+		#ifdef	MCAST_TO_UNICAST
                    	br_update_igmp_snoop_fdb(operation, br, p, macAddr1,skb);
-					#else
+		#else
                    	br_update_igmp_snoop_fdb(operation, br, p, macAddr1);
-					#endif
+		#endif
 
                	}
             }
@@ -215,11 +215,11 @@ static int br_handle_frame_finish(struct sk_buff *skb)
 		}
 		#endif		
 	    //Brad disable the check 20080619
-	    /*    
+    
 	    if((ipaddr&0xFFFFFF00)==0xE0000000){
         	reserved=1;
 	    }
-	    */
+
 		if( igmpsnoopenabled && MULTICAST_MAC(dest) 			
 			&& proto !=IPPROTO_IGMP && ipaddr != 0xEFFFFFFA 
 			&& reserved ==0)
@@ -571,11 +571,11 @@ static char igmp_type_check(struct sk_buff *skb, unsigned char *gmac)
 			return -1;
 	}
 	//Brad disable the check 20080619
-	/*
+	
 	if((IGMP_Group&0xFFFFFF00)==0xE0000000){			
 			return -1;
 	}
-	*/
+	
 	ConvertMulticatIPtoMacAddr(IGMP_Group, gmac);
 	
 #else
