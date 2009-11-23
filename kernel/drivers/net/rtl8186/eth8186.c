@@ -852,7 +852,6 @@ static inline void rtl8186_rx_skb(struct re_private *cp, struct sk_buff *skb,
 		else
 #endif
 		{
-
 #ifdef DYNAMIC_ADJUST_TASKLET
 			if (rx_pkt_thres > 0 && cp->dev->name[3] == '0') // eth0
 				rx_cnt++;
@@ -2031,6 +2030,7 @@ static void cp_vlan_rx_kill_vid(struct net_device *dev, unsigned short vid)
 }
 #endif
 
+#ifdef CONFIG_PROC_FS
 static int read_proc_stats(char *page, char **start, off_t off, int count, int *eof, void *data)
 {
 	struct net_device *dev = (struct net_device *)data;
@@ -2059,6 +2059,7 @@ static int write_proc_stats(struct file *file, const char *buffer, unsigned long
 
 	return count;
 }
+#endif
 
 static int rtl8186_probe(int ethno)
 {
@@ -2235,7 +2236,7 @@ void __init MII_write(unsigned short int phyaddr, unsigned short int regaddr, un
 		
 	rtl8305_outl(MII_reg, phy_addr_data);
 	while (1) {	
-		udelay(300);
+		udelay(120);
 		if ((rtl8305_inl(MII_reg) & 0x80000000) == 0) {
 #ifdef CONFIG_SWITCH_DEBUG_MODE			
 			printk("write phy%d reg%d =0x%x\n",phyaddr, regaddr,rtl8305_inl(MII_reg));
@@ -2267,7 +2268,7 @@ unsigned short int __init MII_read(unsigned short int phyaddr, unsigned short in
 		
 	rtl8305_outl(MII_reg, phy_addr);
 	while (1) {	
-		udelay(300);
+		udelay(120);
 		if ((rtl8305_inl(MII_reg) & 0x80000000)) {
 #ifdef CONFIG_SWITCH_DEBUG_MODE			
 			printk("read phy%d reg%d =0x%x\n",phyaddr, regaddr,rtl8305_inl(MII_reg));

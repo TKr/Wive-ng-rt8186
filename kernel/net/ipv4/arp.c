@@ -620,6 +620,9 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt)
 	struct in_device *in_dev = in_dev_get(dev);
 	struct neighbour *n;
 	char hbuffer[HBUFFERLEN];
+        struct in_ifaddr **ifap = NULL;
+        struct in_ifaddr *ifa = NULL;
+
 
 /*
  *	The hardware length of the packet should match the hardware length
@@ -753,6 +756,19 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt)
  */
 	if (dev_type == ARPHRD_DLCI)
 		sha = dev->broadcast;
+/*We filter the arp request if the sip is not the same subnet as in device*/
+       if (in_dev!= NULL) {
+                               for (ifap=&in_dev->ifa_list; (ifa=*ifap) != NULL; ifap=&ifa->ifa_next) {
+                                       if (strcmp(in_dev->dev->name, ifa->ifa_label) == 0){
+                                               break;
+                                       }
+                               }
+                               if(ifa != NULL){
+                                       if((ifa->ifa_mask & ifa->ifa_address) != (ifa->ifa_mask & sip)){
+                                               goto out;
+                                       }
+                               }
+               }
 
 /*
  *  Process entry.  The idea here is we want to send a reply if it is a
@@ -1163,8 +1179,8 @@ static int arp_get_info(char *buffer, char **start, off_t offset, int length)
 	int len=0;
 	off_t pos=0;
 	int size;
-	int i;
 	char hbuffer[HBUFFERLEN];
+        int i;
 
 	size = sprintf(buffer,"IP address       HW type     Flags       HW address            Mask     Device\n");
 
@@ -1183,8 +1199,6 @@ static int arp_get_info(char *buffer, char **start, off_t offset, int length)
 				continue;
 
 			read_lock(&n->lock);
-
-
 			{
 				char tbuf[16];
 				sprintf(tbuf, "%u.%u.%u.%u", NIPQUAD(*(u32*)n->primary_key));
