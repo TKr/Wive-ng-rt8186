@@ -18,21 +18,74 @@
 #ifdef CONFIG_RTL8186_AP
 #include <asm/rtl8186.h>
 #endif
-#ifdef CONFIG_RTL8196_AP
-#include <asm/rtl8196.h>
+
+#ifdef CONFIG_RTL865X
+#include <asm/rtl865x/interrupt.h>
+#include <asm/rtl865x/rtl_types.h>
+#include <asm/rtl865x/rtl865xc_asicregs.h>
+
+static struct {
+	int ext;
+	int base;
+	int idx;
+} irqRoute[]={
+	{ 9,4, 3 }, // 0:GPIO E,F,G,H
+	{ 8,0, 3 }, // 1:GPIO A,B,C,H
+	{ 7,28, 3 }, // 2: SW_Core
+	{ 6,24, 4 }, // 3:PCI
+	{ 5,20, 3 }, // 4:UART1
+	{ 4,16, 3 }, // 5:UART0
+	{ 3,12, 3 }, // 6. PCM
+	{ 2,8, 3 }, // 7. USB Host
+	{ 1,4, 3 },   // 8:Timer1
+	{ 0,0, 3 },   // 9:Timer0
+};
 #endif
 
+#ifdef CONFIG_RTL8186_AP
 #define ALLINTS (IE_IRQ0 | IE_IRQ2 | IE_IRQ3 | IE_IRQ4 | IE_IRQ5)
+#endif
+
+#ifdef CONFIG_RTL865X
+#define ALLINTS (IE_IRQ0 | IE_IRQ1 |IE_IRQ2 | IE_IRQ3 | IE_IRQ4 | IE_IRQ5)
+#endif
 
 static void  unmask_irq(unsigned int irq)
 {
+#ifdef CONFIG_RTL8186_AP
 	outl((inl(GIMR0) | (1 << irq)),GIMR0);
     inl(GIMR0);
+#endif
+
+#ifdef CONFIG_RTL865X
+#ifdef CONFIG_RTK_VOIP		
+	if (irq == 6) // PCM
+		REG32(GIMR) = (REG32(GIMR)) | (1 << (25-irq));
+	else
+#endif
+	REG32(GIMR) = (REG32(GIMR)) | (1 << (17-irq));  
+	if ( (irq == 0) || (irq == 1) || (irq == 6) )
+		REG32(IRR2)|= ((irqRoute[irq].idx & 0xF)<<irqRoute[irq].base);
+	else
+		REG32(IRR1)|= ((irqRoute[irq].idx & 0xF)<<irqRoute[irq].base);
+#endif	
 }
+
 static void  mask_irq(unsigned int irq)
 {
+#ifdef CONFIG_RTL8186_AP
 	outl(inl(GIMR0) & (~(1 << irq)),GIMR0);
     inl(GIMR0);
+#endif
+
+#ifdef CONFIG_RTL865X
+#ifdef CONFIG_RTK_VOIP		
+	if (irq == 6) // PCM
+		REG32(GIMR)=(REG32(GIMR)) & (~(1 << (25-irq)));
+	else
+#endif
+	REG32(GIMR)=(REG32(GIMR)) & (~(1 << (17-irq)));
+#endif	
 }
 
 extern asmlinkage void do_IRQ(int irq, struct pt_regs *regs);
@@ -80,25 +133,76 @@ static struct hw_interrupt_type irq_type = {
 
 void irq_dispatch(int irq_nr, struct pt_regs *regs)
 {
+
+#ifdef CONFIG_RTL8186_AP
    int i,j,irq;
    volatile unsigned int gimr, gisr,irq_x;  
     
     gimr = inl(GIMR0);
+    // for(j=0; j<=1; j++)
     {	    
 	gisr = inl(GISR);
 	irq_x = (gimr & gisr & 0xff);
 	irq=0;	
+	//if (irq_x == 0)
+       	//	break;
         for (i=0; i<=7; i++)
     	{
         	if (irq_x & 0x01)
-			{
-				do_IRQ(irq, regs);
-
-			}  
+		{
+			do_IRQ(irq, regs);
+		}  
         	irq++;
         	irq_x = irq_x >> 1;
     	}
      }
+#endif
+
+#ifdef CONFIG_RTL865X
+	unsigned int gimr, gisr,irq_x;  
+
+	gimr = REG32(GIMR);
+	REG32(GIMR)&= ~0x0000C000;
+
+	gisr = REG32(GISR);
+	irq_x = (gimr & gisr);
+
+	do{
+		if( irq_x & 0x00000100)
+			do_IRQ(9, regs); //Timer
+#ifdef CONFIG_RTK_VOIP
+		else if( irq_x & 0x00080000)
+			do_IRQ(6, regs); //PCM
+#endif
+		else if( irq_x & 0x00004000)
+			do_IRQ(3, regs); //PCI
+		else if( irq_x & 0x00008000)
+			do_IRQ(2, regs); //NIC
+		else if( irq_x & 0x00010000) 
+			do_IRQ(1, regs); //GPIO A,B,C,D
+		else if( irq_x & 0x00020000) 
+			do_IRQ(0, regs); //GPIO E,F,G,H			
+		else if( irq_x & 0x00001000)
+			do_IRQ(5, regs); //uart0
+		else if( irq_x & 0x00002000)
+			do_IRQ(4, regs); //uart1
+		else if( irq_x & 0x00000400)
+			do_IRQ(7, regs); //USB			
+#ifndef CONFIG_RTK_VOIP
+		else if( irq_x & 0x00080000)
+			do_IRQ(6, regs); //PCM
+#endif
+		else
+		{
+			printk("$$$ Unknown IRQ $$$  0x%08x\n",irq_x);
+		}
+		gisr = REG32(GISR);
+		irq_x = (gimr & gisr);
+	}while(irq_x);
+
+	REG32(GIMR)=gimr;
+
+#endif
 }
 
 void __init nino_irq_setup(void)
@@ -109,6 +213,9 @@ void __init nino_irq_setup(void)
 
 	/* Disable all hardware interrupts */
 	change_cp0_status(ST0_IM, 0x00);
+
+	/* Initialize IRQ vector table */
+	//init_generic_irq();
 
 	/* Initialize IRQ action handlers */
 	for (i = 0; i < 16; i++) {

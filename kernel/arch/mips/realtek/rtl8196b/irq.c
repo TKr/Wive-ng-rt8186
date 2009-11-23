@@ -15,8 +15,8 @@
 #include <asm/io.h>
 #include <asm/mipsregs.h>
 
-#ifdef CONFIG_RTL_EB8186
-#include <asm/rtl8181.h>
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
 #endif
 
 #if defined(CONFIG_RTL865X) || defined(CONFIG_RTL8196B)
@@ -45,7 +45,7 @@ static struct {
 };
 #endif
 
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
 #define ALLINTS (IE_IRQ0 | IE_IRQ2 | IE_IRQ3 | IE_IRQ4 | IE_IRQ5)
 #endif
 
@@ -55,7 +55,7 @@ static struct {
 
 static void  unmask_irq(unsigned int irq)
 {
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
 	outl((inl(GIMR0) | (1 << irq)),GIMR0);
     inl(GIMR0);
 #endif
@@ -98,7 +98,7 @@ static void  unmask_irq(unsigned int irq)
 /*
 static void  mask_irq(unsigned int irq)
 {
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
 	outl(inl(GIMR0) & (~(1 << irq)),GIMR0);
     inl(GIMR0);
 #endif
@@ -159,7 +159,7 @@ static struct hw_interrupt_type irq_type = {
 void irq_dispatch(int irq_nr, struct pt_regs *regs)
 {
 
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
    int i,j,irq;
    volatile unsigned int gimr, gisr,irq_x;  
     

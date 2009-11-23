@@ -53,7 +53,7 @@ void __init prom_init(int argc, char **argv, unsigned long magic, int *prom_vec)
 	mips_machgroup = MACH_GROUP_PHILIPS;
 	mips_machtype = MACH_PHILIPS_NINO;
 
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
 #ifdef CONFIG_NINO_4MB
 	mem_size = 4 << 20;
 #elif CONFIG_NINO_8MB

@@ -207,6 +207,8 @@ EXPORT_SYMBOL(dst_destroy);
 
 /*	misc. support routines */
 EXPORT_SYMBOL(net_ratelimit);
+EXPORT_SYMBOL(in4_pton);
+EXPORT_SYMBOL(in6_pton);
 EXPORT_SYMBOL(net_random);
 EXPORT_SYMBOL(net_srandom);
 
@@ -619,5 +621,17 @@ EXPORT_SYMBOL(register_gifconf);
 
 EXPORT_SYMBOL(net_call_rx_atomic);
 EXPORT_SYMBOL(softnet_data);
+
+#ifdef CONFIG_WIRELESS_EXT_V18
+#if defined(CONFIG_NET_RADIO) || defined(CONFIG_NET_PCMCIA_RADIO)
+#include <net/iw_handler.h>
+EXPORT_SYMBOL(wireless_send_event);
+EXPORT_SYMBOL(iw_handler_set_spy);
+EXPORT_SYMBOL(iw_handler_get_spy);
+EXPORT_SYMBOL(iw_handler_set_thrspy);
+EXPORT_SYMBOL(iw_handler_get_thrspy);
+EXPORT_SYMBOL(wireless_spy_update);
+#endif	/* CONFIG_NET_RADIO || CONFIG_NET_PCMCIA_RADIO */
+#endif
 
 #endif  /* CONFIG_NET */

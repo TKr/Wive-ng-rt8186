@@ -10,6 +10,8 @@
  * Copyright (C) 2000, 2001  Maciej W. Rozycki
  */
 #include <linux/config.h>
+#include <linux/module.h>
+
 #include <linux/errno.h>
 #include <linux/hdreg.h>
 #include <linux/init.h>
@@ -139,6 +141,37 @@ extern void prom_init(int, char **, char **, int *);
 static struct resource code_resource = { "Kernel code" };
 static struct resource data_resource = { "Kernel data" };
 
+#if CONFIG_WIRELESS_LAN_MODULE
+extern int (*wirelessnet_hook)(void);
+EXPORT_SYMBOL(wirelessnet_hook);
+int (*wirelessnet_hook)(void)=NULL;
+#endif
+#if defined(CONFIG_RTL865X) || defined(CONFIG_RTL8196B)
+#include <linux/netdevice.h>
+void shutdown_netdev()
+{
+	struct net_device *dev;
+	printk("Shutdown network interface\n");
+	read_lock(&dev_base_lock);
+	for (dev = dev_base; dev != NULL; dev = dev->next) {
+		if (dev->flags&IFF_UP && dev->stop){
+			printk("%s:===>\n",dev->name);
+			rtnl_lock();
+			dev_close(dev);
+			rtnl_unlock();
+		}
+	}
+#ifdef CONFIG_RTL8196B_KLD
+	{
+		extern void force_stop_wlan_hw(void);
+		force_stop_wlan_hw();
+	}
+#endif
+	read_unlock(&dev_base_lock);
+
+}
+#endif
+
 static inline void check_wait(void)
 {
 	printk("check_wait... unavailable.\n");
@@ -174,12 +207,77 @@ static inline void cpu_probe(void)
 	mips_cpu.cputype = CPU_R3000;
 	mips_cpu.isa_level = MIPS_CPU_ISA_I;
 	mips_cpu.options = MIPS_CPU_TLB;
+#ifdef CONFIG_RTL8186_AP
 	mips_cpu.tlbsize = 64;
+#endif
+#ifdef CONFIG_RTL865XC	
+	mips_cpu.tlbsize = 32;
+#endif	
 }
 
 static inline void cpu_report(void)
 {
 }
+
+
+#ifdef CONFIG_RTL865X_SUSPEND
+/* this function is refer to nino_wait() in \linux-2.4.18\arch\mips\philips\nino\power.c */
+static inline void RTL865x_cpu_wait(void)
+{
+#ifdef CONFIG_RTL8197B_PANA
+	extern int cpu_suspend_enabled;
+	if (!cpu_suspend_enabled)
+		return;	
+#endif
+
+/*
+ * 08-12-2008, due to the WLAN performance is no difference in 10/100 and giga board when gCpuCanSuspend=1
+ * (that means CPU always can suspend), the following code is disabled.
+ * ==> only apply to RTL865X, it still need to check the WLAN throughput in RTL8196B
+ */
+#ifdef CONFIG_RTL8196B
+#ifdef CONFIG_NET_WIRELESS_AGN
+#ifndef CONFIG_RTL8197B_PANA
+#if CONFIG_WIRELESS_LAN_MODULE
+	if(wirelessnet_hook!=NULL)
+	{
+		if(!wirelessnet_hook())
+		{
+			return;
+		}
+	}
+#else
+	extern int gCpuCanSuspend;
+	if (!gCpuCanSuspend)
+            return;
+#endif
+#endif
+#endif
+#endif
+
+	/* We stop the CPU to conserve power */
+	#ifdef OPEN_RSDK_RTL865x
+	#else
+	__asm__ __volatile__ (    "sleep\n\t" ); 
+	#endif
+	/* 
+	 * We wait until an interrupt happens...
+	 */
+
+	/* We resume here */
+
+	/* Give ourselves a little delay */
+	__asm__ __volatile__(
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t");
+
+};
+#endif
 
 asmlinkage void __init
 init_arch(int argc, char **argv, char **envp, int *prom_vec)

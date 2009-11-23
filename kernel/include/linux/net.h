@@ -144,6 +144,8 @@ extern struct socket *sockfd_lookup(int fd, int *err);
 extern int	sock_map_fd(struct socket *sock);
 extern int	net_ratelimit(void);
 extern unsigned long net_random(void);
+extern int in4_pton(const char *, int , u8 *, int , const char **);
+extern int in6_pton(const char *, int , u8 *, int , const char **);
 extern void net_srandom(unsigned long);
 
 #ifndef CONFIG_SMP

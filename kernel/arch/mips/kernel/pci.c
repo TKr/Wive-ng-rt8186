@@ -72,13 +72,20 @@ struct pci_fixup pcibios_fixups[] = {
 
 extern int pciauto_assign_resources(int busno, struct pci_channel * hose);
 extern int init_rtl8181pci();
+#ifdef CONFIG_RTL8196B
+extern int rtl8196b_pci_init();
+#endif
 
 void __init pcibios_init(void)
 {
 	struct pci_channel *p;
 	struct pci_bus *bus;
 	int busno;
-	
+
+#ifdef CONFIG_RTL8196B
+	rtl8196b_pci_init();
+#endif
+
 #ifdef CONFIG_PCI_AUTO
 	/* assign resources */
 	busno=0;
@@ -86,7 +93,7 @@ void __init pcibios_init(void)
 		busno = pciauto_assign_resources(busno, p) + 1;
 	}
 #else 
-	init_rtl8181pci();	
+	init_rtl8181pci();
 #endif
 
 	/* scan the buses */

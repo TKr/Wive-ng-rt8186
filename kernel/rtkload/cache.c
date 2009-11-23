@@ -37,7 +37,7 @@ void flush_dcache(unsigned int start, unsigned int end);
 
 void flush_cache(void)
 {
-#ifdef 	CONFIG_RTL_EB8186
+#ifdef 	CONFIG_RTL8186_AP
 	flush_dcache(0,0);		
 	flush_icache(0,0);	
 #endif	
@@ -80,7 +80,7 @@ void flush_icache(unsigned int start, unsigned int end)
 
 #endif
 
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
    unsigned long flags;
    volatile unsigned int reg;
     save_flags(flags);cli();
@@ -99,7 +99,7 @@ void flush_icache(unsigned int start, unsigned int end)
 
 void flush_dcache(unsigned int start, unsigned int end)
 {
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
    unsigned long flags;
    volatile unsigned int reg;
     save_flags(flags);cli();

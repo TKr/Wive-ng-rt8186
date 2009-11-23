@@ -19,8 +19,8 @@
 #include <asm/reboot.h>
 #include <asm/time.h>
 
-#ifdef CONFIG_RTL_EB8186
-#include <asm/rtl8181.h>
+#ifdef CONFIG_RTL8186_AP
+#include <asm/rtl8186.h>
 #endif
 
 #if defined(CONFIG_RTL865X) || defined(CONFIG_RTL8196B)
@@ -61,7 +61,7 @@ static void nino_machine_restart(char *command)
 {
 	unsigned long flags;
 	static void (*back_to_prom)(void) = (void (*)(void)) 0xbfc00000;
-#ifdef CONFIG_RTL_EB8186	
+#ifdef CONFIG_RTL8186_AP	
 	outl(0,GIMR0);  
 #endif
 
@@ -73,7 +73,7 @@ static void nino_machine_restart(char *command)
 	shutdown_netdev();
 	printk("Enable Watch Dog to Reset whole system\n");
 
-#ifdef CONFIG_RTL_EB8186
+#ifdef CONFIG_RTL8186_AP
 	*(volatile unsigned long *)(0xBD010058)=0x10; // this is to enable watch dog reset
 	*(volatile unsigned long *)(0xBD01005c)=0x00; // this is to enable watch dog reset
 #endif
@@ -172,7 +172,7 @@ static __init void nino_time_init(void)
 
 static __init void nino_timer_setup(struct irqaction *irq)
 {
-#ifdef CONFIG_RTL_EB8186	
+#ifdef CONFIG_RTL8186_AP	
 	irq->dev_id = (void *) irq;
 	setup_irq(0, irq);
 
@@ -193,7 +193,7 @@ static __init void nino_timer_setup(struct irqaction *irq)
 
     outl(0x3, TCCNR);
     outl(0x01, TCIR);
-#endif //CONFIG_RTL_EB8186
+#endif //CONFIG_RTL8186_AP
 
 #if defined(CONFIG_RTL865X) || defined(CONFIG_RTL8196B)
 	int c;
@@ -257,7 +257,7 @@ void __init nino_setup(void)
 
 	irq_setup = nino_irq_setup;
 	
-#ifdef CONFIG_RTL_EB8186	
+#ifdef CONFIG_RTL8186_AP	
 	set_io_port_base(KSEG1ADDR(0x1d010000));
 	outl(0,GIMR0);	
 	//mips_io_port_base=RTL8181_REG_BASE;

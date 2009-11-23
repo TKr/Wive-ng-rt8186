@@ -13,12 +13,12 @@
 #include <asm/mipsregs.h>
 #include <asm/regdef.h>
 #include <asm/stackframe.h>
-#ifdef CONFIG_RTL_EB8186        
-#include <asm/rtl8181.h>
+#ifdef CONFIG_RTL8186_AP        
+#include <asm/rtl8186.h>
 #endif
 
 	.text
-#ifdef CONFIG_RTL_EB8186  	
+#ifdef CONFIG_RTL8186_AP  	
 	.section ".irq_speedup"
 #endif
 
@@ -66,7 +66,7 @@
 	#endif
         bne     t2,zero,handle_it
         nop
-#ifdef CONFIG_RTL_EB8186        
+#ifdef CONFIG_RTL8186_AP        
 #        la      t0,( UART_THR + RTL8181_REG_BASE)
 #        li      t1,'m'
 #        sb      t1, 0(t0)
