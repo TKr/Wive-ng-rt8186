@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #------------------General config mode set-----------------------------
-VERSION="::Wive-NG-0.3.12::RTL8186-REALTIME::"
+VERSION="::Wive-NG-0.3.13::RTL8186-REALTIME::"
 RTL8196=NO
 FULLREBUILD=NO
 CLEANCCACHE=NO
