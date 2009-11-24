@@ -12,13 +12,13 @@ export OBJCOPY = $(CROSS_COMPILE)objcopy
 export INCLUDEDIR=$(INCLUDEALL)
 
 SUBDIRS_APP  = busybox bridge-utils dropbear mount
-SUBDIRS_APP += ader wireless_tools iwcontrol wl arg mii-tool ethtool tcpdump
+SUBDIRS_APP += ader wireless_tools rtkwireless wl arg mii-tool ethtool tcpdump
 SUBDIRS_APP += iptables iproute2 ntpclient igmpproxy dnsmasq
 SUBDIRS_APP += ppp rp-pppoe pppoecd
 SUBDIRS_APP += l2tpd lwins mesh ether-wake
 SUBDIRS_APP += mcprobe udpxy
 
-#SUBDIRS_APP += ppp
+#SUBDIRS_APP += 
 
 all: configure
 	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i; done

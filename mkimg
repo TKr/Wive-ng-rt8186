@@ -204,7 +204,13 @@ fi
 #iwcontrol daemon
 if [ "$INCLUDE_CONTROL" = "YES" ] ; then
   echo -n " IW control "
-  cp -R $APP_PATH/non-sources/iwcontrol $RO_ROOT/bin/iwcontrol
+  cp -R $APP_PATH/rtkwireless/src/dlisten/iwcontrol $RO_ROOT/bin/iwcontrol
+fi
+
+#WPA auth daemon 
+if [ "$INCLUDE_AUTH" = "YES" ] ; then
+  echo -n " WPA AUTH "
+  cp -R $APP_PATH/rtkwireless/src/auth $RO_ROOT/bin/auth
 fi
 
 #iapp roaming daemon
@@ -213,11 +219,6 @@ if [ "$INCLUDE_IAPP" = "YES" ] ; then
   cp -R $APP_PATH/non-sources/iapp $RO_ROOT/bin/iapp
 fi
 
-#WPA auth daemon 
-if [ "$INCLUDE_AUTH" = "YES" ] ; then
-  echo -n " WPA AUTH "
-  cp -R $APP_PATH/non-sources/auth $RO_ROOT/bin/auth
-fi
 
 #HDC util
 if [ "$INCLUDE_HDC" = "YES" ] ; then
