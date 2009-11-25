@@ -42,9 +42,6 @@ __start:
         bne             t0, t1, set_C
         nop
 
-        j               ra                              // PLLMNR and SYSCLKR are set already.
-        nop
-
 set_C:
         /* Set CPU/MEM Clock and Watch Dog Reset. */
         li              t0, VAL_PLLMNR_8186C
@@ -60,7 +57,7 @@ set_C:
         li  t1, REG_PLLMNR
         sw  t0, 0(t1)
 	nop
-	li  t0, VAL_SYSCLKR_8186C       // CPU/MEM divider register
+	li  t0, VAL_SYSCLKR_8186C // CPU/MEM divider register
         li  t1, REG_SYSCLKR
         sw  t0, 0(t1)
         nop

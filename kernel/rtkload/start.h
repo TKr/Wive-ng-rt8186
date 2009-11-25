@@ -4,7 +4,7 @@
 #include <linux/config.h>
 
 //----- System Registers ------------------------------------------------
-#define REG_REVISION	0xbd01010c
+#define REG_REVISION		0xbd01010c
 #define	REG_PLLMNR		0xbd010104
 #define	REG_SYSCLKR		0xbd010108
 #define	REG_GPEFDIR		0xbd010144
