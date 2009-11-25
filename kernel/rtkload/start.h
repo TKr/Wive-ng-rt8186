@@ -8,7 +8,7 @@
 #define	REG_PLLMNR		0xbd010104
 #define	REG_SYSCLKR		0xbd010108
 #define	REG_GPEFDIR		0xbd010144
-#define	REG_GPEFDATA	0xbd010140
+#define	REG_GPEFDATA		0xbd010140
 #define	REG_MTCR0		0xbd011004
 #define	REG_MCR			0xbd011000
 #define	REG_MTCR1		0xbd011008
@@ -23,11 +23,22 @@
 #define VERSION_D		0x4		//0100
 
 //----- DPLL and Clock Setting ------------------------------------------
-#define VAL_PLLMNR_8186B	0x36704		// 160/128
-#define VAL_SYSCLKR_8186B	0xa0b		// CPU=320/2 MEM=320/2.5
+#define VAL_PLLMNR_8186C    0x35a03		// 180/108
+#define VAL_SYSCLKR_8186C   0x090b		// CPU=270/1.5 MEM=270/2.5
 
-#define VAL_PLLMNR_8186C	0x35a03		// 180/108
-#define VAL_SYSCLKR_8186C	0x090b		// CPU=270/1.5 MEM=270/2.5
+//#define VAL_PLLMNR_8186C    0x36a04 		// 210/168
+//#define VAL_SYSCLKR_8186C   0xa0b 		// CPU=420/2 MEM=420/2.5
+
+//#define VAL_PLLMNR_8186C    0x36703		// 40*40/4=400 MHz
+//#define VAL_SYSCLKR_8186C   0x0d0d		// CPU=100 MEM=100
+
+//#define VAL_PLLMNR_8186C    0x36303		// 360MHz
+//#define VAL_SYSCLKR_8186C   0x0a0c		// CPU=360/2 MEM=360/3
+//#define VAL_PLLMNR_8186C    0x35f03		// 40*320/4=320 MHz
+//#define VAL_PLLMNR_8186C    0x36303		// 40*360/4=360 MHz
+//#define VAL_SYSCLKR_8186C   0x0d0d		// CPU=360/4=90 MEM=360/4=90
+//#define VAL_SYSCLKR_8186C   0x0e0e		// CPU=360/6=60 MEM=360/6=60
+//#define VAL_SYSCLKR_8186C   0x0f0f		// CPU=360/6=60 MEM=360/6=45
 
 //----- Memory Setting --------------------------------------------------
 #define	VAL_FLASH_TIMING	0x88880000
