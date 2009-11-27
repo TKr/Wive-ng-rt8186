@@ -18,7 +18,7 @@ SUBDIRS_APP += ppp rp-pppoe pppoecd
 SUBDIRS_APP += l2tpd lwins mesh ether-wake
 SUBDIRS_APP += mcprobe udpxy
 
-#SUBDIRS_APP += 
+SUBDIRS_APP +=
 
 all: configure
 	@set -e; for i in $(SUBDIRS_APP); do $(MAKE) -C $$i; done
