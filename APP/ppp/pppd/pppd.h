@@ -669,8 +669,6 @@ u_int32_t GetMask __P((u_int32_t)); /* Get appropriate netmask for address */
 int  lock __P((char *));	/* Create lock file for device */
 int  relock __P((int));		/* Rewrite lock file with new pid */
 void unlock __P((void));	/* Delete previously-created lock file */
-void logwtmp __P((const char *, const char *, const char *));
-				/* Write entry to wtmp file */
 int  get_host_seed __P((void));	/* Get host-dependent random number seed */
 int  have_route_to __P((u_int32_t)); /* Check if route to addr exists */
 #ifdef PPP_FILTER
