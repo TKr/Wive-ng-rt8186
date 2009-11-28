@@ -625,3 +625,10 @@ discovery(PPPoEConnection *conn)
     conn->discoveryState = STATE_SESSION;
     return;
 }
+
+void fatalSys(char const *str)
+{
+    perror(str);
+    exit(1);
+}
+
