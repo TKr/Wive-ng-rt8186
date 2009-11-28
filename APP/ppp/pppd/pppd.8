@@ -297,6 +297,20 @@ logged through syslog with facility \fIdaemon\fR and level
 \fIdebug\fR.  This information can be directed to a file by setting up
 /etc/syslog.conf appropriately (see syslog.conf(5)).
 .TP
+.B noext-traffic
+Do not count incoming traffic against the idle time set with the idle
+option.  The default idle option behavior is to count both outgoing
+and incoming traffic.  This can be very helpful when remote hosts
+keeping sending unwanted traffic, thereby keeping the connection up.
+
+Note that this \fIcannot\fR prevent programs from responding to incoming
+requests and in doing so defeat the idle option.  The route program
+\fIreject\fR parameter might help in that case when enough is known about
+IP address space of the site generating the unwanted requests.  If you
+initiated contact with the site generating the requests, say with a
+web browser, then denying ingress with the "reject" parameter probably
+won't be a viable option.
+.
 .B default\-asyncmap
 Disable asyncmap negotiation, forcing all control characters to be
 escaped for both the transmit and the receive direction.

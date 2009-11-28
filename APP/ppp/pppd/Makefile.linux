@@ -61,6 +61,7 @@ MPPE=y
 # USE_TDB=y
 
 # HAS_SHADOW=y
+NOEXT_TRAFFIC=y
 # USE_PAM=y
 # HAVE_INET6=y
 
@@ -107,6 +108,10 @@ endif
 ifdef MPPE
 CFLAGS   += -DMPPE=1
 endif
+endif
+
+ifdef NOEXT_TRAFFIC
+CFLAGS += -DNOEXT_TRAFFIC
 endif
 
 # EAP SRP-SHA1

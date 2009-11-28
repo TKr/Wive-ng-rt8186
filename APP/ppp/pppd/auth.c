@@ -243,6 +243,11 @@ static char *uafname;		/* name of most recent +ua file */
 
 extern char *crypt __P((const char *, const char *));
 
+#ifdef NOEXT_TRAFFIC
+/* Boolean to care for external traffic or not. Defined in options.c */
+extern int noexttraffic;
+#endif
+
 /* Prototypes for procedures local to this file. */
 
 static void network_phase __P((int));
@@ -1190,6 +1195,14 @@ check_idle(arg)
 	tlim = idle_time_hook(&idle);
     } else {
 	itime = MIN(idle.xmit_idle, idle.recv_idle);
+#ifdef NOEXT_TRAFFIC  /* modified version, additional commandline-switch noext-traffic */
+	if (!noexttraffic)
+		itime = MIN(idle.xmit_idle, idle.recv_idle);
+	else
+		itime = idle.xmit_idle;
+#else  /* standard version */
+          itime = MIN(idle.xmit_idle, idle.recv_idle);
+#endif
 	tlim = idle_time_limit - itime;
     }
     if (tlim <= 0) {

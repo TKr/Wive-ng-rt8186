@@ -131,6 +131,10 @@ int maxoctets_timeout = 1;   /* default 1 second */
 #endif
 
 
+#ifdef NOEXT_TRAFFIC
+int noexttraffic = 0; /* decide whether or not we want to care for traffic from extern */
+#endif
+
 extern option_t auth_options[];
 extern struct stat devstat;
 
@@ -325,6 +329,9 @@ option_t general_options[] = {
 
     { "active-filter", o_special, setactivefilter,
       "set filter for active pkts", OPT_PRIO },
+#endif
+#ifdef NOEXT_TRAFFIC
+    { "noext-traffic", o_bool, (void *)&noexttraffic, "ignore external pkts for timeout", 1 },
 #endif
 
 #ifdef MAXOCTETS
