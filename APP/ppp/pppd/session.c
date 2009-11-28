@@ -366,7 +366,6 @@ session_start(flags, user, passwd, ttyName, msg)
     if (SESS_ACCT & flags) {
 	if (strncmp(ttyName, "/dev/", 5) == 0)
 	    ttyName += 5;
-	logwtmp(ttyName, user, ifname); /* Add wtmp login entry */
 	logged_in = 1;
 
 #if defined(_PATH_LASTLOG) && !defined(USE_PAM)
@@ -419,7 +418,6 @@ session_end(const char* ttyName)
     if (logged_in) {
 	if (strncmp(ttyName, "/dev/", 5) == 0)
 	    ttyName += 5;
-	logwtmp(ttyName, "", ""); /* Wipe out utmp logout entry */
 	logged_in = 0;
     }
 }
