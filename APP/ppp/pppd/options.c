@@ -114,6 +114,7 @@ char	linkname[MAXPATHLEN];	/* logical name for link */
 bool	tune_kernel;		/* may alter kernel settings */
 int	connect_delay = 1000;	/* wait this many ms after connect script */
 int	req_unit = -1;		/* requested interface unit */
+int	req_minunit = -1;	/* requested minimal interface unit */
 char	path_ipup[MAXPATHLEN];	/* pathname of ip-up script */
 char	path_ipdown[MAXPATHLEN];/* pathname of ip-down script */
 bool	multilink = 0;		/* Enable multilink operation */
@@ -273,6 +274,9 @@ option_t general_options[] = {
 
     { "unit", o_int, &req_unit,
       "PPP interface unit number to use if possible",
+      OPT_PRIO | OPT_LLIMIT, 0, 0 },
+    { "minunit", o_int, &req_minunit,
+      "PPP interface minimal unit number",
       OPT_PRIO | OPT_LLIMIT, 0, 0 },
 
     { "dump", o_bool, &dump_options,

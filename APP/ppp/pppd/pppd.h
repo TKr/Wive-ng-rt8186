@@ -80,6 +80,7 @@
 #define MAXARGS		1	/* max # args to a command */
 #define MAXNAMELEN	256	/* max length of hostname or name for auth */
 #define MAXSECRETLEN	256	/* max length of password or secret */
+#define MAXUNIT		255	/* max ppp interface */
 
 /*
  * Option descriptor structure.
@@ -323,6 +324,7 @@ extern bool	tune_kernel;	/* May alter kernel settings as necessary */
 extern int	connect_delay;	/* Time to delay after connect script */
 extern int	max_data_rate;	/* max bytes/sec through charshunt */
 extern int	req_unit;	/* interface unit number to use */
+extern int	req_minunit;	/* interface minimal unit number to use */
 extern char	path_ipup[MAXPATHLEN]; /* pathname of ip-up script */
 extern char	path_ipdown[MAXPATHLEN]; /* pathname of ip-down script */
 extern bool	multilink;	/* enable multilink operation */
