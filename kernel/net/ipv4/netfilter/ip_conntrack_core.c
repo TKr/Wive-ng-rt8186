@@ -1286,7 +1286,7 @@ unsigned int ip_conntrack_in(unsigned int hooknum,
 
 	if (ip_conntrack_clear != 0)
 	{
-		ip_ct_iterate_cleanup(kill_all, NULL);
+		ip_conntrack_cleanup();
 		ip_conntrack_clear = 0;
 	}
 
@@ -1898,7 +1898,7 @@ static struct nf_sockopt_ops so_getorigdst
     SO_ORIGINAL_DST, SO_ORIGINAL_DST+1, &getorigdst,
     0, NULL };
 
-static int kill_all_conntrack(const struct ip_conntrack *i, void *data)
+static int kill_all(struct ip_conntrack *i, void *data)
 {
 	return 1;
 }
@@ -1915,7 +1915,7 @@ void ip_conntrack_cleanup(void)
 	br_write_unlock_bh(BR_NETPROTO_LOCK);
  
  i_see_dead_people:
-	ip_ct_selective_cleanup(kill_all_conntrack, NULL);
+	ip_ct_selective_cleanup(kill_all, NULL);
 	if (atomic_read(&ip_conntrack_count) != 0) {
 		schedule();
 		goto i_see_dead_people;
