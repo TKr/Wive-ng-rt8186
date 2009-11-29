@@ -13,9 +13,8 @@ LOOSEUDP=yes
 #Netfilter(firewall) configuration start
 START_IPTABLES=no
 
-#Start tc qdisc shaper (pseudo-fair distribution of a strip)
-START_SHAPER=yes //esfq per interface
-OLDSHAPERMODE=no //old some classes htb per device
+#Start tc qdisc shaper (esfq)
+START_SHAPER=yes
 
 #Services to start at boot
 START_DHCPSERVER=no
