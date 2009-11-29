@@ -182,29 +182,20 @@ static int gre_pkt_to_tuple(const void *datah, size_t datalen,
 
 	/* core guarantees 8 protocol bytes, no need for size check */
 
-	switch (grehdr->version) {
-		case GRE_VERSION_1701:
-			if (!grehdr->key) {
-				DEBUGP("Can't track GRE without key\n");
-				return 0;
-			}
-			tuple->dst.u.gre.key = *(gre_key(grehdr));
-			break;
-
-		case GRE_VERSION_PPTP:
-			if (ntohs(grehdr->protocol) != GRE_PROTOCOL_PPTP) {
-				DEBUGP("GRE_VERSION_PPTP but unknown proto\n");
-				return 0;
-			}
-			tuple->dst.u.gre.key = htonl(ntohs(pgrehdr->call_id));
-			break;
-
-		default:
-			printk(KERN_WARNING "unknown GRE version %hu\n",
-				grehdr->version);
-			return 0;
+	/* first only delinearize old RFC1701 GRE header */
+	if (grehdr->version != GRE_VERSION_PPTP) {
+		/* try to behave like "ip_conntrack_proto_generic" */
+		tuple->src.u.all = 0;
+		tuple->dst.u.all = 0;
+		return 1;
 	}
 
+	if (ntohs(grehdr->protocol) != GRE_PROTOCOL_PPTP) {
+		DEBUGP("GRE_VERSION_PPTP but unknown proto\n");
+		return 0;
+	}
+
+	tuple->dst.u.gre.key = htonl(ntohs(pgrehdr->call_id));
 	srckey = gre_keymap_lookup(tuple);
 
 #if 0
