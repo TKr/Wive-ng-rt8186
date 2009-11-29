@@ -64,7 +64,7 @@
 #define NP_IPV6	3		/* Internet Protocol */
 #define NUM_NP	4		/* Number of NPs. */
 
-#define OBUFSIZE	256	/* # chars of output buffering */
+#define OBUFSIZE	2048	/* # chars of output buffering */
 
 /*
  * Structure describing each ppp unit.
