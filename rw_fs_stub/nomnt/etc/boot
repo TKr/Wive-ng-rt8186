@@ -14,7 +14,8 @@ LOOSEUDP=yes
 START_IPTABLES=no
 
 #Start tc qdisc shaper (pseudo-fair distribution of a strip)
-START_SHAPER=yes
+START_SHAPER=yes //esfq per interface
+OLDSHAPERMODE=no //old some classes htb per device
 
 #Services to start at boot
 START_DHCPSERVER=no

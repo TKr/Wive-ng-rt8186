@@ -141,6 +141,13 @@ enum
 
 /* SFQ section */
 
+enum
+{
+	TCA_SFQ_HASH_CLASSIC,
+	TCA_SFQ_HASH_DST,
+	TCA_SFQ_HASH_SRC,
+};
+
 struct tc_sfq_qopt
 {
 	unsigned	quantum;	/* Bytes per round allocated to flow */
@@ -148,6 +155,7 @@ struct tc_sfq_qopt
 	__u32		limit;		/* Maximal packets in queue */
 	unsigned	divisor;	/* Hash divisor  */
 	unsigned	flows;		/* Maximal number of flows  */
+	unsigned	hash_kind;	/* Hash function to use for flow identification */
 };
 
 struct tc_sfq_xstats

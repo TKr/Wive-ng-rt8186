@@ -10,6 +10,7 @@ TCMODULES :=
 TCMODULES += m_pedit.o #No disable
 TCMODULES += q_htb.o # use
 TCMODULES += q_sfq.o # use
+TCMODULES += q_esfq.o #use
 TCMODULES += p_ip.o # use
 TCMODULES += f_u32.o # use
 TCMODULES += f_flow.o

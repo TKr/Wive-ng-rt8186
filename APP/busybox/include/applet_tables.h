@@ -1,6 +1,6 @@
 /* This is a generated file, don't edit */
 
-#define NUM_APPLETS 97
+#define NUM_APPLETS 98
 
 const char applet_names[] ALIGN1 = ""
 "[" "\0"
@@ -97,6 +97,7 @@ const char applet_names[] ALIGN1 = ""
 "vconfig" "\0"
 "vi" "\0"
 "watch" "\0"
+"wget" "\0"
 "which" "\0"
 "yes" "\0"
 "zcat" "\0"
@@ -197,6 +198,7 @@ uptime_main,
 vconfig_main,
 vi_main,
 watch_main,
+wget_main,
 which_main,
 yes_main,
 gunzip_main,
@@ -297,7 +299,8 @@ const uint16_t applet_nameofs[] ALIGN2 = {
 0x022e,
 0x0231,
 0x0237,
-0x323d,
-0x0241,
+0x023c,
+0x3242,
+0x0246,
 };
 #define MAX_APPLET_NAME_LEN 13

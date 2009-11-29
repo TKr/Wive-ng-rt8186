@@ -9591,6 +9591,24 @@ CONFIG_NET_SCH_SFQ
   whenever you want). If you want to compile it as a module, say M
   here and read <file:Documentation/modules.txt>.
 
+ESFQ queue
+CONFIG_NET_SCH_ESFQ
+  Say Y here if you want to use the Stochastic Fairness Queueing (SFQ)
+  packet scheduling algorithm for some of your network devices or as a
+  leaf discipline for the CBQ scheduling algorithm (see the top of
+  <file:net/sched/sch_esfq.c> for details and references about the SFQ
+  algorithm).
+
+  This is an enchanced SFQ version which allows you to control the
+  hardcoded values in the SFQ scheduler: queue depth, hash table size,
+  queues limit. Also adds control to the hash function used to identify
+  packet flows. Hash by src or dst ip and original sfq hash.
+
+  This code is also available as a module called sch_esfq.o ( = code
+  which can be inserted in and removed from the running kernel
+  whenever you want). If you want to compile it as a module, say M
+  here and read <file:Documentation/modules.txt>.
+
 TEQL queue
 CONFIG_NET_SCH_TEQL
   Say Y here if you want to use the True Link Equalizer (TLE) packet

@@ -2,7 +2,7 @@
  * Automatically generated C config: don't edit
  * Busybox version: 1.15.2
  */
-#define AUTOCONF_TIMESTAMP "2009-11-28 20:24:41 OMST"
+#define AUTOCONF_TIMESTAMP "2009-11-29 07:01:25 OMST"
 
 #define CONFIG_HAVE_DOT_CONFIG 1
 #define ENABLE_HAVE_DOT_CONFIG 1
@@ -2688,10 +2688,10 @@
 #define ENABLE_VCONFIG 1
 #define IF_VCONFIG(...) __VA_ARGS__
 #define IF_NOT_VCONFIG(...)
-#undef CONFIG_WGET
-#define ENABLE_WGET 0
-#define IF_WGET(...)
-#define IF_NOT_WGET(...) __VA_ARGS__
+#define CONFIG_WGET 1
+#define ENABLE_WGET 1
+#define IF_WGET(...) __VA_ARGS__
+#define IF_NOT_WGET(...)
 #undef CONFIG_FEATURE_WGET_STATUSBAR
 #define ENABLE_FEATURE_WGET_STATUSBAR 0
 #define IF_FEATURE_WGET_STATUSBAR(...)
