@@ -61,6 +61,8 @@ LIST_HEAD(protocol_list);
 static LIST_HEAD(helpers);
 unsigned int ip_conntrack_htable_size = 0;
 int ip_conntrack_max = 0;
+int ip_conntrack_clear = 0;
+static int kill_all(struct ip_conntrack *i, void *data);
 static atomic_t ip_conntrack_count = ATOMIC_INIT(0);
 struct list_head *ip_conntrack_hash;
 static kmem_cache_t *ip_conntrack_cachep;
@@ -1281,6 +1283,12 @@ unsigned int ip_conntrack_in(unsigned int hooknum,
                }
                return NF_DROP;
        }
+
+	if (ip_conntrack_clear != 0)
+	{
+		ip_ct_iterate_cleanup(kill_all, NULL);
+		ip_conntrack_clear = 0;
+	}
 
 	/* FIXME: Do this right please. --RR */
 	(*pskb)->nfcache |= NFC_UNKNOWN;
