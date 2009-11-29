@@ -377,23 +377,16 @@ fi
 #-----------------------FLUSH WLAN0 ADRESS----------
 ip addr flush dev wlan0
 #-----------------------IF DHCP OR MANUAL UP--------
-if [ "$WLAN_IN_BR0" != "yes" ]; then
-    if [ "$WLAN_USE_DHCP" = "yes" ]; then
-	echo "Set wlan0 IP adreess from dhcp server"
+if [ "$WLAN_IN_BR0" != "yes" ] && [ "$WLAN_ENABLED" = "yes" ]; then
 	ip link set wlan0 up
+	ip addr flush dev wlan0
+    if [ "$WLAN_USE_DHCP" = "yes" ] && [ "$WLAN_FORCEIP" != "yes"]; then
+	echo "Set wlan0 IP adreess from dhcp server"
 	$dhcpc -p /var/run/udhcpc-wlan0.pid -i wlan0 $DHCPOPTS >>/dev/null
     else
 	echo "Set IP adreess from local files"
-	ip link set wlan0 up
 	ip addr add $WLAN_IPADDR brd + dev wlan0
     fi
-fi
-#-----------------------IF FORCE-------------------
-if [ "$WLAN_FORCEIP" = "yes" ]; then
-    echo Wlan force ip
-    ip addr flush dev wlan0
-    ip addr add $WLAN_IPADDR brd + dev wlan0
-    ip link set wlan0 up
 fi
     
 echo Config OK
