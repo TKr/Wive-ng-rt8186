@@ -27,7 +27,17 @@ if [ "$START_SHAPER" == "yes" ]; then
         if [ "$ETH1_ENABLED" == "yes" ]; then
 	  tc qdisc add dev eth1 root esfq perturb 10 hash src quantum 1500
 	fi
-       else
+
+     else
+	if [ "$WLAN_IN_BR0" != "yes" ]; then
+	  tc qdisc add dev wlan0 root esfq perturb 10 hash src quantum 1500
+	fi
+        if [ "$ETH0_IN_BR0" != "yes" ]; then
+	  tc qdisc add dev eth0 root esfq perturb 10 hash src quantum 1500
+        fi
+        if [ "$ETH1_IN_BR0" != "yes" ]; then
+	  tc qdisc add dev eth1 root esfq perturb 10 hash src quantum 1500
+	fi
 	  tc qdisc add dev br0 root esfq perturb 10 hash src quantum 1500
     fi
   /etc/network/tc.start
