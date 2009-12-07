@@ -6,11 +6,6 @@ dhcpc=/sbin/udhcpc
 
 start() {
 if [ "$BRIDGE_START" = "yes" ] ; then
- #---------------Load modules---------
- echo Load bridge modules
- modtest=`uname -r`
- moddir=/lib/modules/$modtest/kernel/net
- /sbin/insmod $moddir/bridge/bridge.o
  #------------------------- Add bridge interface-------------------------
  echo Add bridge interface
  brctl addbr br0

@@ -56,3 +56,8 @@ bool '  IP: Stealth Code (not enabled per default)' CONFIG_IP_STEALTH
 if [ "$CONFIG_NETFILTER" != "n" ]; then
    source net/ipv4/netfilter/Config.in
 fi
+bool 'RTL867x FastPath Routing' CONFIG_UNIVERSAL_FAST_PATH
+if [ "$CONFIG_UNIVERSAL_FAST_PATH" != "n" ]; then
+   define_tristate CONFIG_BRIDGE y
+fi
+

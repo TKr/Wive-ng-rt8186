@@ -43,6 +43,9 @@
 #include <linux/netfilter_ipv4/ip_conntrack_helper.h>
 #include <linux/netfilter_ipv4/ip_conntrack_core.h>
 #include <linux/netfilter_ipv4/listhelp.h>
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+#include "../fastpath/fastpath_core.h"
+#endif
 
 #define IP_CONNTRACK_VERSION	"2.1"
 
@@ -552,6 +555,16 @@ destroy_conntrack(struct nf_conntrack *nfct)
 	proto = ip_ct_find_proto(ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.protonum);
 	if (proto && proto->destroy)
 		proto->destroy(ct);
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        if (FastPath_Enabled()) {
+        if (test_bit(IPS_SEEN_REPLY_BIT, &ct->status)) {
+                if ( ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum != IPPROTO_ICMP ) {
+                        rtl865x_delNaptConnection(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple,
+                                ct->tuplehash[IP_CT_DIR_REPLY].tuple);
+                }
+        }
+        }
+#endif
 	if (ip_conntrack_destroyed)
 		ip_conntrack_destroyed(ct);
 	WRITE_LOCK(&ip_conntrack_lock);
@@ -1274,6 +1287,10 @@ unsigned int ip_conntrack_in(unsigned int hooknum,
 	struct ip_conntrack_protocol *proto;
 	int set_reply;
 	int ret;
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        struct ip_nat_helper *helper;
+        struct ip_nat_info *info;
+#endif
 
        /* Never happen */
        if ((*pskb)->nh.iph->frag_off & htons(IP_OFFSET)) {
@@ -1347,6 +1364,20 @@ unsigned int ip_conntrack_in(unsigned int hooknum,
 			return NF_ACCEPT;
 		}
 	}
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        if (FastPath_Enabled()) {
+        //cathy
+        info = &ct->nat.info;
+        helper = info->helper;
+        if (!ct->helper && !helper &&  set_reply && !(test_bit(IPS_SEEN_REPLY_BIT, &ct->status))) {
+                if( ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.protonum != IPPROTO_ICMP ) {
+                        //printk("napt add !!\n");
+                        rtl865x_addNaptConnection(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple,
+                                ct->tuplehash[IP_CT_DIR_REPLY].tuple, NP_NONE);
+                }
+        }       /* IPS_SEEN_REPLY_BIT up */
+        }
+#endif
 	if (set_reply)
 		set_bit(IPS_SEEN_REPLY_BIT, &ct->status);
 

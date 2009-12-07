@@ -27,6 +27,9 @@
 #include <linux/netfilter_ipv4/ip_nat_helper.h>
 #include <linux/netfilter_ipv4/ip_conntrack_helper.h>
 #include <linux/netfilter_ipv4/listhelp.h>
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+#include "../fastpath/fastpath_core.h"
+#endif
 
 #if 0
 #define DEBUGP printk

@@ -42,6 +42,10 @@
 #include <net/tcp.h>
 #include <net/sock.h>
 #include <net/ip_fib.h>
+#include <asm/rtl865x/rtl_types.h>
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+#include "fastpath/fastpath_core.h"
+#endif
 
 #define FTprint(a...)
 /*
@@ -531,6 +535,10 @@ rta->rta_prefsrc ? *(u32*)rta->rta_prefsrc : 0);
 			goto out;
 
 		if (n->nlmsg_flags&NLM_F_REPLACE) {
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                        if (FastPath_Enabled())
+                        rtl865x_modifyRoute(rta->rta_dst ? *(u32*)rta->rta_dst : 0, inet_make_mask(z),rta->rta_gw ? *(u32*)rta->rta_gw : 0, (uint8 *)fi->fib_dev->name, RT_NONE, type);
+#endif
 			del_fp = fp;
 			fp = &f->fn_next;
 			f = *fp;
@@ -555,6 +563,10 @@ rta->rta_prefsrc ? *(u32*)rta->rta_prefsrc : 0);
 	}
 
 create:
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        if (FastPath_Enabled())
+        rtl865x_addRoute(rta->rta_dst ? *(u32*)rta->rta_dst : 0, inet_make_mask(z),rta->rta_gw ? *(u32*)rta->rta_gw : 0, (uint8 *)fi->fib_dev->name, RT_NONE, type);
+#endif
 	err = -ENOENT;
 	if (!(n->nlmsg_flags&NLM_F_CREATE))
 		goto out;
@@ -639,6 +651,12 @@ FTprint("tb(%d)_delete: %d %08x/%d %d\n", tb->tb_id, r->rtm_type, rta->rta_dst ?
 			return -EINVAL;
 		key = fz_key(dst, fz);
 	}
+
+#if defined(CONFIG_UNIVERSAL_FAST_PATH) || defined(CONFIG_RTL867X_PACKET_PROCESSOR)
+        /* For fixing the bug that system will be hang if keep changing secondary IP&netmask . */
+        //  Remove the redundant node in the list_inuse of table_route.
+        rtl865x_delRoute(rta->rta_dst ? *(u32*)rta->rta_dst : 0, inet_make_mask(z));
+#endif
 
 	fp = fz_chain_p(key, fz);
 
@@ -918,3 +936,56 @@ struct fib_table * __init fib_hash_init(int id)
 	memset(tb->tb_data, 0, sizeof(struct fn_hash));
 	return tb;
 }
+
+#ifdef CONFIG_UNIVERSAL_FAST_PATH
+void fib_iterate(struct fib_table *tb, void *funcptr) {
+        int t;
+        struct fn_zone *fz;
+        struct fn_hash *table;
+        //void (*func )(struct fn_zone *, struct fib_node *, struct fib_info *) = funcptr;
+
+        table = (struct fn_hash *)tb->tb_data;
+        read_lock(&fib_hash_lock);
+        for (fz = table->fn_zone_list; fz; fz = fz->fz_next) {
+                int i;
+                struct fib_node *f;
+                int maxslot = fz->fz_divisor;
+                struct fib_node **fp = fz->fz_hash;
+
+                if (fz->fz_nent == 0)
+                        continue;
+
+                for (i=0; i < maxslot; i++, fp++) {
+                        for (f = *fp; f; f = f->fn_next) {
+                                struct fib_info *fi;
+
+                                fi = FIB_INFO(f);
+                                //func(f, fi);
+                                /*printk("%s %08x %08x %08x %x/%x\n",
+                                        fi->fib_dev ? fi->fib_dev->name : "*",
+                                        fz_prefix(f->fn_key, fz),
+                                        fi->fib_nh->nh_gw,
+                                        FZ_MASK(fz),
+                                        fi->fib_flags,
+                                        f->fn_type);
+
+                                }*/
+
+                                rtl865x_addRoute(
+                                        fz_prefix(f->fn_key, fz),
+                                        FZ_MASK(fz),
+                                        fi->fib_nh->nh_gw,
+                                        fi->fib_dev ? fi->fib_dev->name : "*",
+                                        fi->fib_flags,
+                                        f->fn_type);
+
+                        }
+                }
+
+
+                read_unlock(&fib_hash_lock);
+
+
+        }
+}
+#endif

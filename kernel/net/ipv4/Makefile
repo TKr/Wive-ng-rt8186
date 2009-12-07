@@ -26,5 +26,6 @@ obj-$(CONFIG_NET_IPGRE) += ip_gre.o
 obj-$(CONFIG_SYN_COOKIES) += syncookies.o
 obj-$(CONFIG_IP_PNP) += ipconfig.o
 obj-y += tcp_diag.o
+obj-$(CONFIG_UNIVERSAL_FAST_PATH) += fastpath/fastpath_core.o
 
 include $(TOPDIR)/Rules.make

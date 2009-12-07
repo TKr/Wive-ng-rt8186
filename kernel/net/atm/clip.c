@@ -218,6 +218,15 @@ void clip_push(struct atm_vcc *vcc,struct sk_buff *skb)
 	clip_vcc->last_use = jiffies;
 	PRIV(skb->dev)->stats.rx_packets++;
 	PRIV(skb->dev)->stats.rx_bytes += skb->len;
+#ifdef CONFIG_UNIVERSAL_FAST_PATH
+        if(FastPath_Enabled()){
+                skb->nh.iph=skb->data;
+                if (FastPath_Enter(skb)== 1) {
+                        //printk("in fast path!\n");
+                        return;
+                }
+        }
+#endif
 	netif_rx(skb);
 }
 

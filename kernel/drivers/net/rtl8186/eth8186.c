@@ -63,6 +63,11 @@ static void local_netif_stop_queue(struct net_device *dev)
 }
 #endif
 
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+struct net_device *eth_net_dev;
+struct tasklet_struct *eth_rx_tasklets=NULL;
+#endif
+
 /* proc entry for rtl8186 */
 static struct proc_dir_entry * root_ethX_dir;
 

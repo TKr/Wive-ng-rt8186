@@ -27,6 +27,10 @@
 #include <net/dst.h>
 #include <net/sock.h>
 #include <linux/rtnetlink.h>
+#include <asm/rtl865x/rtl_types.h>
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+#include "../ipv4/fastpath/fastpath_core.h"
+#endif
 
 #define NEIGH_DEBUG 0
 #define NEIGH_PRINTK(x...) printk(x)
@@ -207,6 +211,11 @@ int neigh_ifdown(struct neigh_table *tbl, struct net_device *dev)
 				skb_queue_purge(&n->arp_queue);
 				n->output = neigh_blackhole;
 				if (n->nud_state&NUD_VALID) {
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                                        if(FastPath_Enabled()) {
+                                        rtl865x_delArp(*(u32*)n->primary_key);
+                                        }
+#endif
 				n->nud_state = NUD_NOARP;
 	    			} else
 					n->nud_state = NUD_NONE;
@@ -586,6 +595,11 @@ static void SMP_TIMER_NAME(neigh_periodic_timer)(unsigned long arg)
 			    (state == NUD_FAILED || now - n->used > n->parms->gc_staletime)) {
 				*np = n->next;
 				n->dead = 1;
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                                if (FastPath_Enabled() && (state & NUD_VALID)) {
+                                        rtl865x_delArp(*(u32*)n->primary_key);
+                                }
+#endif                   
 				write_unlock(&n->lock);
 				neigh_release(n);
 				continue;
@@ -658,6 +672,11 @@ static void neigh_timer_handler(unsigned long arg)
 
 	if (atomic_read(&neigh->probes) >= neigh_max_probes(neigh)) {
 		struct sk_buff *skb;
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                if (FastPath_Enabled() && (neigh->nud_state & NUD_VALID)) {
+                        rtl865x_delArp(*(u32*)neigh->primary_key);
+                }
+#endif
 		neigh->nud_state = NUD_FAILED;
 		notify = 1;
 		neigh->tbl->stats.res_failed++;
@@ -691,6 +710,15 @@ out:
 	if (notify && neigh->parms->app_probes)
 		neigh_app_notify(neigh);
 #endif
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        if (FastPath_Enabled()) {
+        if ((neigh->nud_state & NUD_VALID) && !(state & NUD_VALID)) {
+                rtl865x_addArp(*(u32*)neigh->primary_key, (ether_addr_t*)neigh->ha, ARP_NONE);
+        } else if ((state & NUD_VALID) && !(neigh->nud_state & NUD_VALID)) {
+                rtl865x_delArp(*(u32*)neigh->primary_key);
+        }
+        }
+#endif
 	neigh_release(neigh);
 }
 
@@ -701,6 +729,11 @@ int __neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 		if (!(neigh->nud_state&(NUD_STALE|NUD_INCOMPLETE))) {
 			if (neigh->parms->mcast_probes + neigh->parms->app_probes) {
 				atomic_set(&neigh->probes, neigh->parms->ucast_probes);
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                                if (FastPath_Enabled() && (neigh->nud_state & NUD_VALID)) {
+                                        rtl865x_delArp(*(u32*)neigh->primary_key);
+                                }
+#endif
                                 neigh->nud_state = NUD_INCOMPLETE;
 				neigh_hold(neigh);
 				neigh->timer.expires = jiffies + neigh->parms->retrans_time;
@@ -710,6 +743,13 @@ int __neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 				atomic_inc(&neigh->probes);
 				write_lock_bh(&neigh->lock);
 				} else {
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                                if (FastPath_Enabled()) {
+                                if (neigh->nud_state & NUD_VALID) {
+                                        rtl865x_delArp(*(u32*)neigh->primary_key);
+                                }
+                                }
+#endif
 				neigh->nud_state = NUD_FAILED;
 				write_unlock_bh(&neigh->lock);
 
@@ -855,6 +895,13 @@ int neigh_update(struct neighbour *neigh, const u8 *lladdr, u8 new, int override
 	neigh_del_timer(neigh);
 	neigh->nud_state = new;
 	if (lladdr != neigh->ha) {
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+                if (FastPath_Enabled()) {
+                if (old & NUD_VALID) {
+                        rtl865x_modifyArp(*(u32*)neigh->primary_key, (ether_addr_t*)lladdr, ARP_NONE);
+                }
+                }
+#endif
 		memcpy(&neigh->ha, lladdr, dev->addr_len);
 		neigh_update_hhs(neigh);
 		if (!(new&NUD_CONNECTED))
@@ -891,6 +938,15 @@ out:
 #ifdef CONFIG_ARPD
 	if (notify && neigh->parms->app_probes)
 		neigh_app_notify(neigh);
+#endif
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+        if (FastPath_Enabled()) {
+        if ((neigh->nud_state & NUD_VALID) && !(old & NUD_VALID)) {
+                rtl865x_addArp(*(u32*)neigh->primary_key, (ether_addr_t*)neigh->ha, ARP_NONE);
+        } else if ((old & NUD_VALID) && !(neigh->nud_state & NUD_VALID)) {
+                rtl865x_delArp(*(u32*)neigh->primary_key);
+        }
+        }
 #endif
 	return err;
 }

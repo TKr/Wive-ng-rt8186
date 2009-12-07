@@ -1,6 +1,6 @@
 #ifndef	__FASTPATH_CORE_H__
 #define	__FASTPATH_CORE_H__
-#include <linux/config.h>
+
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/in.h>
@@ -12,48 +12,32 @@
 #include <linux/netfilter_ipv4.h>
 #include <net/dst.h>
 #include <net/route.h>
-
 #include "./rtl_queue.h"			/* X-Queue Marco Function */
-
+#include <linux/netfilter_ipv4/ip_conntrack_tuple.h>
 
 /*
 	Virtual Rome Driver API & System (Light Rome Driver Simulator)
 */
-#ifdef CONFIG_FAST_PATH_MODULE
-#define	__IRAM_GEN	
-#else
-#define	__IRAM_GEN	__attribute__	((section(".speedup")))
-#endif
-#define	ipaddr_t		__u32
-#define	uint8		__u8
-#define	uint16		__u16
-#define	uint32		__u32
+#define	__IRAM_GEN	__attribute__	((section(".iram-gen")))
+#define	ip_t		__u32
 /* ---------------------------------------------------------------------------------------------------- */
 
 #define	IFNAME_LEN_MAX		16
-#define	MAC_ADDR_LEN_MAX		18
-#define	ARP_TABLE_LIST_MAX		32
+#define	MAC_ADDR_LEN_MAX	18
+#define	ARP_TABLE_LIST_MAX	32
 #define	ARP_TABLE_ENTRY_MAX	128
 #define	ROUTE_TABLE_LIST_MAX	16
 #define	ROUTE_TABLE_ENTRY_MAX	64
-
-#ifndef CONFIG_RTL_KERNEL_MIPS16_FASTPATH
-#define	NAPT_TABLE_LIST_MAX	850
-#define	NAPT_TABLE_ENTRY_MAX	850
-#define	PATH_TABLE_LIST_MAX	850
-#else
-#define	NAPT_TABLE_LIST_MAX	128
-#define	NAPT_TABLE_ENTRY_MAX	128
-#define	PATH_TABLE_LIST_MAX	128
-#endif
-
-#define	PATH_TABLE_ENTRY_MAX	(NAPT_TABLE_ENTRY_MAX * 2)
+#define	NAPT_TABLE_LIST_MAX	32
+#define	NAPT_TABLE_ENTRY_MAX	32
+#define	PATH_TABLE_LIST_MAX	32
+#define	PATH_TABLE_ENTRY_MAX NAPT_TABLE_ENTRY_MAX	//(NAPT_TABLE_ENTRY_MAX * 2)  //cathy
 #define	INTERFACE_ENTRY_MAX	8
 
 #define	ETHER_ADDR_LEN		6
-typedef struct ether_addr_s {
-        uint8 octet[ETHER_ADDR_LEN];
-} ether_addr_t;
+typedef struct ether_s {
+        __u8 octet[ETHER_ADDR_LEN];
+} ether_t;
 
 /* ########### API #################################################################################### */
 enum LR_RESULT
@@ -71,19 +55,6 @@ enum LR_RESULT
 	LR_DUPENTRY = -1003,					/* Duplicate entry found */
 };
 
-#if 0
-enum IF_FLAGS
-{
-	IF_NONE,
-	IF_INTERNAL = (0<<1),					/* This is an internal interface. */
-	IF_EXTERNAL = (1<<1),					/* This is an external interface. */
-};
-
-enum FDB_FLAGS
-{
-	FDB_NONE = 0,
-};
-#endif
 
 enum ARP_FLAGS
 {
@@ -106,74 +77,32 @@ enum SE_FLAGS
 	SE_NONE = 0,
 };
 
-enum NP_PROTOCOL
-{
-	NP_UDP = 1,
-	NP_TCP = 2,
-};
 enum NP_FLAGS
 {
 	NP_NONE = 0,
 };
 
 /* ---------------------------------------------------------------------------------------------------- */
-#if 0
-enum LR_RESULT rtk_addInterface( uint8* ifname, ipaddr_t ipAddr, ether_addr_t* gmac, uint32 mtu, enum IF_FLAGS flags );
-enum LR_RESULT rtk_configInterface( uint8* ifname, uint32 vlanId, uint32 fid, uint32 mbr, uint32 untag, enum IF_FLAGS flags );
-enum LR_RESULT rtk_delInterface( uint8* ifname );
-enum LR_RESULT rtk_addFdbEntry( uint32 vid, uint32 fid, ether_addr_t* mac, uint32 portmask, enum FDB_FLAGS flags );
-enum LR_RESULT rtk_delFdbEntry( uint32 vid, uint32 fid, ether_addr_t* mac );
-#endif
-#ifdef CONFIG_FAST_PATH_MODULE
+enum LR_RESULT rtl865x_addArp( ip_t ip, ether_t* mac, enum ARP_FLAGS flags );
+enum LR_RESULT rtl865x_modifyArp( ip_t ip, ether_t* mac, enum ARP_FLAGS flags );
+enum LR_RESULT rtl865x_delArp( ip_t ip );
+enum LR_RESULT rtl865x_addRoute( ip_t ip, ip_t mask, ip_t gateway, __u8* ifname, enum RT_FLAGS flags, int type);
+enum LR_RESULT rtl865x_modifyRoute( ip_t ip, ip_t mask, ip_t gateway, __u8* ifname, enum RT_FLAGS flags, int type );
+enum LR_RESULT rtl865x_delRoute( ip_t ip, ip_t mask );
+enum LR_RESULT rtl865x_addSession( __u8* ifname, enum SE_TYPE seType, __u32 sessionId, enum SE_FLAGS flags );
+enum LR_RESULT rtl865x_delSession( __u8* ifname );
 
-extern enum LR_RESULT (*FastPath_hook2)( ipaddr_t ip, ipaddr_t mask, ipaddr_t gateway, uint8* ifname, enum RT_FLAGS flags );
-extern enum LR_RESULT (*FastPath_hook1)( ipaddr_t ip, ipaddr_t mask );
-extern int (*fast_path_hook)(struct sk_buff **pskb) ;
-extern enum LR_RESULT (*FastPath_hook3)( ipaddr_t ip, ipaddr_t mask, ipaddr_t gateway, uint8* ifname, enum RT_FLAGS flags );
-extern  enum LR_RESULT (*FastPath_hook4)( enum NP_PROTOCOL protocol, ipaddr_t intIp, uint32 intPort,
-                                                               ipaddr_t extIp, uint32 extPort,
-                                                               ipaddr_t remIp, uint32 remPort );
-extern enum LR_RESULT (*FastPath_hook5)( ipaddr_t ip, ether_addr_t* mac, enum ARP_FLAGS flags );
-extern enum LR_RESULT (*FastPath_hook6)( enum NP_PROTOCOL protocol, ipaddr_t intIp, uint32 intPort,
-                                                               ipaddr_t extIp, uint32 extPort,
-                                                               ipaddr_t remIp, uint32 remPort,
-                                                               enum NP_FLAGS flags);
-extern enum LR_RESULT (*FastPath_hook7)( ipaddr_t ip );
-extern enum LR_RESULT (*FastPath_hook8)( ipaddr_t ip, ether_addr_t* mac, enum ARP_FLAGS flags );
-extern enum LR_RESULT (*FastPath_hook11)(enum NP_PROTOCOL protocol,
-		ipaddr_t intIp, uint32 intPort,
-		ipaddr_t extIp, uint32 extPort,
-		ipaddr_t remIp, uint32 remPort,
-		uint32 interval);
-extern int (*FastPath_hook9)( void );
-extern int Get_fast_pptp_fw(void);
-extern int (*FastPath_hook10)(struct sk_buff *skb);	
-enum LR_RESULT rtk_addSession( uint8* ifname, enum SE_TYPE seType, uint32 sessionId, enum SE_FLAGS flags );
-enum LR_RESULT rtk_delSession( uint8* ifname );	
+//andrew
+void fastpath_notify(int event);
+
+//cathy
+enum LR_RESULT rtl865x_addNaptConnection(struct ip_conntrack_tuple ori_tuple,
+		struct ip_conntrack_tuple reply_tuple, enum NP_FLAGS flags);
+
+enum LR_RESULT rtl865x_delNaptConnection (struct ip_conntrack_tuple ori_tuple,
+		struct ip_conntrack_tuple reply_tuple);
 
 
-#else
-
-enum LR_RESULT rtk_addArp( ipaddr_t ip, ether_addr_t* mac, enum ARP_FLAGS flags );
-enum LR_RESULT rtk_modifyArp( ipaddr_t ip, ether_addr_t* mac, enum ARP_FLAGS flags );
-enum LR_RESULT rtk_delArp( ipaddr_t ip );
-enum LR_RESULT rtk_addRoute( ipaddr_t ip, ipaddr_t mask, ipaddr_t gateway, uint8* ifname, enum RT_FLAGS flags );
-enum LR_RESULT rtk_modifyRoute( ipaddr_t ip, ipaddr_t mask, ipaddr_t gateway, uint8* ifname, enum RT_FLAGS flags );
-enum LR_RESULT rtk_delRoute( ipaddr_t ip, ipaddr_t mask );
-enum LR_RESULT rtk_addSession( uint8* ifname, enum SE_TYPE seType, uint32 sessionId, enum SE_FLAGS flags );
-enum LR_RESULT rtk_delSession( uint8* ifname );
-enum LR_RESULT rtk_addNaptConnection( enum NP_PROTOCOL protocol, ipaddr_t intIp, uint32 intPort,
-                                                               ipaddr_t extIp, uint32 extPort,
-                                                               ipaddr_t remIp, uint32 remPort,
-                                                               enum NP_FLAGS flags);
-enum LR_RESULT rtk_delNaptConnection( enum NP_PROTOCOL protocol, ipaddr_t intIp, uint32 intPort,
-                                                               ipaddr_t extIp, uint32 extPort,
-                                                               ipaddr_t remIp, uint32 remPort );
-enum LR_RESULT rtk_idleNaptConnection(enum NP_PROTOCOL protocol, ipaddr_t intIp, uint32 intPort,
-                                                              ipaddr_t extIp, uint32 extPort,
-                                                              ipaddr_t remIp, uint32 remPort,
-                                                              uint32 interval,uint32 *entry_last_used);//mark_add
-#endif 
 /* [MARCO FUNCTION] ========================================================================= */
 #define	MAC2STR(addr) \
 	((unsigned char *)&addr)[0], \
@@ -195,6 +124,78 @@ enum LR_RESULT rtk_idleNaptConnection(enum NP_PROTOCOL protocol, ipaddr_t intIp,
 		hbuffer[--k]=0; \
 	} while(0)	/* Mac Address to String */
 
+#define FASTPATH_ADJUST_CHKSUM_NAT_UDP(ip_mod, ip_org, chksum) \
+	do { \
+		s32 accumulate = 0; \
+		if (chksum == 0) break; \
+		if (((ip_mod) != 0) && ((ip_org) != 0)){ \
+			accumulate = ((ip_org) & 0xffff); \
+			accumulate += (( (ip_org) >> 16 ) & 0xffff); \
+			accumulate -= ((ip_mod) & 0xffff); \
+			accumulate -= (( (ip_mod) >> 16 ) & 0xffff); \
+		} \
+		accumulate += ntohs(chksum); \
+		if (accumulate < 0) { \
+			accumulate = -accumulate; \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) ~accumulate); \
+		} else { \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) accumulate); \
+		} \
+	}while(0)	/* Checksum adjustment */
+
+#define FASTPATH_ADJUST_CHKSUM_NPT_UDP(port_mod, port_org, chksum) \
+	do { \
+		s32 accumulate = 0; \
+		if (chksum == 0) break; \
+		if (((port_mod) != 0) && ((port_org) != 0)){ \
+			accumulate += (port_org); \
+			accumulate -= (port_mod); \
+		} \
+		accumulate += ntohs(chksum); \
+		if (accumulate < 0) { \
+			accumulate = -accumulate; \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) ~accumulate); \
+		} else { \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) accumulate); \
+		} \
+	}while(0)	/* Checksum adjustment */
+
+
+#define FASTPATH_ADJUST_CHKSUM_NAPT_UDP(ip_mod, ip_org, port_mod, port_org, chksum) \
+	do { \
+		s32 accumulate = 0; \
+		if (chksum == 0) break; \
+		if (((ip_mod) != 0) && ((ip_org) != 0)){ \
+			accumulate = ((ip_org) & 0xffff); \
+			accumulate += (( (ip_org) >> 16 ) & 0xffff); \
+			accumulate -= ((ip_mod) & 0xffff); \
+			accumulate -= (( (ip_mod) >> 16 ) & 0xffff); \
+		} \
+		if (((port_mod) != 0) && ((port_org) != 0)){ \
+			accumulate += (port_org); \
+			accumulate -= (port_mod); \
+		} \
+		accumulate += ntohs(chksum); \
+		if (accumulate < 0) { \
+			accumulate = -accumulate; \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) ~accumulate); \
+		} else { \
+			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
+			accumulate += accumulate >> 16; \
+			chksum = htons((__u16) accumulate); \
+		} \
+	}while(0)	/* Checksum adjustment */
+
 #define FASTPATH_ADJUST_CHKSUM_NAT(ip_mod, ip_org, chksum) \
 	do { \
 		s32 accumulate = 0; \
@@ -209,11 +210,11 @@ enum LR_RESULT rtk_idleNaptConnection(enum NP_PROTOCOL protocol, ipaddr_t intIp,
 			accumulate = -accumulate; \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) ~accumulate); \
+			chksum = htons((__u16) ~accumulate); \
 		} else { \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) accumulate); \
+			chksum = htons((__u16) accumulate); \
 		} \
 	}while(0)	/* Checksum adjustment */
 
@@ -229,11 +230,11 @@ enum LR_RESULT rtk_idleNaptConnection(enum NP_PROTOCOL protocol, ipaddr_t intIp,
 			accumulate = -accumulate; \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) ~accumulate); \
+			chksum = htons((__u16) ~accumulate); \
 		} else { \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) accumulate); \
+			chksum = htons((__u16) accumulate); \
 		} \
 	}while(0)	/* Checksum adjustment */
 
@@ -256,19 +257,52 @@ enum LR_RESULT rtk_idleNaptConnection(enum NP_PROTOCOL protocol, ipaddr_t intIp,
 			accumulate = -accumulate; \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) ~accumulate); \
+			chksum = htons((__u16) ~accumulate); \
 		} else { \
 			accumulate = (accumulate >> 16) + (accumulate & 0xffff); \
 			accumulate += accumulate >> 16; \
-			chksum = htons((uint16) accumulate); \
+			chksum = htons((__u16) accumulate); \
 		} \
 	}while(0)	/* Checksum adjustment */
 
 /* ---------------------------------------------------------------------------------------------------- */
-uint8 *FastPath_Route(ipaddr_t dIp);
-int FastPath_Enter(struct sk_buff **skb);
+__u8 *FastPath_Route(ip_t dIp);
+int FastPath_Enter(struct sk_buff *skb);
 int FastPath_Track(struct sk_buff *skb);
 /* ---------------------------------------------------------------------------------------------------- */
 
+struct Arp_List_Entry
+{
+	__u8 vaild;
+	ip_t ip;
+	ether_t mac;
+	enum ARP_FLAGS flags;
+	CTAILQ_ENTRY(Arp_List_Entry) arp_link;
+	CTAILQ_ENTRY(Arp_List_Entry) tqe_link;
+};
+
+struct Route_List_Entry
+{
+	__u8 vaild;
+	ip_t ip;
+	ip_t mask;
+	ip_t gateway;
+	__u8 ifname[IFNAME_LEN_MAX];
+	enum RT_FLAGS flags;
+	CTAILQ_ENTRY(Route_List_Entry) route_link;
+	CTAILQ_ENTRY(Route_List_Entry) tqe_link;
+};
+
+extern int fp_on;
+static inline int FastPath_Enabled(void) {
+//	return 1;
+	return fp_on;
+}
+#ifdef CONFIG_PPPOE_PROXY
+extern int pppoe_proxy_enabled;
+extern void  GetPPPoeInfo(struct sk_buff *skb,int *session, char **remote);
+extern int findmacType(char *mac, int  *type);
+extern int  pppoe_xmit2(struct sk_buff *skb,char *macaddr,int session ,int type);
+#endif
 #endif	/* __FASTPATH_CORE_H__ */
 

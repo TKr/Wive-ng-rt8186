@@ -13,6 +13,9 @@ LOOSEUDP=yes
 #Netfilter(firewall) configuration start
 START_IPTABLES=no
 
+#Kernel hack for fast route mode
+FASTPATH=yes
+
 #Start tc qdisc shaper (esfq)
 START_SHAPER=yes
 

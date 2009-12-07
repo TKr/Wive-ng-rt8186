@@ -117,6 +117,11 @@
 #undef IDONTRECEIVEMYOWNPACKETSBACK 
 #define HBUFFERLEN 30
 
+#include <linux/netfilter_arp.h>
+#ifdef  CONFIG_UNIVERSAL_FAST_PATH
+#include "fastpath/fastpath_core.h"
+#endif
+
 
 
 /*
