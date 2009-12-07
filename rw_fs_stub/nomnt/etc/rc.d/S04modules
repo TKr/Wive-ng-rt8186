@@ -11,7 +11,7 @@ echo "Starting modules.dep generate..."
     ls -1R $moddir/drivers/net/*	| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/fs/cifs/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/net/8021q/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
-    ls -1R $moddir/net/bridge/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
+#    ls -1R $moddir/net/bridge/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/net/ipv4/netfilter/*	| awk '{ print $1 ":" }' >> /etc/modules.dep
     ls -1R $moddir/net/sched/*		| awk '{ print $1 ":" }' >> /etc/modules.dep
 

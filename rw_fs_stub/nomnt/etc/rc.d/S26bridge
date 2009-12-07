@@ -124,7 +124,7 @@ fi
 }
 
 stop() {
-echo UserBridgeStop from S26bridge
+echo "UserBridgeStop from S26bridge"
   if [ "$WLAN_IN_BR0" == "yes" ]; then 
   ip link set wlan0 down
   brctl delif br0 wlan0
