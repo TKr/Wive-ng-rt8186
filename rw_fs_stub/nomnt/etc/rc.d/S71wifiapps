@@ -41,6 +41,7 @@ if [ "$WPS" = "yes" ] ; then
 	else
 	wscd -c /etc/wscd.conf -w wlan0 -br eth0 -mode 3 -sig_start
     fi
+	mini_upnpd -wsc /tmp/wscd_config
 fi
 
 #---------------------iwcontrol start----------------------

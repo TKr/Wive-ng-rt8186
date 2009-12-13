@@ -227,12 +227,18 @@ if [ "$INCLUDE_HDC" = "YES" ] ; then
 fi
 
 #WPS daemon & upnp 
-if [ "$INCLUDE_WPS" = "YES" ] ; then
-  echo -n " TC "
-  cp -R $APP_PATH/non-sources/wscd $RO_ROOT/bin/wscd
+if [ "$INCLUDE_WPS" = "YES" ] || [ "$INCLUDE_UPNP" = "YES" ] ; then
+  echo -n " UPNP_LIB "
   cp -R $APP_PATH/non-sources/mini_upnp.so $RO_ROOT/lib/mini_upnp.so
+    if [ "$INCLUDE_WPS" = "YES" ] ; then
+      echo -n " WPS "
+      cp -R $APP_PATH/non-sources/wscd $RO_ROOT/bin/wscd
+    fi
+    if [ "$INCLUDE_UPNP" = "YES" ] ; then
+      echo -n " UPNP "
+      cp -R $APP_PATH/non-sources/mini_upnpd $RO_ROOT/bin/mini_upnpd
+    fi
 fi
-
 #CIFS-Mount 
 if [ "$INCLUDE_CIFS" = "YES" ] ; then
   echo -n " MOUNT CIFS "
