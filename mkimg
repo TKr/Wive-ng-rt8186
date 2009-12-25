@@ -275,6 +275,14 @@ if [ "$INCLUDE_ETHTOOL" = "YES" ] ; then
   cp -R $APP_PATH/ethtool/filesystem/sbin/ethtool $RO_ROOT/sbin/ethtool
 fi
 
+#LLD
+if [ "$INCLUDE_LLD" = "YES" ] ; then
+  echo -n " LLD "
+  cp -R $APP_PATH/lldt/lld2d $RO_ROOT/sbin/lld2d
+  cp -R $APP_PATH/lldt/icon.ico $RO_ROOT/sbin/icon.ico
+  cp -R $APP_PATH/lldt/icon.large.ico $RO_ROOT/sbin/icon.large.ico
+fi
+
 #menu
 if [ "$INCLUDE_MENU" = "YES" ] ; then
   echo -n "menu "

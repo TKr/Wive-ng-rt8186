@@ -41,6 +41,9 @@ MCASTDEV=br0
 #Start syslog daemon (start if 16MB or more RAM, disable if RAM size <16MB )
 SYSLOG_ENABLE=yes
 
+#Start lldt daemon (Link Layer Topology Discovery)
+LLDT_ENABLE=yes
+
 #Disable echo reply at all interfaces
 ICMP_DISABLE=no
 #Enable proxy ARP for router mode
