@@ -1,0 +1,30 @@
+#################################################################
+#			TABLE TZ 				#
+#################################################################
+#	Kyiv                  EET-2EEST,M3.5.0/3,M10.5.0/4	#
+#	Moscow                MSK-3MSD,M3.5.0,M10.5.0/3		#
+#	St.Petersburg         MST-3MDT,M3.5.0/2,M10.5.0/3	#
+#	Kaliningrad           EET-2EEST,M3.5.0,M10.5.0/3	#
+#	Irkutsk               IRKT-8IRKST,M3.5.0,M10.5.0/3	#
+#	Kamchatka             PETT-12PETST,M3.5.0,M10.5.0/3	#
+#	Krasnoyarsk           KRAT-7KRAST,M3.5.0,M10.5.0/3	#
+#	Magadan               MAGT-11MAGST,M3.5.0,M10.5.0/3	#
+#	Novosibirsk           NOVT-6NOVST,M3.5.0,M10.5.0/3	#
+#	Omsk                  OMST-6OMSST,M3.5.0,M10.5.0/3	#
+#	Sakhalin              SAKT-10SAKST,M3.5.0,M10.5.0/3	#
+#	Vladivostok           VLAT-10VLAST,M3.5.0,M10.5.0/3	#
+#	Yakutsk               YAKT-9YAKST,M3.5.0,M10.5.0/3	#
+#	Yekaterinburg         YEKT-5YEKST,M3.5.0,M10.5.0/3	#
+#	Minsk                 EET-2EEST,M3.5.0,M10.5.0/3	#
+#	Riga                  EET-2EEST,M3.5.0/3,M10.5.0/4	#
+#	Baku                  AZT-4AZST,M3.5.0/4,M10.5.0/5	#
+#	Yerevan               AMT-4AMST,M3.5.0,M10.5.0/3	#
+#	Ashgabat              TMT-5				#
+#	Ashkhabad             TMT-5				#
+#	Samarkand             UZT-5				#
+#	Tashkent              UZT-5				#
+#	Tbilisi               GET-4				#
+#	Tel_Aviv              IDDT				#
+#	Ulan_Bator            ULAT-8				#
+#	Bishkek               KGT-6 				#
+#################################################################
