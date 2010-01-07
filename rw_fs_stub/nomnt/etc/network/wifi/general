@@ -27,10 +27,10 @@ FIXCHANNEL=no
 #If enabled in B+G mode, AP will deny the association from 11B STA.
 DENYLEGACY=no
 
-#Set TransmitPower for CCK(802.11b) modulation (1-4b) 
+#Set TransmitPower for CCK(802.11b) modulation (01-4b) 
 #Attention! The parametre increase can cause failure RF of the module.
 #More 2A need fun.
-CCKPOWER=8
+CCKPOWER=08
 
 #Set TransmitPower for OFDM(802.11g) modulation. Recomended 1A-25.
 #Attention! The parametre increase can cause failure RF of the module.
