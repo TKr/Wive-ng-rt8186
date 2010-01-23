@@ -1,0 +1,2 @@
+extensions/libipt_ECN.c: In function `save':
+extensions/libipt_ECN.c:103: warning: enumeration value `IPT_ECN_OP_NONE' not handled in switch

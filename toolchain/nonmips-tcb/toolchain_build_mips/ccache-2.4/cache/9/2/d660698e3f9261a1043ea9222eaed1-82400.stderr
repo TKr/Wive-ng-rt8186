@@ -1,0 +1,2 @@
+miniwget.c: In function `miniwget2':
+miniwget.c:41: warning: unused parameter `url'

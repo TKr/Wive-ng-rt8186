@@ -1,0 +1,2 @@
+cc1: warning: "-fno-rtti" is valid for C++ but not for C/ObjC
+mips-linux-gcc: -lssl: linker input file unused because linking not done

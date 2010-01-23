@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2009 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2010 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -46,12 +46,13 @@ void tftp_request(struct listener *listen, time_t now)
   struct sockaddr_in addr, peer;
   struct msghdr msg;
   struct iovec iov;
-  int is_err = 1, if_index = 0;
+  struct ifreq ifr;
+  int is_err = 1, if_index = 0, mtu = 0;
   struct iname *tmp;
   struct tftp_transfer *transfer;
   int port = daemon->start_tftp_port; /* may be zero to use ephemeral port */
 #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
-  int mtu = IP_PMTUDISC_DONT;
+  int mtuflag = IP_PMTUDISC_DONT;
 #endif
   
   union {
@@ -83,7 +84,10 @@ void tftp_request(struct listener *listen, time_t now)
     return;
   
   if (daemon->options & OPT_NOWILD)
-    addr = listen->iface->addr.in;
+    {
+      addr = listen->iface->addr.in;
+      mtu = listen->iface->mtu;
+    }
   else
     {
       char name[IF_NAMESIZE];
@@ -125,7 +129,10 @@ void tftp_request(struct listener *listen, time_t now)
       for (tmp = daemon->dhcp_except; tmp; tmp = tmp->next)
 	if (tmp->name && (strcmp(tmp->name, name) == 0))
 	  return;
-      
+     
+      strncpy(ifr.ifr_name, name, IF_NAMESIZE);
+      if (ioctl(listen->tftpfd, SIOCGIFMTU, &ifr) != -1)
+	mtu = ifr.ifr_mtu;      
     }
   
   addr.sin_port = htons(port);
@@ -158,7 +165,7 @@ void tftp_request(struct listener *listen, time_t now)
     {
       if (bind(transfer->sockfd, (struct sockaddr *)&addr, sizeof(addr)) == -1 ||
 #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
-	  setsockopt(transfer->sockfd, SOL_IP, IP_MTU_DISCOVER, &mtu, sizeof(mtu)) == -1 ||
+	  setsockopt(transfer->sockfd, SOL_IP, IP_MTU_DISCOVER, &mtuflag, sizeof(mtuflag)) == -1 ||
 #endif
 	  !fix_fd(transfer->sockfd))
 	{
@@ -202,6 +209,9 @@ void tftp_request(struct listener *listen, time_t now)
 		    transfer->blocksize = 1;
 		  if (transfer->blocksize > (unsigned)daemon->packet_buff_sz - 4)
 		    transfer->blocksize = (unsigned)daemon->packet_buff_sz - 4;
+		  /* 32 bytes for IP, UDP and TFTP headers */
+		  if (mtu != 0 && transfer->blocksize > (unsigned)mtu - 32)
+		    transfer->blocksize = (unsigned)mtu - 32;
 		  transfer->opt_blocksize = 1;
 		  transfer->block = 0;
 		}
@@ -212,6 +222,10 @@ void tftp_request(struct listener *listen, time_t now)
 	      transfer->block = 0;
 	    }
 	}
+
+      /* cope with backslashes from windows boxen. */
+      while ((p = strchr(filename, '\\')))
+	*p = '/';
 
       strcpy(daemon->namebuff, "/");
       if (daemon->tftp_prefix)
@@ -265,7 +279,7 @@ void tftp_request(struct listener *listen, time_t now)
     free_transfer(transfer);
   else
     {
-      my_syslog(MS_TFTP | LOG_INFO, _("TFTP sent %s to %s"), daemon->namebuff, inet_ntoa(peer.sin_addr));
+      my_syslog(MS_TFTP | LOG_INFO, _("sent %s to %s"), daemon->namebuff, inet_ntoa(peer.sin_addr));
       transfer->next = daemon->tftp_trans;
       daemon->tftp_trans = transfer;
     }
@@ -399,7 +413,7 @@ void check_tftp_listeners(fd_set *rset, time_t now)
 			  *(q++) = *r;
 		      *q = 0;
 		    }
-		  my_syslog(MS_TFTP | LOG_ERR, _("TFTP error %d %s received from %s"),
+		  my_syslog(MS_TFTP | LOG_ERR, _("error %d %s received from %s"),
 			    (int)ntohs(mess->block), err, 
 			    inet_ntoa(transfer->peer.sin_addr));	
 		  
@@ -430,7 +444,7 @@ void check_tftp_listeners(fd_set *rset, time_t now)
 	      /* don't complain about timeout when we're awaiting the last
 		 ACK, some clients never send it */
 	      if (len != 0)
-		my_syslog(MS_TFTP | LOG_ERR, _("TFTP failed sending %s to %s"), 
+		my_syslog(MS_TFTP | LOG_ERR, _("failed sending %s to %s"), 
 			  transfer->file->filename, inet_ntoa(transfer->peer.sin_addr));
 	      len = 0;
 	    }
@@ -489,7 +503,7 @@ static ssize_t tftp_err(int err, char *packet, char *message, char *file)
   mess->op = htons(OP_ERR);
   mess->err = htons(err);
   ret += (snprintf(mess->message, 500,  message, file, errstr) + 1);
-  my_syslog(MS_TFTP | LOG_ERR, "TFTP %s", mess->message);
+  my_syslog(MS_TFTP | LOG_ERR, "%s", mess->message);
   
   return  ret;
 }

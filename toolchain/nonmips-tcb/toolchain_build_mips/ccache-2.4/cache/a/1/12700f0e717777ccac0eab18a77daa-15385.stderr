@@ -1,0 +1,2 @@
+sp_fint.c: In function `ieee754sp_fint':
+sp_fint.c:32: warning: unused variable `xc'

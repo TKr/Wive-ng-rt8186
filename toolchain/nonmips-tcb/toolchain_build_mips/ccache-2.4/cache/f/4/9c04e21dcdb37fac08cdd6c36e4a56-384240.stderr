@@ -1,0 +1,14 @@
+setup.c: In function `parse_mem_cmdline':
+setup.c:374: warning: int format, long unsigned int arg (arg 2)
+setup.c:374: warning: int format, long unsigned int arg (arg 3)
+setup.c:374: warning: int format, long unsigned int arg (arg 4)
+setup.c:374: warning: int format, long unsigned int arg (arg 5)
+setup.c:368: warning: unused variable `c'
+setup.c:368: warning: unused variable `to'
+setup.c:368: warning: unused variable `from'
+setup.c:369: warning: unused variable `start_at'
+setup.c:369: warning: unused variable `mem_size'
+setup.c:370: warning: unused variable `len'
+setup.c:371: warning: unused variable `usermem'
+setup.c: In function `setup_arch':
+setup.c:516: warning: long int format, int arg (arg 2)

@@ -1,0 +1,6 @@
+muldiv_lib.c: In function `shift_left_64':
+muldiv_lib.c:47: warning: unused variable `i'
+muldiv_lib.c: In function `mul_32_4_unsigned':
+muldiv_lib.c:62: warning: unused variable `i'
+muldiv_lib.c: In function `__umulsi3':
+muldiv_lib.c:321: warning: control reaches end of non-void function

@@ -1,0 +1,2 @@
+svr-main.c: In function `commonsetup':
+svr-main.c:440: warning: implicit declaration of function `seedrandom'

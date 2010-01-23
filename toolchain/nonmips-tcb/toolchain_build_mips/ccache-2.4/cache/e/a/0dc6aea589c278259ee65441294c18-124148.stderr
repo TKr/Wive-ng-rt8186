@@ -1,0 +1,2 @@
+webseed.c: In function `fireNeedReq':
+webseed.c:64: warning: unused parameter `w'

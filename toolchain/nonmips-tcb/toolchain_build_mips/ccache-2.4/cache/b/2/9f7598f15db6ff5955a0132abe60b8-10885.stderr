@@ -1,0 +1,2 @@
+hfload.c: In function `main':
+hfload.c:62: warning: return type of `main' is not `int'

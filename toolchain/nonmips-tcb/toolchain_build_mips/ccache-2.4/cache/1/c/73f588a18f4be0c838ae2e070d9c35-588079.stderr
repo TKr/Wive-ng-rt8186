@@ -1,0 +1,4 @@
+dev.c: In function `handle_macvlan':
+dev.c:1468: warning: implicit declaration of function `macvlan_handle_frame_hook'
+dev.c: In function `net_rx_action':
+dev.c:1487: warning: unused variable `ret'

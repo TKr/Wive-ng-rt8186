@@ -1,0 +1,2 @@
+softirq.c: In function `ksoftirqd':
+softirq.c:376: warning: implicit declaration of function `sys_sched_setscheduler'

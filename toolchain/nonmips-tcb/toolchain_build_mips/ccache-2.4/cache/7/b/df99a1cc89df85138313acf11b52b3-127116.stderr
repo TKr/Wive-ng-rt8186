@@ -1,0 +1,7 @@
+1x_info_auth.c: In function `lib1x_authRSN_constructIE':
+1x_info_auth.c:577: warning: implicit declaration of function `wpa2_hexdump'
+1x_info_auth.c: In function `lib1x_authRSN_parseIE':
+1x_info_auth.c:600: warning: unused variable `pDot11RSNCapability'
+1x_info_auth.c: In function `lib1x_authWPA2_parseIE':
+1x_info_auth.c:971: warning: implicit declaration of function `find_pmksa'
+1x_info_auth.c:971: warning: assignment makes pointer from integer without a cast

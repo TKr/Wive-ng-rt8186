@@ -1,0 +1,2 @@
+ifaddr.c: In function `if2addr':
+ifaddr.c:28: warning: `sa_len' might be used uninitialized in this function

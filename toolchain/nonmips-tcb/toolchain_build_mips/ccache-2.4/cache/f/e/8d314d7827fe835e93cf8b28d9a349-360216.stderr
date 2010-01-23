@@ -1,0 +1,4 @@
+mmc.c: In function `mmc_open':
+mmc.c:554: warning: unused variable `device'
+mmc.c: At top level:
+mmc.c:641: warning: `mmc_check_media_change' defined but not used

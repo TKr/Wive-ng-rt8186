@@ -1,0 +1,2 @@
+discovery.c: In function `parsePADOTags':
+discovery.c:114: warning: unused variable `i'

@@ -1,0 +1,8 @@
+crypto.c: In function `tr_cryptoNew':
+crypto.c:136: warning: unused parameter `torrentHash'
+crypto.c:137: warning: unused parameter `isIncoming'
+crypto.c: In function `tr_cryptoComputeSecret':
+crypto.c:174: warning: unused parameter `crypto'
+crypto.c:175: warning: unused parameter `peerPublicKey'
+crypto.c: At top level:
+crypto.c:113: warning: `getSharedDH' defined but not used

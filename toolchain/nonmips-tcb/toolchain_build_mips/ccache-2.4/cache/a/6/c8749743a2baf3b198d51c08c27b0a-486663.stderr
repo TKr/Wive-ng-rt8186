@@ -1,0 +1,2 @@
+sch_esfq.c:567: warning: initialization from incompatible pointer type
+sch_esfq.c:382: warning: `esfq_change' defined but not used

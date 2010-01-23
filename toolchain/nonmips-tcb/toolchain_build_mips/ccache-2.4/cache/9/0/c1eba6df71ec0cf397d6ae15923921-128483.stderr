@@ -1,0 +1,3 @@
+avpair.c: In function `rc_avpair_tostr':
+avpair.c:740: warning: long int format, UINT4 arg (arg 3)
+avpair.c:752: warning: `%y' yields only last 2 digits of year

@@ -1,0 +1,2 @@
+command.c: In function `command_new':
+command.c:311: warning: passing arg 3 of `input_new' makes integer from pointer without a cast

@@ -1,0 +1,2 @@
+pppoe-discovery.c: In function `sendPADI':
+pppoe-discovery.c:455: warning: implicit declaration of function `error'

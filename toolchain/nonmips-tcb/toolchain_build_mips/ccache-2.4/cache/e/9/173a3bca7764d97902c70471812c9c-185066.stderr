@@ -1,0 +1,2 @@
+handshake.c: In function `canRead':
+handshake.c:1032: warning: `ret' might be used uninitialized in this function

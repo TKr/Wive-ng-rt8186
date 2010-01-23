@@ -1,0 +1,2 @@
+get_driver.c: In function `main':
+get_driver.c:40: warning: unused variable `attr'

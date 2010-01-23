@@ -1,0 +1,10 @@
+src/osl-linux.c: In function `get_ipv6addr':
+src/osl-linux.c:726: warning: unused variable `ipv6addr'
+src/osl-linux.c: In function `get_support_info':
+src/osl-linux.c:907: warning: unused variable `support'
+src/osl-linux.c: In function `get_friendly_name':
+src/osl-linux.c:918: warning: unused variable `fname'
+src/osl-linux.c: In function `get_hw_id':
+src/osl-linux.c:940: warning: unused variable `hwid'
+src/osl-linux.c: In function `get_wl_physical_medium':
+src/osl-linux.c:970: warning: unused variable `wpm'

@@ -1,0 +1,13 @@
+natpmp.c: In function `sendnewportmappingrequest':
+natpmp.c:157: warning: cast increases required alignment of target type
+natpmp.c:158: warning: cast increases required alignment of target type
+natpmp.c:159: warning: cast increases required alignment of target type
+natpmp.c: At top level:
+natpmp.c:165: warning: no previous declaration for `readnatpmpresponse'
+natpmp.c: In function `readnatpmpresponse':
+natpmp.c:190: warning: cast increases required alignment of target type
+natpmp.c:191: warning: cast increases required alignment of target type
+natpmp.c:220: warning: cast increases required alignment of target type
+natpmp.c:222: warning: cast increases required alignment of target type
+natpmp.c:223: warning: cast increases required alignment of target type
+natpmp.c:224: warning: cast increases required alignment of target type

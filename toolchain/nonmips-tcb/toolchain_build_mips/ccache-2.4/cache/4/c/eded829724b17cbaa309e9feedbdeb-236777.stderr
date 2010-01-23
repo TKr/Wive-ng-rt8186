@@ -1,0 +1,4 @@
+session.c: In function `tr_sessionSetPeerLimit':
+session.c:1383: warning: unused parameter `session'
+session.c: In function `tr_sessionGetPeerLimit':
+session.c:1391: warning: unused parameter `session'

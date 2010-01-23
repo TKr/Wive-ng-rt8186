@@ -1,0 +1,7 @@
+pppol2tp.c: In function `setdevname_pppol2tp':
+pppol2tp.c:127: warning: unused variable `a'
+pppol2tp.c: In function `send_config_pppol2tp':
+pppol2tp.c:200: warning: unused variable `ifr'
+pppol2tp.c:202: warning: unused variable `fd'
+pppol2tp.c: At top level:
+pppol2tp.c:494: warning: `pppol2tp_cleanup' defined but not used

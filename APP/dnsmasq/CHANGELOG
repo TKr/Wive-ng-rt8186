@@ -1,5 +1,182 @@
+version 2.52
+            Work around a Linux kernel bug which insists that the 
+	    length of the option passed to setsockopt must be at least
+            sizeof(int) bytes, even if we're calling SO_BINDTODEVICE
+            and the device name is "lo".  Note that this is fixed 
+	    in kernel 2.6.31, but the workaround is harmless and 
+	    allows earlier kernels to be used. Also fix dnsmasq 
+	    bug which reported the wrong address when this failed. 
+	    Thanks to Fedor for finding this.
+
+	    The API for IPv6 PKTINFO changed around Linux kernel
+	    2.6.14. Workaround the case where dnsmasq is compiled
+	    against newer headers, but then run on an old kernel:
+	    necessary for some *WRT distros.
+
+	    Re-read the set of network interfaces when re-loading
+	    /etc/resolv.conf if --bind-interfaces is not set. This
+	    handles the case that loopback interfaces do not exist
+	    when dnsmasq is first started.
+
+	    Tweak the PXE code to support port 4011. This should
+	    reduce broadcasts and make things more reliable when other
+	    servers are around. It also improves inter-operability
+	    with certain clients.
+
+	    Make a pxe-service configuration with no filename or boot 
+	    service type legal: this does a local boot. eg.
+	    pxe-service=x86PC, "Local boot" 
+
+	    Be more conservative in detecting "A for A"
+	    queries. Dnsmasq checks if the name in a type=A query looks
+	    like a dotted-quad IP address and answers the query itself
+	    if so, rather than forwarding it. Previously dnsmasq
+	    relied in the library function inet_addr() to convert
+	    addresses, and that will accept some things which are
+	    confusing in this context, like 1.2.3 or even just
+	    1234. Now we only do A for A processing for four decimal
+	    numbers delimited by dots.
+
+	    A couple of tweaks to fix compilation on Solaris. Thanks
+	    to Joel Macklow for help with this.
+
+	    Another Solaris compilation tweak, needed for Solaris
+	    2009.06. Thanks to Lee Essen for that.
+
+	    Added extract packaging stuff from Lee Essen to 
+	    contrib/Solaris10.
+          
+            Increased the default limit on number of leases to 1000
+            (from 150). This is mainly a defence against DoS attacks,
+            and for the average "one for two class C networks"
+            installation, IP address exhaustion does that just as
+            well. Making the limit greater than the number of IP
+            addresses available in such an installation removes a
+            surprise which otherwise can catch people out.
+
+	    Removed extraneous trailing space in the value of the
+	    DNSMASQ_TIME_REMAINING DNSMASQ_LEASE_LENGTH and
+	    DNSMASQ_LEASE_EXPIRES environment variables. Thanks to
+	    Gildas Le Nadan for spotting this.
+
+	    Provide the network-id tags for a DHCP transaction to 
+	    the lease-change script in the environment variable
+	    DNSMASQ_TAGS. A good suggestion from Gildas Le Nadan.  
+
+	    Add support for RFC3925 "Vendor-Identifying Vendor
+	    Options". The syntax looks like this:  
+	    --dhcp-option=vi-encap:<enterprise number>, .........
+
+	    Add support to --dhcp-match to allow matching against
+	    RFC3925 "Vendor-Identifying Vendor Classes". The syntax
+	    looks like this:
+	    --dhcp-match=tag,vi-encap<enterprise number>, <value>
+	    
+	    Add some application specific code to assist in
+	    implementing the Broadband forum TR069 CPE-WAN
+	    specification. The details are in contrib/CPE-WAN/README
+
+	    Increase the default DNS packet size limit to 4096, as
+	    recommended by RFC5625 section 4.4.3. This can be
+	    reconfigured using --edns-packet-max if needed. Thanks to
+	    Francis Dupont for pointing this out.
+
+	    Rewrite query-ids even for DNSSEC signed packets, since
+	    this is allowed by RFC5625 section 4.5.
+	    
+	    Use getopt_long by default on OS X. It has been supported
+	    since version 10.3.0. Thanks to Arek Dreyer for spotting
+	    this.
+
+	    Added up-to-date startup configuration for MacOSX/launchd
+	    in contrib/MacOSX-launchd. Thanks to Arek Dreyer for
+	    providing this.
+
+	    Fix link error when including Dbus but excluding DHCP. 
+	    Thanks to Oschtan for the bug report.
+
+            Updated French translation. Thanks to Gildas Le Nadan.
+ 
+            Updated Polish translation. Thanks to Jan Psota.
+
+	    Updated Spanish translation. Thanks to Chris Chatham.
+
+
+version 2.51
+            Add support for internationalised DNS. Non-ASCII characters
+            in domain names found in /etc/hosts, /etc/ethers and 
+	    /etc/dnsmasq.conf will be correctly handled by translation to
+            punycode, as specified in RFC3490. This function is only
+            available if dnsmasq is compiled with internationalisation
+            support, and adds a dependency on GNU libidn. Without i18n
+            support, dnsmasq continues to be compilable with just
+            standard tools. Thanks to Yves Dorfsman for the
+            suggestion. 
+
+            Add two more environment variables for lease-change scripts:
+	    First, DNSMASQ_SUPPLIED_HOSTNAME; this is set to the hostname
+	    supplied by a client, even if the actual hostname used is
+	    over-ridden by dhcp-host or dhcp-ignore-names directives.
+	    Also DNSMASQ_RELAY_ADDRESS which gives the address of 
+            a DHCP relay, if used.
+	    Suggestions from Michael Rack.
+
+	    Fix regression which broke echo of relay-agent
+	    options. Thanks to Michael Rack for spotting this.
+          
+            Don't treat option 67 as being interchangeable with
+            dhcp-boot parameters if it's specified as
+            dhcp-option-force.
+
+	    Make the code to call scripts on lease-change compile-time
+	    optional. It can be switched off by editing src/config.h
+	    or building with "make COPTS=-DNO_SCRIPT".
+ 
+	    Make the TFTP server cope with filenames from Windows/DOS
+	    which use '\' as pathname separator. Thanks to Ralf for
+	    the patch.
+
+	    Updated Polish translation. Thanks to Jan Psota.
+ 
+	    Warn if an IP address is duplicated in /etc/ethers. Thanks
+	    to Felix Schwarz for pointing this out.
+
+	    Teach --conf-dir to take an option list of file suffices
+	    which will be ignored when scanning the directory. Useful
+	    for backup files etc. Thanks to Helmut Hullen for the
+	    suggestion. 
+
+	    Add new DHCP option named tftpserver-address, which
+	    corresponds to the third argument of dhcp-boot. This
+	    allows the complete functionality of dhcp-boot to be
+	    replicated with dhcp-option. Useful when using 
+	    dhcp-optsfile.
+
+	    Test which upstream nameserver to use every 10 seconds
+            or 50 queries and not just when a query times out and 
+            is retried. This should improve performance when there
+            is a slow nameserver in the list. Thanks to Joe for the
+            suggestion. 
+
+	    Don't do any PXE processing, even for clients with the 
+	    correct vendorclass, unless at least one pxe-prompt or 
+            pxe-service option is given. This stops dnsmasq 
+            interfering with proxy PXE subsystems when it is just 
+            the DHCP server. Thanks to Spencer Clark for spotting this.
+
+	    Limit the blocksize used for TFTP transfers to a value
+	    which avoids packet fragmentation, based on the MTU of the
+	    local interface. Many netboot ROMs can't cope with
+	    fragmented packets.
+
+	    Honour dhcp-ignore configuration for PXE and proxy-PXE 
+	    requests. Thanks to Niels Basjes for the bug report.
+
+            Updated French translation. Thanks to Gildas Le Nadan.
+
+
 version 2.50
-            Fix security problem which allowed any host permitted to 
+	    Fix security problem which allowed any host permitted to 
             do TFTP to possibly compromise dnsmasq by remote buffer 
             overflow when TFTP enabled. Thanks to Core Security 
 	    Technologies and Iván Arce, Pablo Hernán Jorge, Alejandro 
@@ -358,3 +535,8 @@ version 2.43
 	    ports. Thanks to Patrick McLean for spotting this.
 
 	    Updated French translation. Thanks to Gildas Le Nadan.
+
+
+version 2.42
+            The changelog for version 2.42 and earlier is 
+            available in CHANGELOG.archive.

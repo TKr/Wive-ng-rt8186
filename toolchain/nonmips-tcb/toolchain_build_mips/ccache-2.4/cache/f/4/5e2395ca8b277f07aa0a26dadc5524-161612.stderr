@@ -1,0 +1,9 @@
+dht.c: In function `is_martian':
+dht.c:308: warning: cast increases required alignment of target type
+dht.c:316: warning: cast increases required alignment of target type
+dht.c: In function `storage_store':
+dht.c:1196: warning: cast increases required alignment of target type
+dht.c:1201: warning: cast increases required alignment of target type
+dht.c: In function `make_token':
+dht.c:1341: warning: cast increases required alignment of target type
+dht.c:1346: warning: cast increases required alignment of target type

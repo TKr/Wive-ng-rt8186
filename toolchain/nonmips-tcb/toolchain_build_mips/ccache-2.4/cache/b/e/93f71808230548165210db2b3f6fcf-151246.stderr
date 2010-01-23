@@ -1,0 +1,2 @@
+sshpty.c: In function `pty_release':
+sshpty.c:248: warning: unused parameter `tty_name'

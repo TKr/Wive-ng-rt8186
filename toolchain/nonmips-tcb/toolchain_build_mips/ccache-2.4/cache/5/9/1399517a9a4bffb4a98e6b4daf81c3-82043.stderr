@@ -1,0 +1,2 @@
+evutil.c: In function `evutil_strtoll':
+evutil.c:183: warning: implicit declaration of function `strtoll'

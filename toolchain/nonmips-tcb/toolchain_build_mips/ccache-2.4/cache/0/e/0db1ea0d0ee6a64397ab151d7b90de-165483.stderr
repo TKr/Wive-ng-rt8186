@@ -1,0 +1,5 @@
+rpc-server.c: In function `add_response':
+rpc-server.c:307: warning: unused parameter `req'
+rpc-server.c:308: warning: unused parameter `server'
+ptrarray.h: At top level:
+rpc-server.c:542: warning: `isAddressAllowed' defined but not used

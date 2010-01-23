@@ -1,0 +1,4 @@
+crypto.c: In function `getSharedDH':
+crypto.c:118: warning: assignment from incompatible pointer type
+crypto.c: In function `tr_cryptoComputeSecret':
+crypto.c:177: warning: unused variable `dh'

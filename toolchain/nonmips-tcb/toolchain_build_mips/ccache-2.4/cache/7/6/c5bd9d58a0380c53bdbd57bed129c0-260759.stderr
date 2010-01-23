@@ -1,0 +1,18 @@
+1x_kmsm_auth.c: In function `lib1x_akmsm_SendEAPOL_proc':
+1x_kmsm_auth.c:362: warning: suggest parentheses around + or - in operand of &
+1x_kmsm_auth.c:362: warning: suggest parentheses around + or - in operand of &
+1x_kmsm_auth.c:369: warning: suggest parentheses around + or - in operand of &
+1x_kmsm_auth.c:369: warning: suggest parentheses around + or - in operand of &
+1x_kmsm_auth.c: In function `lib1x_akmsm_ProcessEAPOL_proc':
+1x_kmsm_auth.c:551: warning: implicit declaration of function `wpa2_hexdump'
+1x_kmsm_auth.c:557: warning: implicit declaration of function `del_pmksa_by_spa'
+1x_kmsm_auth.c:620: warning: implicit declaration of function `SetEAPOL_KEYIV'
+1x_kmsm_auth.c: In function `lib1x_akmsm_AuthenticationRequest':
+1x_kmsm_auth.c:1711: warning: implicit declaration of function `CalcPMKID'
+1x_kmsm_auth.c: In function `lib1x_akmsm_AuthenticationSuccess':
+1x_kmsm_auth.c:1770: warning: implicit declaration of function `get_pmksa_node'
+1x_kmsm_auth.c:1770: warning: assignment makes pointer from integer without a cast
+1x_kmsm_auth.c:1789: warning: implicit declaration of function `cache_pmksa'
+1x_kmsm_auth.c: In function `lib1x_akmsm_trans':
+1x_kmsm_auth.c:2305: warning: enumeration value `gkmsm_REKEYESTABLISHED' not handled in switch
+1x_kmsm_auth.c:2305: warning: enumeration value `gkmsm_KEYERROR' not handled in switch

@@ -1,0 +1,13 @@
+setup.c:34: warning: function declaration isn't a prototype
+setup.c: In function `shutdown_netdev':
+setup.c:41: warning: implicit declaration of function `rtnl_lock'
+setup.c:43: warning: implicit declaration of function `rtnl_unlock'
+setup.c: In function `nino_machine_restart':
+setup.c:52: warning: unused variable `back_to_prom'
+setup.c: At top level:
+setup.c:84: warning: function declaration isn't a prototype
+setup.c:117: warning: function declaration isn't a prototype
+setup.c: In function `early_printk_setup':
+setup.c:122: warning: implicit declaration of function `console_setup'
+setup.c: At top level:
+setup.c:34: warning: `shutdown_netdev' defined but not used

@@ -1,0 +1,2 @@
+peer-msgs.c: In function `tr_generateAllowedSet':
+peer-msgs.c:630: warning: cast increases required alignment of target type

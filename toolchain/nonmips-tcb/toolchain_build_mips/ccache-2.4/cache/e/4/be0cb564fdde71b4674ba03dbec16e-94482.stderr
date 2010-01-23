@@ -1,0 +1,3 @@
+In file included from miniupnpc.c:36:
+/opt/Wive-DSL-2.6/lib/uClibc/include/unistd.h:985: warning: redundant redeclaration of `ctermid' in same scope
+/opt/Wive-DSL-2.6/lib/uClibc/include/stdio.h:601: warning: previous declaration of `ctermid'

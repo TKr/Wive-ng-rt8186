@@ -1,0 +1,2 @@
+crypto.c: In function `ensureKeyExists':
+crypto.c:116: warning: unused parameter `crypto'

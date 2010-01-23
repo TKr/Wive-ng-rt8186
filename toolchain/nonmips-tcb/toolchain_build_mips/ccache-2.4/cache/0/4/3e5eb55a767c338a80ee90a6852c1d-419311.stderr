@@ -1,0 +1,1 @@
+ppp_async.c:237: warning: `ppp_asynctty_hangup' defined but not used

@@ -1,0 +1,5 @@
+peer-mgr.c: In function `assertValidPiece':
+peer-mgr.c:539: warning: unused parameter `t'
+peer-mgr.c:539: warning: unused parameter `piece'
+peer-mgr.c: At top level:
+peer-mgr.c:128: warning: `tr_isAtom' defined but not used

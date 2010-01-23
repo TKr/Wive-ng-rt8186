@@ -1,0 +1,4 @@
+brctl_cmd.c: In function `br_cmd_meshsignaloff':
+brctl_cmd.c:234: warning: implicit declaration of function `br_turnoff_signal_pathsel'
+brctl_cmd.c: At top level:
+brctl_cmd.c:478: warning: initialization from incompatible pointer type

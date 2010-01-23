@@ -1,0 +1,2 @@
+ext.c: In function `regex_command':
+ext.c:544: warning: assignment makes pointer from integer without a cast

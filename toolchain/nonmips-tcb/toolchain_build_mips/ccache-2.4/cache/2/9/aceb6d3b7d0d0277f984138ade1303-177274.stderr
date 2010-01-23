@@ -1,0 +1,6 @@
+peer-io.c: In function `didWriteWrapper':
+peer-io.c:91: warning: cast increases required alignment of target type
+peer-io.c: In function `trDatatypeFree':
+peer-io.c:445: warning: cast increases required alignment of target type
+peer-io.c: In function `tr_peerIoFlushOutgoingProtocolMsgs':
+peer-io.c:903: warning: cast increases required alignment of target type

@@ -1,0 +1,5 @@
+neighbour.c: In function `neigh_timer_handler':
+neighbour.c:716: warning: passing arg 2 of `rtl865x_addArp' from incompatible pointer type
+neighbour.c: In function `neigh_update':
+neighbour.c:901: warning: passing arg 2 of `rtl865x_modifyArp' from incompatible pointer type
+neighbour.c:945: warning: passing arg 2 of `rtl865x_addArp' from incompatible pointer type

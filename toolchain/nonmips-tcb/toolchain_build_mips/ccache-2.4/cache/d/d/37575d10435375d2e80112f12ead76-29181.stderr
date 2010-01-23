@@ -1,0 +1,2 @@
+prom.c: In function `prom_init':
+prom.c:41: warning: unused variable `cnt'

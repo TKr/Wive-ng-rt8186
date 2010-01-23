@@ -1,0 +1,3 @@
+net.c: In function `global_unicast_address':
+net.c:513: warning: cast increases required alignment of target type
+net.c:521: warning: cast increases required alignment of target type

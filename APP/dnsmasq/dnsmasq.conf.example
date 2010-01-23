@@ -365,7 +365,7 @@
 #pxe-prompt="Press F8 for menu.", 60
 
 # Available boot services. for PXE.
-#pxe-service=x86PC, "Boot from local disk", 0
+#pxe-service=x86PC, "Boot from local disk"
 
 # Loads <tftp-root>/pxelinux.0 from dnsmasq TFTP server.
 #pxe-service=x86PC, "Install Linux", pxelinux 
@@ -395,6 +395,11 @@
 # Make the TFTP server more secure: with this set, only files owned by
 # the user dnsmasq is running as will be send over the net.
 #tftp-secure
+
+# This option stops dnsmasq from negotiating a larger blocksize for TFTP 
+# transfers. It will slow things down, but may rescue some broken TFTP
+# clients.
+#tftp-no-blocksize
 
 # Set the boot file name only when the "red" tag is set.
 #dhcp-boot=net:red,pxelinux.red-net

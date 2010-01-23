@@ -1,0 +1,2 @@
+cons.handler.c: In function `handle_console_linux':
+cons.handler.c:208: warning: deprecated use of label at end of compound statement
