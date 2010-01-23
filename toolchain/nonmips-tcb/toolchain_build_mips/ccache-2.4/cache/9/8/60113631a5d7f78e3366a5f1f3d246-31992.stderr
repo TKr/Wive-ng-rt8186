@@ -1,5 +1,0 @@
-conftest.c: In function `main':
-conftest.c:76: warning: `cp1' might be used uninitialized in this function
-conftest.c:76: warning: `cp2' might be used uninitialized in this function
-conftest.c:77: warning: `h1' might be used uninitialized in this function
-conftest.c:78: warning: `i1' might be used uninitialized in this function

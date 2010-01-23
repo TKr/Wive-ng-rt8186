@@ -1,2 +1,0 @@
-1x_ptsm.c: In function `lib1x_ptsm_dump':
-1x_ptsm.c:88: warning: unused variable `ptsm'

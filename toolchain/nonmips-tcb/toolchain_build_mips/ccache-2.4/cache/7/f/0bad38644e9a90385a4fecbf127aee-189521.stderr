@@ -1,2 +1,0 @@
-dnsmasq.c: In function `clear_cache_and_reload':
-dnsmasq.c:938: warning: unused parameter `now'

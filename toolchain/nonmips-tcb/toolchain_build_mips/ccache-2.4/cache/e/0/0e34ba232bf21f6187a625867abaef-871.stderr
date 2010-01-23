@@ -1,3 +1,0 @@
-conftest.c: In function `main':
-conftest.c:68: warning: `t' might be used uninitialized in this function
-conftest.c:87: warning: `b' might be used uninitialized in this function

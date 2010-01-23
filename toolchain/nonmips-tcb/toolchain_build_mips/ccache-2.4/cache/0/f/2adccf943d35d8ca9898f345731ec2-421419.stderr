@@ -1,1 +1,0 @@
-pppox.c:82: warning: static declaration for `pppox_ioctl' follows non-static

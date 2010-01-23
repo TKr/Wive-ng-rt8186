@@ -1,2 +1,0 @@
-netlink.c: In function `iface_enumerate':
-netlink.c:125: warning: unused parameter `ipv6_callback'

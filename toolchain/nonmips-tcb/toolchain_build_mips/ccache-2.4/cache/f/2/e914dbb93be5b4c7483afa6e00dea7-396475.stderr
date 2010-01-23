@@ -1,6 +1,0 @@
-inode.c: In function `read_data':
-inode.c:153: warning: `b' might be used uninitialized in this function
-inode.c: In function `squashfs_readpage':
-inode.c:1202: warning: `fragment' might be used uninitialized in this function
-inode.c: In function `squashfs_put_super':
-inode.c:1522: warning: use of cast expressions as lvalues is deprecated

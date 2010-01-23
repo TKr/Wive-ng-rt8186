@@ -1,2 +1,0 @@
-sys-linux.c: In function `ppp_available':
-sys-linux.c:2117: warning: `count' might be used uninitialized in this function

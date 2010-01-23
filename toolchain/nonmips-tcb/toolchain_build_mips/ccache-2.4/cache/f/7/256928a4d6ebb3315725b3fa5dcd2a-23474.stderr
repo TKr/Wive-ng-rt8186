@@ -1,1 +1,0 @@
-mips-linux-gcc: -lssl: linker input file unused because linking not done

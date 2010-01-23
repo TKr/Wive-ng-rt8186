@@ -1,6 +1,0 @@
-1x_auth_pae.c: In function `lib1x_timer_authenticator':
-1x_auth_pae.c:1004: warning: implicit declaration of function `lib1x_akmsm_GroupReKey_Timer_proc'
-1x_auth_pae.c: In function `lib1x_capture_control':
-1x_auth_pae.c:1661: warning: implicit declaration of function `lib1x_authWPA2_parseIE'
-1x_auth_pae.c: In function `lib1x_authsm_execute_authsm':
-1x_auth_pae.c:2622: warning: enumeration value `apsm_Held' not handled in switch

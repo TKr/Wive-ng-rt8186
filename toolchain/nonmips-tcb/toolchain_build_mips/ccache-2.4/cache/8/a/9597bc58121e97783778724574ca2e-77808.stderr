@@ -1,2 +1,0 @@
-ptrarray.c: In function `assertSortedAndUnique':
-ptrarray.c:175: warning: unused parameter `compare'

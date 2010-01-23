@@ -1,4 +1,0 @@
-1x_pmk_cache.c: In function `get_pmksa_node':
-1x_pmk_cache.c:23: warning: implicit declaration of function `malloc'
-1x_pmk_cache.c: In function `free_pmksa_node':
-1x_pmk_cache.c:30: warning: implicit declaration of function `free'

@@ -1,4 +1,0 @@
-random.c: In function `reseedrandom':
-random.c:170: warning: unused variable `hash'
-random.c: In function `genrandom':
-random.c:196: warning: comparison between signed and unsigned

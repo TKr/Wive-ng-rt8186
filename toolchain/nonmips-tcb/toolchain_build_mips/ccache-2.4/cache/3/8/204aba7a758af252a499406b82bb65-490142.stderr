@@ -1,2 +1,0 @@
-raw.c: In function `raw_sendmsg':
-raw.c:431: warning: passing arg 2 of `ip_build_xmit' from incompatible pointer type

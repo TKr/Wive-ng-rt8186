@@ -1,2 +1,0 @@
-ipt_MASQUERADE.c: In function `masquerade_target':
-ipt_MASQUERADE.c:83: warning: unused variable `i'

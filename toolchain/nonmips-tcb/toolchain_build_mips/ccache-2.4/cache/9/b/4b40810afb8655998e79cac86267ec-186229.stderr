@@ -1,4 +1,0 @@
-libbb/sha1.c: In function `sha1_end':
-libbb/sha1.c:411: warning: unused variable `i'
-libbb/sha1.c: In function `sha512_end':
-libbb/sha1.c:446: warning: unused variable `i'

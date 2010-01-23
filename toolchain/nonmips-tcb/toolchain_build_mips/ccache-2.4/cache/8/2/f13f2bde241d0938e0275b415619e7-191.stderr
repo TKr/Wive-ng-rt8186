@@ -1,2 +1,0 @@
-conftest.c: In function `main':
-conftest.c:96: warning: unused variable `cp'

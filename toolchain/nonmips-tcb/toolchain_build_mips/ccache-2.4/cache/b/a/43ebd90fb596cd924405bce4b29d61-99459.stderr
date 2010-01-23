@@ -1,2 +1,0 @@
-src/main.c: In function `main':
-src/main.c:267: warning: implicit declaration of function `get_machine_name'

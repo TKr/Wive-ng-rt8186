@@ -1,4 +1,0 @@
-br_input.c: In function `br_handle_frame':
-br_input.c:367: warning: `return' with a value, in function returning void
-br_input.c: In function `ICMPv6_check':
-br_input.c:501: warning: control reaches end of non-void function

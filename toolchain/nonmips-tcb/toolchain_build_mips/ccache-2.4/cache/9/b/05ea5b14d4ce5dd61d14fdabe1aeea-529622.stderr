@@ -1,2 +1,0 @@
-af_packet.c: In function `packet_getsockopt':
-af_packet.c:1357: warning: use of cast expressions as lvalues is deprecated

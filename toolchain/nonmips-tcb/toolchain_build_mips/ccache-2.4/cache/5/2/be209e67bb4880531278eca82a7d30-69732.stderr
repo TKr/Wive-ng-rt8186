@@ -1,8 +1,0 @@
-src/ctstate.c: In function `state_process_packet':
-src/ctstate.c:215: warning: unused variable `this_session'
-src/ctstate.c:216: warning: unused variable `smStatus'
-src/ctstate.c: In function `state_process_timeout':
-src/ctstate.c:249: warning: unused variable `smStatus'
-src/ctstate.c: At top level:
-src/ctstate.c:91: warning: `find_session' defined but not used
-src/ctstate.c:110: warning: `new_session' defined but not used

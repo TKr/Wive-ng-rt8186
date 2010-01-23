@@ -1,4 +1,0 @@
-crypto.c: In function `ensureKeyExists':
-crypto.c:116: warning: unused parameter `crypto'
-crypto.c: In function `tr_cryptoFree':
-crypto.c:171: warning: unused parameter `crypto'

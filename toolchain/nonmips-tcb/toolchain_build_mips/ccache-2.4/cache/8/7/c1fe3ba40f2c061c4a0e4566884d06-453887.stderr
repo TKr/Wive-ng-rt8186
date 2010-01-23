@@ -1,4 +1,0 @@
-pptp_ctrl.c: In function `ctrlp_disp':
-pptp_ctrl.c:901: warning: too few arguments for format
-pptp_ctrl.c: At top level:
-pptp_ctrl.c:218: warning: `ctrl_msg_types' defined but not used

@@ -1,2 +1,0 @@
-tr-dht.c: In function `tr_dhtInit':
-tr-dht.c:322: warning: unused variable `one'

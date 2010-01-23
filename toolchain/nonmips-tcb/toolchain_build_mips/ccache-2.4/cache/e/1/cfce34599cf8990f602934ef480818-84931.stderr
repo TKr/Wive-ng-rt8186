@@ -1,2 +1,0 @@
-src/ciphers/aes/aes.c: In function `rijndael_enc_done':
-src/ciphers/aes/aes.c:722: warning: unused parameter `skey'

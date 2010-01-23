@@ -1,5 +1,0 @@
-In file included from platform.c:42:
-/opt/Wive-DSL-2.6/lib/uClibc/include/unistd.h:985: warning: redundant redeclaration of `ctermid' in same scope
-/opt/Wive-DSL-2.6/lib/uClibc/include/stdio.h:601: warning: previous declaration of `ctermid'
-/opt/Wive-DSL-2.6/lib/uClibc/include/unistd.h:1004: warning: redundant redeclaration of `pthread_atfork' in same scope
-/opt/Wive-DSL-2.6/lib/uClibc/include/pthread.h:676: warning: previous declaration of `pthread_atfork'

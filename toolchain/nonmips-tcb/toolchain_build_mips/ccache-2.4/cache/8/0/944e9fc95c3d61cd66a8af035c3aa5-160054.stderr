@@ -1,8 +1,0 @@
-fdlimit.c: In function `tr_pread':
-fdlimit.c:217: warning: implicit declaration of function `pread'
-fdlimit.c: In function `tr_pwrite':
-fdlimit.c:230: warning: implicit declaration of function `pwrite'
-fdlimit.c: In function `tr_prefetch':
-fdlimit.c:240: warning: unused parameter `fd'
-fdlimit.c:240: warning: unused parameter `offset'
-fdlimit.c:240: warning: unused parameter `count'

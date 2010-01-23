@@ -1,2 +1,0 @@
-fib_hash.c: In function `fib_iterate':
-fib_hash.c:942: warning: unused variable `t'

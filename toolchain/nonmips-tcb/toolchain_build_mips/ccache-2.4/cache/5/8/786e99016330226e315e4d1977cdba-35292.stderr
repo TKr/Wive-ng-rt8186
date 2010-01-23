@@ -1,2 +1,0 @@
-conftest.c: In function `main':
-conftest.c:62: warning: assignment discards qualifiers from pointer target type

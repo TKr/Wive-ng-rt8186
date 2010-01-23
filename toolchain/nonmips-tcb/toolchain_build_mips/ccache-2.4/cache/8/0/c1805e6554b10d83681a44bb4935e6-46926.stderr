@@ -1,3 +1,0 @@
-dlist_test.c: In function `main':
-dlist_test.c:63: warning: unused parameter `argc'
-dlist_test.c:63: warning: unused parameter `argv'

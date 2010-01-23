@@ -1,4 +1,0 @@
-rline.c: In function `line_completion':
-rline.c:437: warning: implicit declaration of function `mvwaddwstr'
-rline.c: In function `my_rl_gets':
-rline.c:681: warning: implicit declaration of function `wget_wch'

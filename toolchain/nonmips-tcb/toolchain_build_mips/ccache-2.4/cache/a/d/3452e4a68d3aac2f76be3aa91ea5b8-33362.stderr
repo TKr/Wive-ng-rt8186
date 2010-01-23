@@ -1,2 +1,0 @@
-dlist.c: In function `_dlist_swap':
-dlist.c:649: warning: unused parameter `list'

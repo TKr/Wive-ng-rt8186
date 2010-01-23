@@ -1,2 +1,0 @@
-loginrec.c: In function `syslogin_perform_logout':
-loginrec.c:1235: warning: unused parameter `li'

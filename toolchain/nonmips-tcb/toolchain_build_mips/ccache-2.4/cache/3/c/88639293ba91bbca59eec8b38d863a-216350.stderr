@@ -1,4 +1,0 @@
-peer-msgs.c: In function `tr_generateAllowedSet':
-peer-msgs.c:569: warning: cast increases required alignment of target type
-peer-msgs.c: In function `readBtMessage':
-peer-msgs.c:1360: warning: unused variable `startBufLen'

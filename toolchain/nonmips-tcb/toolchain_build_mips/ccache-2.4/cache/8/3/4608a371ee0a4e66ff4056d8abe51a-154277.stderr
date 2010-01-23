@@ -1,3 +1,0 @@
-dropbearkey.c: In function `printpubkey':
-dropbearkey.c:316: warning: implicit declaration of function `sign_key_fingerprint'
-dropbearkey.c:316: warning: assignment makes pointer from integer without a cast

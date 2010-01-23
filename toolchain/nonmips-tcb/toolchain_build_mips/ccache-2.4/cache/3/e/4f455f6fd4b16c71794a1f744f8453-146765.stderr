@@ -1,2 +1,0 @@
-dht.c: In function `dht_uninit':
-dht.c:1358: warning: unused parameter `s'

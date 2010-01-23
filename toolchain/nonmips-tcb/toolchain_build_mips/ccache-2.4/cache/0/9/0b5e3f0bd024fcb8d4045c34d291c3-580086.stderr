@@ -1,2 +1,0 @@
-ip_nat_sip.c: In function `masq_sip_mangle_sdp_out':
-ip_nat_sip.c:657: warning: implicit declaration of function `ip_conntrack_change_expect'

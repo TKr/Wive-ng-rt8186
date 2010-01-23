@@ -1,2 +1,0 @@
-dp_fint.c: In function `ieee754dp_fint':
-dp_fint.c:32: warning: unused variable `xc'
