@@ -399,7 +399,7 @@ echo " Ok"
 stop() {
 
 if [ -f $dhcpcPidFile ]; then
-       echo "Stop dhcp server"
+       echo "Stop dhcp client"
        kill `cat $dhcpcPidFile`
 fi
 
