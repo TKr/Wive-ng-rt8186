@@ -3,6 +3,7 @@
 . /etc/network/interfaces
 . /etc/network/wifi/general
 dhcpc=/sbin/udhcpc
+dhcpcPidFile=/var/run/udhcpc-wlan0.pid
 
 start() {
 echo "Starting wireless network..."
@@ -16,9 +17,9 @@ echo  "   Starting wlan0: "
     iwpriv wlan0 set_mib nat25_disable=0
     iwpriv wlan0 set_mib macclone_enable=0
 #-------------------------------FOR ALL MODES---------------------------------
-    iwpriv wlan0 set_mib ssid=$ESSID
+    iwpriv wlan0 set_mib ssid="$ESSID"
     #Deny the association SSID of “any” including upper and lower cases
-    iwpriv wlan0 set_mib deny_any=$DSSID
+    iwpriv wlan0 set_mib deny_any="$DSSID"
     #Channels list mode
     iwpriv wlan0 set_mib regdomain=6
     #Do not disable 14channel for 802.11g mode
@@ -251,7 +252,7 @@ if [ "$RMODE" = "AP" ] ; then
     if [ "$REPEATER" = "yes" ] ; then
         ifconfig wlan0-vxd down 
 	ifconfig wlan0-vxd hw ether $WLAN_MACADDR
-	iwpriv wlan0-vxd set_mib ssid=$ESSID
+	iwpriv wlan0-vxd set_mib ssid="$ESSID"
 	iwpriv wlan0-vxd set_mib encmode=$REPCRYPT
 	ifconfig wlan0-vxd up 
     fi
@@ -292,7 +293,7 @@ fi
 if [ "$RMODE" = "ADHOC" ] ; then
     iwpriv wlan0 set_mib opmode=32
     iwpriv wlan0 set_mib channel=$CHANNEL
-    iwpriv wlan0 set_mib defssid=$ESSID
+    iwpriv wlan0 set_mib defssid="$ESSID"
     #---------------------OPTION FOR BRIDGE
     if [ "$BRIDGE_START" = "yes" ] ;  then 
         if [ "$NAT2_5" = "yes" ] ; then
@@ -380,9 +381,9 @@ ip addr flush dev wlan0
 if [ "$WLAN_IN_BR0" != "yes" ] && [ "$WLAN_ENABLED" = "yes" ]; then
 	ip link set wlan0 up
 	ip addr flush dev wlan0
-    if [ "$WLAN_USE_DHCP" = "yes" ] && [ "$WLAN_FORCEIP" != "yes"]; then
+    if [ "$WLAN_USE_DHCP" = "yes" ] && [ "$WLAN_FORCEIP" != "yes" ]; then
 	echo "Set wlan0 IP adreess from dhcp server"
-	$dhcpc -p /var/run/udhcpc-wlan0.pid -i wlan0 $DHCPOPTS >>/dev/null
+	$dhcpc -p $dhcpcPidFile -i wlan0 $DHCPOPTS >>/dev/null
     else
 	echo "Set IP adreess from local files"
 	ip addr add $WLAN_IPADDR brd + dev wlan0
@@ -396,6 +397,11 @@ echo " Ok"
 }
 
 stop() {
+
+if [ -f $dhcpcPidFile ]; then
+       echo "Stop dhcp server"
+       kill `cat $dhcpcPidFile`
+fi
 
 echo "Stop wireless network..."
 ip link set wlan0 down                                
