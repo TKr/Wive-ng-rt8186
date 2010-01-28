@@ -1,1 +1,1 @@
-#define CONFIG_UDHCP_DEBUG 0
+#define CONFIG_UDHCP_DEBUG 1

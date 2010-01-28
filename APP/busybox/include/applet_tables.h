@@ -103,6 +103,7 @@ const char applet_names[] ALIGN1 = ""
 "zcat" "\0"
 ;
 
+#ifndef SKIP_applet_main
 int (*const applet_main[])(int argc, char **argv) = {
 test_main,
 test_main,
@@ -203,6 +204,8 @@ which_main,
 yes_main,
 gunzip_main,
 };
+#endif
+
 const uint16_t applet_nameofs[] ALIGN2 = {
 0x3000,
 0x3002,
@@ -303,4 +306,5 @@ const uint16_t applet_nameofs[] ALIGN2 = {
 0x3242,
 0x0246,
 };
+
 #define MAX_APPLET_NAME_LEN 13
