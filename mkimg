@@ -36,7 +36,7 @@ UCLIB_PATH=$WIVEROOT/toolchain/mips-linux-uclibc
 # ------------------------------------------------------------------------- #
 
 #Generate version file
-if [ "$BASE_STATION" = "YES" ] ; then
+if [ "$SERIAL_CONSOLE" = "YES" ] ; then
     echo $VERSION > ro_fs_stub/version
     echo "Base station firmware version" >> ro_fs_stub/version
     echo "Enter 'menu' for config router" >> ro_fs_stub/version

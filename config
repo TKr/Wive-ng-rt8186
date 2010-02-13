@@ -8,6 +8,7 @@ CLEANCCACHE=NO
 REBUILDTOOLCHAIN=NO
 DOS2UNIX=NO
 DEBUG=NO
+SERIAL_CONSOLE=YES
 #----------------------------------------------------------------------
 #-------------------TOOLCHAIN DIR CONFIG--------------------------------
 #root dir of Wive
