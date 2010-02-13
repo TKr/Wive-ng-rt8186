@@ -19,7 +19,12 @@ __________________________________________________________
 
 
 -------------------=COMPILE=------------------------------
-Install lexra gcc-3.3.3 in you system and run ./compile
+Install extra gcc-3.3.3 in you system and run ./compile,
+alternatively, you can recompile the toolchain with gcc
+4.x if you export CFLAGS=-D_FORTIFY_SOURCE=0 beforehand.
+
+You need to have genext2fs and if you want to compile as a
+non-privileged user, use "fakeroot ./compile" command.
 -------------------=FLASHING=-----------------------------
 For flash firmware push reset and power on device. Wait 
 5 seconds. Start ./upload_a.sh or ./upload_a.sh.

@@ -375,12 +375,7 @@ if [ $ROOTSIZE -gt $RAMDISK_SIZE ];then
   echo "Error! :Your rootfs size $ROOTSIZE KBytes over ramdisk size"
   exit 1
 else
-  dd if=/dev/zero of=$TEMP_IMG bs=1k count=$RAMDISK_SIZE >>/dev/null
-  mke2fs -F -i 1024 $TEMP_IMG $RAMDISK_SIZE >>/dev/null|| exit
-  mount -t ext2 -o loop $TEMP_IMG $MOUNTDIR || exit
-  cp -fR $RW_ROOT/* $MOUNTDIR
-  rm -rf $MOUNTDIR/lost+found
-  umount $MOUNTDIR
+  genext2fs -b $RAMDISK_SIZE -i 1000 -d $RW_ROOT $TEMP_IMG
   gzip -9v -f $TEMP_IMG
   cp -fv "$TEMP_IMG".gz $APPIMG_DIR/ramdisk.img
   rm -f "$TEMP_IMG".*
