@@ -11,6 +11,7 @@ KERNEL_SOURCE=$WIVEROOT/kernel
 APPIMG_DIR=$KERNEL_SOURCE/arch/mips/ramdisk
 STRIP=$CROSSPATH/bin/mips-linux-strip
 SSTRIP=tools/sstrip/sstrip
+GENEXT2=tools/genext2fs/filesystem/bin/genext2fs
 # Destination images path
 IMAGES_PATH=$WIVEROOT/images
 # Files system stubs and pre-creation tree's path
@@ -375,7 +376,7 @@ if [ $ROOTSIZE -gt $RAMDISK_SIZE ];then
   echo "Error! :Your rootfs size $ROOTSIZE KBytes over ramdisk size"
   exit 1
 else
-  genext2fs -b $RAMDISK_SIZE -i 1000 -d $RW_ROOT $TEMP_IMG
+  $GENEXT2 -b $RAMDISK_SIZE -i 1000 -d $RW_ROOT $TEMP_IMG
   gzip -9v -f $TEMP_IMG
   cp -fv "$TEMP_IMG".gz $APPIMG_DIR/ramdisk.img
   rm -f "$TEMP_IMG".*

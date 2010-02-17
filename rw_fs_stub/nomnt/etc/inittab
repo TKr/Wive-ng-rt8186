@@ -1,2 +1,2 @@
 ::sysinit:/etc/rc.d/start
-ttyS0::off:-/bin/sh
+ttyS0::respawn:-/bin/sh
