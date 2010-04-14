@@ -459,7 +459,8 @@ int dnsd_main(int argc UNUSED_PARAM, char **argv)
 	unsigned lsa_size;
 	int udps, opts;
 	uint16_t port = 53;
-	uint8_t buf[MAX_PACK_LEN + 1];
+	/* Ensure buf is 32bit aligned (we need 16bit, but 32bit can't hurt) */
+	uint8_t buf[MAX_PACK_LEN + 1] ALIGN4;
 
 	opts = getopt32(argv, "vi:c:t:p:d", &listen_interface, &fileconf, &sttl, &sport);
 	//if (opts & 0x1) // -v
