@@ -89,10 +89,10 @@ COMMANDS
             wget, which, yes, zcat
 
 COMMAND DESCRIPTIONS
-    arp arp [-vn] [-H type] [-i if] -a [hostname] [-v] [-i if] -d hostname
-        [pub] [-v] [-H type] [-i if] -s hostname hw_addr [temp] [-v] [-H
-        type] [-i if] -s hostname hw_addr [netmask nm] pub [-v] [-H type]
-        [-i if] -Ds hostname ifa [netmask nm] pub
+    arp arp [-vn] [-H HWTYPE] [-i IF] -a [HOSTNAME] [-v] [-i IF] -d HOSTNAME
+        [pub] [-v] [-H HWTYPE] [-i IF] -s HOSTNAME HWADDR [temp] [-v] [-H
+        HWTYPE] [-i IF] -s HOSTNAME HWADDR [netmask MASK] pub [-v] [-H
+        HWTYPE] [-i IF] -Ds HOSTNAME IFACE [netmask MASK] pub
 
         Manipulate ARP cache
 
@@ -109,7 +109,7 @@ COMMAND DESCRIPTIONS
                 -H HWTYPE       Hardware address type
 
     arping
-        arping [-fqbDUA] [-c count] [-w timeout] [-I dev] [-s sender] target
+        arping [-fqbDUA] [-c CNT] [-w TIMEOUT] [-I IFACE] [-s SRC_IP] DST_IP
 
         Send ARP requests/replies
 
@@ -122,10 +122,10 @@ COMMAND DESCRIPTIONS
                 -U              Unsolicited ARP mode, update your neighbors
                 -A              ARP answer mode, update your neighbors
                 -c N            Stop after sending N ARP requests
-                -w timeout      Time to wait for ARP reply, in seconds
-                -I dev          Interface to use (default eth0)
-                -s sender       Sender IP address
-                target          Target IP address
+                -w TIMEOUT      Time to wait for ARP reply, seconds
+                -I IFACE        Interface to use (default eth0)
+                -s SRC_IP       Sender IP address
+                DST_IP          Target IP address
 
     awk awk [OPTIONS] [AWK_PROGRAM] [FILE]...
 
@@ -196,7 +196,7 @@ COMMAND DESCRIPTIONS
 
     cut cut [OPTIONS] [FILE]...
 
-        Print selected fields from each input FILE to standard output
+        Print selected fields from each input FILE to stdout
 
         Options:
 
@@ -249,7 +249,7 @@ COMMAND DESCRIPTIONS
         (x1024), MD (x1000000), M (x1048576), GD (x1000000000) or G
         (x1073741824)
 
-    df  df [-Pkmhai] [-B SIZE] [FILESYSTEM...]
+    df  df [-Pkmhai] [-B SIZE] [FILESYSTEM]...
 
         Print filesystem usage statistics
 
@@ -264,7 +264,7 @@ COMMAND DESCRIPTIONS
                 -B SIZE Blocksize
 
     dhcprelay
-        dhcprelay CLIENT_IFACE[,CLIENT_IFACE2...] SERVER_IFACE [SERVER_IP]
+        dhcprelay CLIENT_IFACE[,CLIENT_IFACE2]... SERVER_IFACE [SERVER_IP]
 
         Relay DHCP requests between clients and server
 
@@ -291,7 +291,7 @@ COMMAND DESCRIPTIONS
                 -a,--absolute   Interpret lease times as expire time
 
     echo
-        echo [-neE] [ARG...]
+        echo [-neE] [ARG]...
 
         Print the specified ARGs to stdout
 
@@ -304,7 +304,7 @@ COMMAND DESCRIPTIONS
     expr
         expr EXPRESSION
 
-        Print the value of EXPRESSION to standard output
+        Print the value of EXPRESSION to stdout
 
         EXPRESSION may be:
 
@@ -343,7 +343,7 @@ COMMAND DESCRIPTIONS
         Return an exit code of FALSE (1)
 
     find
-        find [PATH...] [EXPRESSION]
+        find [PATH]... [EXPRESSION]
 
         Search for files. The default PATH is the current directory, default
         EXPRESSION is '-print'
@@ -355,7 +355,7 @@ COMMAND DESCRIPTIONS
                 -name PATTERN   File name (w/o directory name) matches PATTERN
                 -iname PATTERN  Case insensitive -name
                 -type X         File type is X (X is one of: f,d,l,b,c,...)
-                -size N[bck]    File size is N (c:bytes,k:kbytes,b:512 bytes(def.)).
+                -size N[bck]    File size is N (c:bytes,k:kbytes,b:512 bytes(def.))
                                 +/-N: file size is bigger/smaller than N
                 -links N        Number of links is greater than (+N), less than (-N),
                                 or exactly N
@@ -392,52 +392,53 @@ COMMAND DESCRIPTIONS
                 -P,--port       Port number
 
     grep
-        grep [-HhrilLnqvsoeFEABC] PATTERN [FILE]...
+        grep [-HhnlLoqvsriFE] [-m N] [-A/B/C N] PATTERN/-e PATTERN.../-f
+        FILE [FILE]...
 
-        Search for PATTERN in each FILE or standard input
+        Search for PATTERN in FILEs (or stdin)
 
         Options:
 
-                -H      Prefix output lines with filename where match was found
-                -h      Suppress the prefixing filename on output
-                -r      Recurse
-                -i      Ignore case distinctions
-                -l      List names of files that match
-                -L      List names of files that don't match
-                -n      Print line number with output lines
+                -H      Add 'filename:' prefix
+                -h      Do not add 'filename:' prefix
+                -n      Add 'line_no:' prefix
+                -l      Show only names of files that match
+                -L      Show only names of files that don't match
+                -c      Show only count of matching lines
+                -o      Show only the matching part of line
                 -q      Quiet. Return 0 if PATTERN is found, 1 otherwise
                 -v      Select non-matching lines
-                -s      Suppress file open/read error messages
-                -c      Only print count of matching lines
-                -o      Show only the part of a line that matches PATTERN
+                -s      Suppress open and read errors
+                -r      Recurse
+                -i      Ignore case
+                -F      PATTERN is a literal (not regexp)
+                -E      PATTERN is an extended regexp
                 -m N    Match up to N times per file
-                -F      PATTERN is a set of newline-separated strings
-                -E      PATTERN is an extended regular expression
-                -e PTRN Pattern to match
-                -f FILE Read pattern from file
                 -A N    Print N lines of trailing context
                 -B N    Print N lines of leading context
-                -C N    Print N lines of output context
+                -C N    Same as '-A N -B N'
+                -e PTRN Pattern to match
+                -f FILE Read pattern from file
 
     gunzip
         gunzip [OPTIONS] [FILE]...
 
-        Uncompress FILEs (or standard input)
+        Uncompress FILEs (or stdin)
 
         Options:
 
-                -c      Write to standard output
+                -c      Write to stdout
                 -f      Force
                 -t      Test file integrity
 
     gzip
         gzip [OPTIONS] [FILE]...
 
-        Compress FILEs (or standard input)
+        Compress FILEs (or stdin)
 
         Options:
 
-                -c      Write to standard output
+                -c      Write to stdout
                 -d      Decompress
                 -f      Force
 
@@ -455,9 +456,8 @@ COMMAND DESCRIPTIONS
     head
         head [OPTIONS] [FILE]...
 
-        Print first 10 lines of each FILE (or standard input) to standard
-        output. With more than one FILE, precede each with a header giving
-        the file name.
+        Print first 10 lines of each FILE (or stdin) to stdout. With more
+        than one FILE, precede each with a header giving the file name.
 
         Options:
 
@@ -467,9 +467,9 @@ COMMAND DESCRIPTIONS
                 -v      Always output headers giving file names
 
     hexdump
-        hexdump [-bcCdefnosvx] FILE...
+        hexdump [-bcCdefnosvx] [FILE]...
 
-        Display FILEs or standard input in a user specified format
+        Display FILEs (or stdin) in a user specified format
 
         Options:
 
@@ -596,7 +596,7 @@ COMMAND DESCRIPTIONS
                 -l      List all signal names and numbers
 
     killall
-        killall [-l] [-q] [-SIG] process-name...
+        killall [-l] [-q] [-SIG] PROCESS_NAME...
 
         Send a signal (default: TERM) to given processes
 
@@ -630,7 +630,7 @@ COMMAND DESCRIPTIONS
     logger
         logger [OPTIONS] [MESSAGE]
 
-        Write MESSAGE to the system log. If MESSAGE is omitted, log stdin.
+        Write MESSAGE (or stdin) to syslog
 
         Options:
 
@@ -734,7 +734,7 @@ COMMAND DESCRIPTIONS
                 p:      Make a named pipe (MAJOR and MINOR are ignored)
 
     modprobe
-        modprobe [-knqrsvb] MODULE [symbol=value...]
+        modprobe [-knqrsvb] MODULE [symbol=value]...
 
         Options:
 
@@ -793,7 +793,7 @@ COMMAND DESCRIPTIONS
                 -p      Display PID/Program name for sockets
 
     nice
-        nice [-n ADJUST] [PROG [ARGS]]
+        nice [-n ADJUST] [PROG ARGS]
 
         Run PROG with modified scheduling priority
 
@@ -927,7 +927,7 @@ COMMAND DESCRIPTIONS
     seq seq [-w] [-s SEP] [FIRST [INC]] LAST
 
         Print numbers from FIRST to LAST, in steps of INC. FIRST, INC
-        default to 1
+        default to 1.
 
         Options:
 
@@ -984,14 +984,14 @@ COMMAND DESCRIPTIONS
     syslogd
         syslogd [OPTIONS]
 
-        System logging utility. Note that this version of syslogd ignores
-        /etc/syslog.conf.
+        System logging utility. This version of syslogd ignores
+        /etc/syslog.conf
 
         Options:
 
                 -n              Run in foreground
                 -O FILE         Log to given file (default:/var/log/messages)
-                -l n            Set local log level
+                -l N            Set local log level
                 -S              Smaller logging output
                 -s SIZE         Max size (KB) before rotate (default:200KB, 0=off)
                 -b N            N rotated logs to keep (default:1, max=99, 0=purge)
@@ -1001,9 +1001,8 @@ COMMAND DESCRIPTIONS
     tail
         tail [OPTIONS] [FILE]...
 
-        Print last 10 lines of each FILE (or standard input) to standard
-        output. With more than one FILE, precede each with a header giving
-        the file name.
+        Print last 10 lines of each FILE (or stdin) to stdout. With more
+        than one FILE, precede each with a header giving the file name.
 
         Options:
 
@@ -1039,8 +1038,8 @@ COMMAND DESCRIPTIONS
     top top [-b] [-nCOUNT] [-dSECONDS]
 
         Provide a view of process activity in real time. Read the status of
-        all processes from /proc each SECONDS and show the status for
-        however many processes will fit on the screen.
+        all processes from /proc each SECONDS and display a screenful of
+        them.
 
     traceroute
         traceroute [-FIldnrv] [-f 1ST_TTL] [-m MAXTTL] [-p PORT] [-q PROBES]
@@ -1053,7 +1052,7 @@ COMMAND DESCRIPTIONS
 
                 -F      Set the don't fragment bit
                 -I      Use ICMP ECHO instead of UDP datagrams
-                -l      Display the ttl value of the returned packet
+                -l      Display the TTL value of the returned packet
                 -d      Set SO_DEBUG options to socket
                 -n      Print numeric addresses
                 -r      Bypass routing tables, send directly to HOST
@@ -1061,7 +1060,7 @@ COMMAND DESCRIPTIONS
                 -m      Max time-to-live (max number of hops)
                 -p      Base UDP port number used in probes
                         (default 33434)
-                -q      Number of probes per 'ttl' (default 3)
+                -q      Number of probes per TTL (default 3)
                 -s      IP address to use as the source address
                 -t      Type-of-service in probe packets (default 0)
                 -w      Time in seconds to wait for a response (default 3)
@@ -1164,7 +1163,7 @@ COMMAND DESCRIPTIONS
                 -H      Short help regarding available features
 
     watch
-        watch [-n seconds] [-t] PROG [ARGS]
+        watch [-n SEC] [-t] PROG ARGS
 
         Run PROG periodically
 

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BUSYBOX 1"
-.TH BUSYBOX 1 "2010-02-17" "version 1.16.0" "BusyBox"
+.TH BUSYBOX 1 "2010-05-01" "version 1.16.1" "BusyBox"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -228,11 +228,11 @@ Currently available applets include:
 .IP "\fBarp\fR" 4
 .IX Item "arp"
 arp 
-[\-vn]	[\-H type] [\-i if] \-a [hostname]
-[\-v]		  [\-i if] \-d hostname [pub]
-[\-v]	[\-H type] [\-i if] \-s hostname hw_addr [temp]
-[\-v]	[\-H type] [\-i if] \-s hostname hw_addr [netmask nm] pub
-[\-v]	[\-H type] [\-i if] \-Ds hostname ifa [netmask nm] pub
+[\-vn]	[\-H \s-1HWTYPE\s0] [\-i \s-1IF\s0] \-a [\s-1HOSTNAME\s0]
+[\-v]		    [\-i \s-1IF\s0] \-d \s-1HOSTNAME\s0 [pub]
+[\-v]	[\-H \s-1HWTYPE\s0] [\-i \s-1IF\s0] \-s \s-1HOSTNAME\s0 \s-1HWADDR\s0 [temp]
+[\-v]	[\-H \s-1HWTYPE\s0] [\-i \s-1IF\s0] \-s \s-1HOSTNAME\s0 \s-1HWADDR\s0 [netmask \s-1MASK\s0] pub
+[\-v]	[\-H \s-1HWTYPE\s0] [\-i \s-1IF\s0] \-Ds \s-1HOSTNAME\s0 \s-1IFACE\s0 [netmask \s-1MASK\s0] pub
 .Sp
 Manipulate \s-1ARP\s0 cache
 .Sp
@@ -251,7 +251,7 @@ Options:
 .Ve
 .IP "\fBarping\fR" 4
 .IX Item "arping"
-arping [\-fqbDUA] [\-c count] [\-w timeout] [\-I dev] [\-s sender] target
+arping [\-fqbDUA] [\-c \s-1CNT\s0] [\-w \s-1TIMEOUT\s0] [\-I \s-1IFACE\s0] [\-s \s-1SRC_IP\s0] \s-1DST_IP\s0
 .Sp
 Send \s-1ARP\s0 requests/replies
 .Sp
@@ -265,10 +265,10 @@ Options:
 \&        \-U              Unsolicited ARP mode, update your neighbors
 \&        \-A              ARP answer mode, update your neighbors
 \&        \-c N            Stop after sending N ARP requests
-\&        \-w timeout      Time to wait for ARP reply, in seconds
-\&        \-I dev          Interface to use (default eth0)
-\&        \-s sender       Sender IP address
-\&        target          Target IP address
+\&        \-w TIMEOUT      Time to wait for ARP reply, seconds
+\&        \-I IFACE        Interface to use (default eth0)
+\&        \-s SRC_IP       Sender IP address
+\&        DST_IP          Target IP address
 .Ve
 .IP "\fBawk\fR" 4
 .IX Item "awk"
@@ -356,7 +356,7 @@ crontab [\-c \s-1DIR\s0] [\-u \s-1USER\s0] [\-ler]|[\s-1FILE\s0]
 .IX Item "cut"
 cut [\s-1OPTIONS\s0] [\s-1FILE\s0]...
 .Sp
-Print selected fields from each input \s-1FILE\s0 to standard output
+Print selected fields from each input \s-1FILE\s0 to stdout
 .Sp
 Options:
 .Sp
@@ -419,7 +419,7 @@ Numbers may be suffixed by c (x1), w (x2), b (x512), kD (x1000), k (x1024),
 \&\s-1MD\s0 (x1000000), M (x1048576), \s-1GD\s0 (x1000000000) or G (x1073741824)
 .IP "\fBdf\fR" 4
 .IX Item "df"
-df [\-Pkmhai] [\-B \s-1SIZE\s0] [\s-1FILESYSTEM\s0...]
+df [\-Pkmhai] [\-B \s-1SIZE\s0] [\s-1FILESYSTEM\s0]...
 .Sp
 Print filesystem usage statistics
 .Sp
@@ -436,7 +436,7 @@ Options:
 .Ve
 .IP "\fBdhcprelay\fR" 4
 .IX Item "dhcprelay"
-dhcprelay CLIENT_IFACE[,CLIENT_IFACE2...] \s-1SERVER_IFACE\s0 [\s-1SERVER_IP\s0]
+dhcprelay CLIENT_IFACE[,CLIENT_IFACE2]... \s-1SERVER_IFACE\s0 [\s-1SERVER_IP\s0]
 .Sp
 Relay \s-1DHCP\s0 requests between clients and server
 .IP "\fBdmesg\fR" 4
@@ -467,7 +467,7 @@ Options:
 .Ve
 .IP "\fBecho\fR" 4
 .IX Item "echo"
-echo [\-neE] [\s-1ARG\s0...]
+echo [\-neE] [\s-1ARG\s0]...
 .Sp
 Print the specified ARGs to stdout
 .Sp
@@ -482,7 +482,7 @@ Options:
 .IX Item "expr"
 expr \s-1EXPRESSION\s0
 .Sp
-Print the value of \s-1EXPRESSION\s0 to standard output
+Print the value of \s-1EXPRESSION\s0 to stdout
 .Sp
 \&\s-1EXPRESSION\s0 may be:
 .Sp
@@ -523,7 +523,7 @@ false
 Return an exit code of \s-1FALSE\s0 (1)
 .IP "\fBfind\fR" 4
 .IX Item "find"
-find [\s-1PATH\s0...] [\s-1EXPRESSION\s0]
+find [\s-1PATH\s0]... [\s-1EXPRESSION\s0]
 .Sp
 Search for files. The default \s-1PATH\s0 is the current directory,
 default \s-1EXPRESSION\s0 is '\-print'
@@ -536,7 +536,7 @@ default \s-1EXPRESSION\s0 is '\-print'
 \&        \-name PATTERN   File name (w/o directory name) matches PATTERN
 \&        \-iname PATTERN  Case insensitive \-name
 \&        \-type X         File type is X (X is one of: f,d,l,b,c,...)
-\&        \-size N[bck]    File size is N (c:bytes,k:kbytes,b:512 bytes(def.)).
+\&        \-size N[bck]    File size is N (c:bytes,k:kbytes,b:512 bytes(def.))
 \&                        +/\-N: file size is bigger/smaller than N
 \&        \-links N        Number of links is greater than (+N), less than (\-N),
 \&                        or exactly N
@@ -578,44 +578,44 @@ Options:
 .Ve
 .IP "\fBgrep\fR" 4
 .IX Item "grep"
-grep [\-HhrilLnqvsoeFEABC] \s-1PATTERN\s0 [\s-1FILE\s0]...
+grep [\-HhnlLoqvsriFE] [\-m N] [\-A/B/C N] PATTERN/\-e \s-1PATTERN\s0.../\-f \s-1FILE\s0 [\s-1FILE\s0]...
 .Sp
-Search for \s-1PATTERN\s0 in each \s-1FILE\s0 or standard input
+Search for \s-1PATTERN\s0 in FILEs (or stdin)
 .Sp
 Options:
 .Sp
 .Vb 10
-\&        \-H      Prefix output lines with filename where match was found
-\&        \-h      Suppress the prefixing filename on output
-\&        \-r      Recurse
-\&        \-i      Ignore case distinctions
-\&        \-l      List names of files that match
-\&        \-L      List names of files that don\*(Aqt match
-\&        \-n      Print line number with output lines
+\&        \-H      Add \*(Aqfilename:\*(Aq prefix
+\&        \-h      Do not add \*(Aqfilename:\*(Aq prefix
+\&        \-n      Add \*(Aqline_no:\*(Aq prefix
+\&        \-l      Show only names of files that match
+\&        \-L      Show only names of files that don\*(Aqt match
+\&        \-c      Show only count of matching lines
+\&        \-o      Show only the matching part of line
 \&        \-q      Quiet. Return 0 if PATTERN is found, 1 otherwise
 \&        \-v      Select non\-matching lines
-\&        \-s      Suppress file open/read error messages
-\&        \-c      Only print count of matching lines
-\&        \-o      Show only the part of a line that matches PATTERN
+\&        \-s      Suppress open and read errors
+\&        \-r      Recurse
+\&        \-i      Ignore case
+\&        \-F      PATTERN is a literal (not regexp)
+\&        \-E      PATTERN is an extended regexp
 \&        \-m N    Match up to N times per file
-\&        \-F      PATTERN is a set of newline\-separated strings
-\&        \-E      PATTERN is an extended regular expression
-\&        \-e PTRN Pattern to match
-\&        \-f FILE Read pattern from file
 \&        \-A N    Print N lines of trailing context
 \&        \-B N    Print N lines of leading context
-\&        \-C N    Print N lines of output context
+\&        \-C N    Same as \*(Aq\-A N \-B N\*(Aq
+\&        \-e PTRN Pattern to match
+\&        \-f FILE Read pattern from file
 .Ve
 .IP "\fBgunzip\fR" 4
 .IX Item "gunzip"
 gunzip [\s-1OPTIONS\s0] [\s-1FILE\s0]...
 .Sp
-Uncompress FILEs (or standard input)
+Uncompress FILEs (or stdin)
 .Sp
 Options:
 .Sp
 .Vb 3
-\&        \-c      Write to standard output
+\&        \-c      Write to stdout
 \&        \-f      Force
 \&        \-t      Test file integrity
 .Ve
@@ -623,12 +623,12 @@ Options:
 .IX Item "gzip"
 gzip [\s-1OPTIONS\s0] [\s-1FILE\s0]...
 .Sp
-Compress FILEs (or standard input)
+Compress FILEs (or stdin)
 .Sp
 Options:
 .Sp
 .Vb 3
-\&        \-c      Write to standard output
+\&        \-c      Write to stdout
 \&        \-d      Decompress
 \&        \-f      Force
 .Ve
@@ -649,7 +649,7 @@ Options:
 .IX Item "head"
 head [\s-1OPTIONS\s0] [\s-1FILE\s0]...
 .Sp
-Print first 10 lines of each \s-1FILE\s0 (or standard input) to standard output.
+Print first 10 lines of each \s-1FILE\s0 (or stdin) to stdout.
 With more than one \s-1FILE\s0, precede each with a header giving the file name.
 .Sp
 Options:
@@ -662,9 +662,9 @@ Options:
 .Ve
 .IP "\fBhexdump\fR" 4
 .IX Item "hexdump"
-hexdump [\-bcCdefnosvx] \s-1FILE\s0...
+hexdump [\-bcCdefnosvx] [\s-1FILE\s0]...
 .Sp
-Display FILEs or standard input in a user specified format
+Display FILEs (or stdin) in a user specified format
 .Sp
 Options:
 .Sp
@@ -813,7 +813,7 @@ Options:
 .Ve
 .IP "\fBkillall\fR" 4
 .IX Item "killall"
-killall [\-l] [\-q] [\-SIG] process-name...
+killall [\-l] [\-q] [\-SIG] \s-1PROCESS_NAME\s0...
 .Sp
 Send a signal (default: \s-1TERM\s0) to given processes
 .Sp
@@ -854,7 +854,7 @@ Options:
 .IX Item "logger"
 logger [\s-1OPTIONS\s0] [\s-1MESSAGE\s0]
 .Sp
-Write \s-1MESSAGE\s0 to the system log. If \s-1MESSAGE\s0 is omitted, log stdin.
+Write \s-1MESSAGE\s0 (or stdin) to syslog
 .Sp
 Options:
 .Sp
@@ -973,7 +973,7 @@ Options:
 .Ve
 .IP "\fBmodprobe\fR" 4
 .IX Item "modprobe"
-modprobe [\-knqrsvb] \s-1MODULE\s0 [symbol=value...]
+modprobe [\-knqrsvb] \s-1MODULE\s0 [symbol=value]...
 .Sp
 Options:
 .Sp
@@ -1042,7 +1042,7 @@ Options:
 .Ve
 .IP "\fBnice\fR" 4
 .IX Item "nice"
-nice [\-n \s-1ADJUST\s0] [\s-1PROG\s0 [\s-1ARGS\s0]]
+nice [\-n \s-1ADJUST\s0] [\s-1PROG\s0 \s-1ARGS\s0]
 .Sp
 Run \s-1PROG\s0 with modified scheduling priority
 .Sp
@@ -1202,7 +1202,7 @@ Remaining arguments are input files (stdin if none).
 seq [\-w] [\-s \s-1SEP\s0] [\s-1FIRST\s0 [\s-1INC\s0]] \s-1LAST\s0
 .Sp
 Print numbers from \s-1FIRST\s0 to \s-1LAST\s0, in steps of \s-1INC\s0.
-\&\s-1FIRST\s0, \s-1INC\s0 default to 1
+\&\s-1FIRST\s0, \s-1INC\s0 default to 1.
 .Sp
 Options:
 .Sp
@@ -1264,14 +1264,14 @@ Options:
 syslogd [\s-1OPTIONS\s0]
 .Sp
 System logging utility.
-Note that this version of syslogd ignores /etc/syslog.conf.
+This version of syslogd ignores /etc/syslog.conf
 .Sp
 Options:
 .Sp
 .Vb 8
 \&        \-n              Run in foreground
 \&        \-O FILE         Log to given file (default:/var/log/messages)
-\&        \-l n            Set local log level
+\&        \-l N            Set local log level
 \&        \-S              Smaller logging output
 \&        \-s SIZE         Max size (KB) before rotate (default:200KB, 0=off)
 \&        \-b N            N rotated logs to keep (default:1, max=99, 0=purge)
@@ -1282,7 +1282,7 @@ Options:
 .IX Item "tail"
 tail [\s-1OPTIONS\s0] [\s-1FILE\s0]...
 .Sp
-Print last 10 lines of each \s-1FILE\s0 (or standard input) to standard output.
+Print last 10 lines of each \s-1FILE\s0 (or stdin) to stdout.
 With more than one \s-1FILE\s0, precede each with a header giving the file name.
 .Sp
 Options:
@@ -1326,7 +1326,7 @@ top [\-b] [\-nCOUNT] [\-dSECONDS]
 .Sp
 Provide a view of process activity in real time.
 Read the status of all processes from /proc each \s-1SECONDS\s0
-and show the status for however many processes will fit on the screen.
+and display a screenful of them.
 .IP "\fBtraceroute\fR" 4
 .IX Item "traceroute"
 traceroute [\-FIldnrv] [\-f 1ST_TTL] [\-m \s-1MAXTTL\s0] [\-p \s-1PORT\s0] [\-q \s-1PROBES\s0]
@@ -1340,7 +1340,7 @@ Options:
 .Vb 10
 \&        \-F      Set the don\*(Aqt fragment bit
 \&        \-I      Use ICMP ECHO instead of UDP datagrams
-\&        \-l      Display the ttl value of the returned packet
+\&        \-l      Display the TTL value of the returned packet
 \&        \-d      Set SO_DEBUG options to socket
 \&        \-n      Print numeric addresses
 \&        \-r      Bypass routing tables, send directly to HOST
@@ -1348,7 +1348,7 @@ Options:
 \&        \-m      Max time\-to\-live (max number of hops)
 \&        \-p      Base UDP port number used in probes
 \&                (default 33434)
-\&        \-q      Number of probes per \*(Aqttl\*(Aq (default 3)
+\&        \-q      Number of probes per TTL (default 3)
 \&        \-s      IP address to use as the source address
 \&        \-t      Type\-of\-service in probe packets (default 0)
 \&        \-w      Time in seconds to wait for a response (default 3)
@@ -1465,7 +1465,7 @@ Options:
 .Ve
 .IP "\fBwatch\fR" 4
 .IX Item "watch"
-watch [\-n seconds] [\-t] \s-1PROG\s0 [\s-1ARGS\s0]
+watch [\-n \s-1SEC\s0] [\-t] \s-1PROG\s0 \s-1ARGS\s0
 .Sp
 Run \s-1PROG\s0 periodically
 .Sp
