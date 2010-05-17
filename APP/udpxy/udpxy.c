@@ -268,7 +268,7 @@ send_http_response( int sockfd, int code, const char* reason )
 
     assert( (sockfd > 0) && code && reason );
 
-    msglen = snprintf( msg, sizeof(msg) - 1, "HTTP/1.1 %d %s \n\n",
+    msglen = snprintf( msg, sizeof(msg) - 1, "HTTP/1.1 %d %s.\nContent-Type:application/octet-stream.\n\n",
               code, reason );
     if( msglen <= 0 ) return ERR_INTERNAL;
 
