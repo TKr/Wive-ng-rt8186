@@ -676,6 +676,7 @@ iw_get_basic_config(int			skfd,
 {
   struct iwreq		wrq;
 
+  memset((char *) &wrq, 0, sizeof(struct iwreq));
   memset((char *) info, 0, sizeof(struct wireless_config));
 
   /* Get wireless name */
