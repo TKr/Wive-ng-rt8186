@@ -111,6 +111,7 @@ int	log_to_fd = 1;		/* send log messages to this fd too */
 bool	log_default = 1;	/* log_to_fd is default (stdout) */
 int	maxfail = 10;		/* max # of unsuccessful connection attempts */
 char	linkname[MAXPATHLEN];	/* logical name for link */
+char	use_ifname[IFNAMSIZ];	/* physical name for PPP link */
 bool	tune_kernel;		/* may alter kernel settings */
 int	connect_delay = 1000;	/* wait this many ms after connect script */
 int	req_unit = -1;		/* requested interface unit */
@@ -262,6 +263,9 @@ option_t general_options[] = {
     { "linkname", o_string, linkname,
       "Set logical name for link",
       OPT_PRIO | OPT_PRIV | OPT_STATIC, NULL, MAXPATHLEN },
+    { "ifname", o_string, use_ifname,
+      "Set physical name for PPP interface",
+      OPT_PRIO | OPT_PRIV | OPT_STATIC, NULL, IFNAMSIZ },
 
     { "maxfail", o_int, &maxfail,
       "Maximum number of unsuccessful connection attempts to allow",

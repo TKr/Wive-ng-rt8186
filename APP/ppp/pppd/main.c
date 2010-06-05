@@ -214,6 +214,8 @@ int error_count;
 bool bundle_eof;
 bool bundle_terminating;
 
+sigset_t ignored_signals; /* to be ignored due to kill_my_pg() call */
+
 /*
  * We maintain a list of child process pids and
  * functions to call when they exit.
@@ -257,7 +259,6 @@ static void delete_db_key __P((const char *));
 static void cleanup_db __P((void));
 #endif
 
-static void handle_events __P((void));
 void print_link_stats __P((void));
 
 extern	char	*ttyname __P((int));
@@ -609,7 +610,7 @@ main(argc, argv)
 /*
  * handle_events - wait for something to happen and respond to it.
  */
-static void
+void
 handle_events()
 {
     struct timeval timo;
@@ -733,6 +734,8 @@ setup_signals()
      * be sufficient.
      */
     signal(SIGPIPE, SIG_IGN);
+    
+    sigemptyset(&ignored_signals);
 }
 
 /*
@@ -743,8 +746,11 @@ void
 set_ifunit(iskey)
     int iskey;
 {
-    info("Using interface %s%d", PPP_DRV_NAME, ifunit);
-    slprintf(ifname, sizeof(ifname), "%s%d", PPP_DRV_NAME, ifunit);
+    if (use_ifname[0] == 0)
+	slprintf(ifname, sizeof(ifname), "%s%d", PPP_DRV_NAME, ifunit);
+    else
+	slprintf(ifname, sizeof(ifname), "%s", use_ifname);
+    info("Using interface %s", ifname);
     script_setenv("IFNAME", ifname, iskey);
     if (iskey) {
 	create_pidfile(getpid());	/* write pid to file */
@@ -1424,26 +1430,6 @@ static void
 kill_my_pg(sig)
     int sig;
 {
-    struct sigaction act, oldact;
-    struct subprocess *chp;
-
-    if (!detached) {
-	/*
-	 * There might be other things in our process group that we
-	 * didn't start that would get hit if we did a kill(0), so
-	 * just send the signal individually to our children.
-	 */
-	for (chp = children; chp != NULL; chp = chp->next)
-	    if (chp->killable)
-		kill(chp->pid, sig);
-	return;
-    }
-
-    /* We've done a setsid(), so we can just use a kill(0) */
-    sigemptyset(&act.sa_mask);		/* unnecessary in fact */
-    act.sa_handler = SIG_IGN;
-    act.sa_flags = 0;
-    kill(0, sig);
     /*
      * The kill() above made the signal pending for us, as well as
      * the rest of our process group, but we don't want it delivered
@@ -1455,8 +1441,15 @@ kill_my_pg(sig)
      * would be delivered after the current signal handler exits,
      * leading to an infinite loop.
      */
-    sigaction(sig, &act, &oldact);
-    sigaction(sig, &oldact, NULL);
+    if (sigismember(&ignored_signals, sig))
+    {
+       sigdelset(&ignored_signals, sig);
+    }
+    else
+    {
+       sigaddset(&ignored_signals, sig);
+       kill(0, sig);
+    }
 }
 
 
@@ -1477,6 +1470,7 @@ hup(sig)
 	/* Send the signal to the [dis]connector process(es) also */
 	kill_my_pg(sig);
     notify(sigreceived, sig);
+    status = EXIT_USER_REQUEST;
     if (waiting)
 	siglongjmp(sigjmp, 1);
 }
@@ -1498,6 +1492,7 @@ term(sig)
 	/* Send the signal to the [dis]connector process(es) also */
 	kill_my_pg(sig);
     notify(sigreceived, sig);
+    status = EXIT_USER_REQUEST;
     if (waiting)
 	siglongjmp(sigjmp, 1);
 }

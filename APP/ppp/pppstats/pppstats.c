@@ -506,10 +506,12 @@ main(argc, argv)
     if (argc > 0)
 	interface = argv[0];
 
+/*
     if (sscanf(interface, PPP_DRV_NAME "%d", &unit) != 1) {
 	fprintf(stderr, "%s: invalid interface '%s' specified\n",
 		progname, interface);
     }
+*/
 
 #ifndef STREAMS
     {

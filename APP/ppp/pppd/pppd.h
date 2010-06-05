@@ -71,6 +71,10 @@
 #include "eui64.h"
 #endif
 
+#ifndef IFNAMSIZ
+#define IFNAMSIZ	16
+#endif
+
 /*
  * Limits.
  */
@@ -320,6 +324,7 @@ extern char	*record_file;	/* File to record chars sent/received */
 extern bool	sync_serial;	/* Device is synchronous serial device */
 extern int	maxfail;	/* Max # of unsuccessful connection attempts */
 extern char	linkname[MAXPATHLEN]; /* logical name for link */
+extern char	use_ifname[IFNAMSIZ]; /* physical name for PPP interface */
 extern bool	tune_kernel;	/* May alter kernel settings as necessary */
 extern int	connect_delay;	/* Time to delay after connect script */
 extern int	max_data_rate;	/* max bytes/sec through charshunt */
@@ -479,6 +484,7 @@ extern struct channel *the_channel;
  */
 
 /* Procedures exported from main.c. */
+void handle_events __P((void));        /* wait for smth to happen and respond to it*/
 void set_ifunit __P((int));	/* set stuff that depends on ifunit */
 void detach __P((void));	/* Detach from controlling tty */
 void die __P((int));		/* Cleanup and exit */

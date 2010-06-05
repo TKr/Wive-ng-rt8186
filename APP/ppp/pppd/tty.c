@@ -690,6 +690,7 @@ int connect_tty()
 				status = EXIT_INIT_FAILED;
 				goto errretf;
 			}
+			handle_events();
 			if (got_sigterm) {
 				disconnect_tty();
 				goto errretf;
@@ -700,9 +701,11 @@ int connect_tty()
 		if (connector && connector[0]) {
 			if (device_script(connector, ttyfd, ttyfd, 0) < 0) {
 				error("Connect script failed");
-				status = EXIT_CONNECT_FAILED;
+				if (status != EXIT_USER_REQUEST)
+				    status = EXIT_CONNECT_FAILED;
 				goto errretf;
 			}
+			handle_events();
 			if (got_sigterm) {
 				disconnect_tty();
 				goto errretf;
@@ -729,6 +732,7 @@ int connect_tty()
 				error("Failed to reopen %s: %m", devnam);
 				status = EXIT_OPEN_FAILED;
 			}
+			handle_events();
 			if (!persist || errno != EINTR || hungup || got_sigterm)
 				goto errret;
 		}
