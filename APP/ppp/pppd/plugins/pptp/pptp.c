@@ -53,7 +53,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PPTPC_VERSION "0.8.2"
+#define PPTPC_VERSION "0.8.4"
 
 extern char** environ;
 
@@ -66,7 +66,7 @@ char *pptp_client = NULL;
 char *pptp_phone = NULL;
 int pptp_sock=-1;
 int pptp_timeout=100000;
-struct in_addr localbind = { INADDR_NONE };
+struct in_addr localbind = { .s_addr = INADDR_NONE };
 
 static int callmgr_sock;
 static int pptp_fd;
@@ -230,7 +230,7 @@ static int open_callmgr(int call_id,struct in_addr inetaddr, char *phonenr,int w
         {
             /* couldn't connect.  We'll have to launch this guy. */
 
-            unlink (where.sun_path);
+	    unlink (where.sun_path); /* FIXME: potential race condition */
 
             /* fork and launch call manager process */
             switch (pid = fork())
@@ -244,7 +244,7 @@ static int open_callmgr(int call_id,struct in_addr inetaddr, char *phonenr,int w
                 }
                 default: /* parent */
                     waitpid(pid, &status, 0);
-                    if (status!= 0)
+		    if (WEXITSTATUS(status) != 0)
 		    {
 			close(fd);
 			error("Call manager exited with error %d", status);

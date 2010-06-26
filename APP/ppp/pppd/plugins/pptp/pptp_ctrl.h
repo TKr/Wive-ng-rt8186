@@ -33,6 +33,8 @@ int pptp_conn_established(PPTP_CONN * conn);
 void pptp_call_close(PPTP_CONN * conn, PPTP_CALL * call);
 /* hard close. */
 void pptp_call_destroy(PPTP_CONN *conn, PPTP_CALL *call);
+int pptp_conn_is_dead(PPTP_CONN * conn);
+void pptp_conn_free(PPTP_CONN * conn);
 /* soft close.  Will callback on completion. */
 void pptp_conn_close(PPTP_CONN * conn, u_int8_t close_reason);
 /* hard close */
